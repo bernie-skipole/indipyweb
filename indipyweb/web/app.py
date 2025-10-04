@@ -29,10 +29,10 @@ from litestar.exceptions import NotAuthorizedException
 from litestar.response import ServerSentEvent, ServerSentEventMessage
 from litestar.types import SSEData
 
-from . import userdata, edit
+from . import userdata, edit, device
 
 
-from ..register import DEFINE_EVENT, MESSAGE_EVENT, indihostport
+from ..register import DEFINE_EVENT, MESSAGE_EVENT, indihostport, localtimestring, get_indiclient
 
 
 # location of static files, for CSS and javascript
@@ -41,9 +41,6 @@ STATICFILES = Path(__file__).parent.resolve() / "static"
 # location of template files
 TEMPLATEFILES = Path(__file__).parent.resolve() / "templates"
 
-# Set the indi client by the call to ipywebapp
-ICLIENT = None
-
 
 class ShowInstruments:
     """Iterate with instruments table whenever an instrument change happens."""
@@ -51,6 +48,7 @@ class ShowInstruments:
     def __init__(self):
         self.instruments = set()
         self.connected = False
+        self.iclient = get_indiclient()
 
     def __aiter__(self):
         return self
@@ -58,13 +56,13 @@ class ShowInstruments:
     async def __anext__(self):
         "Whenever there is a change in devices, return a ServerSentEventMessage message"
         while True:
-            if ICLIENT.stop:
+            if self.iclient.stop:
                 raise StopAsyncIteration
-            if ICLIENT.connected != self.connected:
-                self.connected = ICLIENT.connected
+            if self.iclient.connected != self.connected:
+                self.connected = self.iclient.connected
                 return ServerSentEventMessage(event="newinstruments")
             # get a set of instrument names for enabled devices
-            newinstruments = set(name for name,value in ICLIENT.items() if value.enable)
+            newinstruments = set(name for name,value in self.iclient.items() if value.enable)
             if newinstruments == self.instruments:
                 # No change, wait, at most 5 seconds, for a DEFINE_EVENT
                 try:
@@ -91,6 +89,7 @@ class ShowMessages:
     def __init__(self):
         self.lasttimestamp = None
         self.connected = False
+        self.iclient = get_indiclient()
 
     def __aiter__(self):
         return self
@@ -98,20 +97,20 @@ class ShowMessages:
     async def __anext__(self):
         "Whenever there is a new message, return a ServerSentEventMessage message"
         while True:
-            if ICLIENT.stop:
+            if self.iclient.stop:
                 raise StopAsyncIteration
-            if ICLIENT.connected != self.connected:
-                self.connected = ICLIENT.connected
+            if self.iclient.connected != self.connected:
+                self.connected = self.iclient.connected
                 return ServerSentEventMessage(event="newmessage")
             # get new message
-            if ICLIENT.messages:
-                lasttimestamp = ICLIENT.messages[0][0]
+            if self.iclient.messages:
+                lasttimestamp = self.iclient.messages[0][0]
                 if (self.lasttimestamp is None) or (lasttimestamp != self.lasttimestamp):
                     # a new message is received
                     self.lasttimestamp = lasttimestamp
                     return ServerSentEventMessage(event="newmessages")
             elif self.lasttimestamp is not None:
-                # There are no ICLIENT.messages, but self.lasttimestamp
+                # There are no self.iclient.messages, but self.lasttimestamp
                 # has a value, so there has been a change
                 self.lasttimestamp = None
                 return ServerSentEventMessage(event="newmessages")
@@ -190,22 +189,17 @@ async def publicroot(request: Request) -> Template:
 @get("/updateinstruments", exclude_from_auth=True)
 async def updateinstruments() -> Template:
     "Updates the instruments on the main public page"
-    instruments = list(name for name,value in ICLIENT.items() if value.enable)
+    iclient = get_indiclient()
+    instruments = list(name for name,value in iclient.items() if value.enable)
     instruments.sort()
     return HTMXTemplate(template_name="instruments.html", context={"instruments":instruments})
 
 
-def localtimestring(t):
-    "Return a string of the local time (not date)"
-    localtime = t.astimezone(tz=None)
-    # convert microsecond to integer between 0 and 100
-    ms = localtime.microsecond//10000
-    return f"{localtime.strftime('%H:%M:%S')}.{ms:0>2d}"
-
 @get("/updatemessages", exclude_from_auth=True)
 async def updatemessages() -> Template:
     "Updates the messages on the main public page"
-    messages = list(ICLIENT.messages)
+    iclient = get_indiclient()
+    messages = list(iclient.messages)
     messagelist = list(localtimestring(t) + "  " + m for t,m in messages)
     messagelist.reverse()
     return HTMXTemplate(template_name="messages.html", context={"messages":messagelist})
@@ -256,9 +250,7 @@ async def logout(request: Request[str, str, State]) -> Template:
 
 
 
-def ipywebapp(iclient):
-    global ICLIENT
-    ICLIENT = iclient
+def ipywebapp():
     # Initialize the Litestar app with a Mako template engine and register the routes
     app = Litestar(
         route_handlers=[publicroot,
@@ -267,9 +259,10 @@ def ipywebapp(iclient):
                         login_page,
                         login,
                         logout,
-                        edit.edit_router,     # This router in edit.py deals with routes below /edit
                         instruments,
                         messages,
+                        edit.edit_router,     # This router in edit.py deals with routes below /edit
+                        device.device_router, # This router in device.py deals with routes below /device
                         create_static_files_router(path="/static", directories=[STATICFILES]),
                        ],
         exception_handlers={ NotAuthorizedException: gotologin_error_handler},

@@ -14,7 +14,7 @@ from ..register import indihostport
 
 
 @get("/")
-async def edit(request: Request[str, str, State]) -> Template:
+async def edit(request: Request[str, str, State]) -> Template|ClientRedirect|Redirect:
     """This allows a user to edit his/her password, or delete themself from the system
        If the user is an admin user, further facilities to add/delete/reset other users
        are available"""
@@ -44,7 +44,7 @@ async def edit(request: Request[str, str, State]) -> Template:
 
 
 @post("/fullname")
-async def fullname(request: Request[str, str, State]) -> Template:
+async def fullname(request: Request[str, str, State]) -> Template|ClientRedirect|Redirect:
     "A user is changing his own full name"
     user = request.user
     form_data = await request.form()
@@ -68,7 +68,7 @@ async def fullname(request: Request[str, str, State]) -> Template:
 
 
 @post("/userfullname")
-async def userfullname(request: Request[str, str, State]) -> Template:
+async def userfullname(request: Request[str, str, State]) -> Template|ClientRedirect|Redirect:
     "An administrator is changing someone else's name, hence get username from the form"
     if request.auth != "admin":
         return logout(request)

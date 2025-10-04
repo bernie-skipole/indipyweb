@@ -10,7 +10,7 @@ from .web.app import ipywebapp
 
 from .web.userdata import setupdbase
 
-from .register import read_configuration
+from .register import read_configuration, set_indiclient
 
 
 if sys.version_info < (3, 10):
@@ -38,13 +38,15 @@ def getconfig():
 
 async def main():
 
-    iclient = ipywebclient()
-    app = ipywebapp(iclient)
+    # create the client, and set it into register.py
+    indiclient = ipywebclient()
+    set_indiclient(indiclient)
 
+    app = ipywebapp()
     config = uvicorn.Config(app=app, port=8000, log_level="info")
     server = uvicorn.Server(config)
 
-    await asyncio.gather(server.serve(), iclient.asyncrun())
+    await asyncio.gather(server.serve(), indiclient.asyncrun())
 
 
 

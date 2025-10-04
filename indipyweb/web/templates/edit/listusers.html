@@ -19,9 +19,9 @@
         % for row in users:
           <tr>
             % for item in row:
-                <td>${item}</td>
+                <td>${item | h}</td>
             % endfor
-            <td class="w3-center"><a href="/edit/edituser/${row[0]}" class="w3-button w3-black w3-ripple w3-round w3-small">Edit</a></td>
+            <td class="w3-center"><a href="/edit/edituser/${row[0]|h}" class="w3-button w3-black w3-ripple w3-round w3-small">Edit</a></td>
           </tr>
         % endfor
 

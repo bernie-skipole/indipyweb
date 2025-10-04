@@ -53,6 +53,7 @@ class UserAuth():
     user:str             # The username
     time:float           # time used for timing out the session
     page:int             # admins can see 'pages' of user data, this stores the current page number
+    device:str           # the device being displayed
 
 
 def setupdbase():
@@ -129,7 +130,7 @@ def createcookie(user:str) -> str:
     """Given a user, create and return a cookie string value
        Also create and set a UserAuth object into USERCOOKIES"""
     randomstring = token_urlsafe(16)
-    USERCOOKIES[randomstring] = UserAuth(user, time.time(), 0)    # initially page is set to zero
+    USERCOOKIES[randomstring] = UserAuth(user, time.time(), 0, '')    # initially page is set to zero, no device
     # The cookie returned will be the random string
     return randomstring
 
@@ -406,3 +407,24 @@ def dbbackup() -> str|None:
     except Exception:
         return
     return backupfilename
+
+
+def setuserdevice(cookie:str, device:str) -> None:
+    "Sets the device this user is monitoring"
+    if not cookie:
+        return
+    userauth = getuserauth(cookie)
+    if userauth is None:
+        return
+    if not device:
+        return
+    userauth.device = device
+
+def getuserdevice(cookie:str) -> str|None:
+    "Gets the device this user is monitoring"
+    if not cookie:
+        return
+    userauth = getuserauth(cookie)
+    if userauth is None:
+        return
+    return userauth.device

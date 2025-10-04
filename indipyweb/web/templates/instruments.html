@@ -6,15 +6,11 @@
 
             % for device in instruments:
               <div>
-                 <a href="/device/${device}" class="w3-button w3-black w3-ripple w3-round w3-margin" style="width:100%">${device}</a>
+                 <a href="/device/choosedevice/${device|h}" class="w3-button w3-black w3-ripple w3-round w3-margin" style="width:100%">${device|h}</a>
               </div>
             % endfor
     % else:
         <p>No device available</p>
     % endif
-
-
-
-
 
     </div>
