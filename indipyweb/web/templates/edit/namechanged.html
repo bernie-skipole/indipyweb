@@ -1,0 +1,15 @@
+
+## namechanged.html - Shows success message when a name has changed
+
+## It also reproduces the table of users, since the name should change on the table
+## Notice the success message goes to the nameconfirm target, but the table goes to
+## the userlist id, hence the hx-swap-oob="true" flag
+
+
+<p id="nameconfirm" style="color:green" class="w3-animate-right">Success! The name has changed</p>
+
+<div id="userlist" class="w3-panel" hx-swap-oob="true">
+
+<%include file="listusers.html"/>
+
+</div>

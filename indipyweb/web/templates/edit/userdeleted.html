@@ -1,0 +1,26 @@
+## userdeleted.html - shown when the administrator has deleted a user
+
+## different from deleted.html - which deletes a users own account and logs him out
+## in this case the adinistrator has deleted another user, but remains logged in
+## and the page, including the user list, is refreshed entirely
+
+<%inherit file="base_edit.html"/>
+
+<%block name="title">
+<title>Account Deleted</title>
+</%block>
+
+
+<div class="w3-center" style="margin-top:8vh">
+  <h2>Account : ${user | h} has been deleted</h2>
+</div>
+
+<%include file="backupdb.html"/>
+
+<%include file="adduser.html"/>
+
+<div id = "userlist" class="w3-panel">
+
+<%include file="listusers.html"/>
+
+</div>

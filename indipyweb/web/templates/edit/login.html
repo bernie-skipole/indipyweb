@@ -1,0 +1,32 @@
+## login.html - The login form
+
+## Calls /login and shows a cookie notice, which can be closed.
+## On failure an invalid message is shown in paragraph id result
+
+<%inherit file="base_loginout.html"/>
+
+<%block name="title">
+<title>Login</title>
+</%block>
+
+
+      <div class="w3-container w3-card w3-display-middle" style="width:80%;max-width:400px">
+        <form hx-post="/login" hx-target="#result" hx-swap="outerHTML">
+            <p>
+            <label for="username">Username:</label>
+            <input class="w3-input" type="text" id="username" name="username" required /></p>
+            <p>
+            <label for="password">Password:</label>
+            <input class="w3-input" type="password" id="password" name="password" required /></p>
+            <p class="w3-center">
+               <button class="w3-button w3-black w3-ripple w3-round" type="submit">Login</button>
+            </p>
+        </form>
+        <p id="result">Please login to continue</p>
+      </div>
+
+      <footer class="w3-container w3-display-bottomleft w3-flat-silver w3-block" x-data="{ open: true }" x-show="open">
+        <button class="w3-button w3-black w3-ripple w3-round w3-right" x-on:click="open=false">X</button>
+        <h5>Cookies</h5>
+        <p>This site only uses strictly necessary cookies for its operation. If you do not wish to accept any cookies, please do not log in.</p>
+      </footer>

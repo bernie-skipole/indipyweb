@@ -1,0 +1,17 @@
+## loggedout.html - shown when a user or administrator has logged out
+
+## Also provides a login button
+
+<%inherit file="base_loginout.html"/>
+
+<%block name="title">
+<title>Logged out</title>
+</%block>
+
+
+    <div class="w3-container w3-card w3-display-middle" style="width:80%;max-width:400px">
+      <h2 class="w3-center">You are now logged out</h2>
+      <p class="w3-center">
+        <a href="/login" class="w3-button w3-black w3-ripple w3-round">Login</a>
+      </p>
+    </div>

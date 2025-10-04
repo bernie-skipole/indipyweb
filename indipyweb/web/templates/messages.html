@@ -1,0 +1,12 @@
+
+   <div class="w3-margin">
+
+      % if messages:
+            % for message in messages:
+              <p>${message}</p>
+            % endfor
+      % else:
+        <p>Waiting..</p>
+      % endif
+
+    </div>
