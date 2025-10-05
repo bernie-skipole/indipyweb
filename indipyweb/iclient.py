@@ -27,11 +27,18 @@ class IPyWebClient(ipc.IPyClient):
         if event.eventtype in ("Define", "Delete", "ConnectionMade", "ConnectionLost"):
             DEFINE_EVENT.set()
             DEFINE_EVENT.clear()
-
-        if event.eventtype == "Message":
+        elif event.eventtype == "Message":
             MESSAGE_EVENT.set()
             MESSAGE_EVENT.clear()
             if event.devicename:
+                dme = get_device_messages_event(event.devicename)
+                dme.set()
+                dme.clear()
+
+        if event.eventtype == "Delete":
+            if event.devicename:
+                # set a message event, so if the device is deleted
+                # when client sends an updatemessages it forces a redirect
                 dme = get_device_messages_event(event.devicename)
                 dme.set()
                 dme.clear()

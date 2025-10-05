@@ -51,19 +51,26 @@ class ShowMessages:
     async def __anext__(self):
         "Whenever there is a new message, return a ServerSentEventMessage message"
         while True:
-            if self.iclient.stop:
-                raise StopAsyncIteration
-            if not self.iclient.connected:                     #### note, check device exists, event to go back to main page?
-                raise StopAsyncIteration
-            # get new message
-            if self.iclient[self.device].messages:
-                lasttimestamp = self.iclient[self.device].messages[0][0]
+            if self.iclient.stop or (not self.iclient.connected):
+                asyncio.sleep(2)
+                return ServerSentEventMessage(event="devicemessages") # forces the client to send updatemessages
+                                                                      # which checks status of the device
+            if self.device not in self.iclient:
+                asyncio.sleep(2)
+                return ServerSentEventMessage(event="devicemessages")
+            deviceobject = self.iclient[self.device]
+            if not deviceobject.enable:
+                asyncio.sleep(2)
+                return ServerSentEventMessage(event="devicemessages")
+            # So nothing wrong with the device, check for new message
+            if deviceobject.messages:
+                lasttimestamp = deviceobject.messages[0][0]
                 if (self.lasttimestamp is None) or (lasttimestamp != self.lasttimestamp):
                     # a new message is received
                     self.lasttimestamp = lasttimestamp
                     return ServerSentEventMessage(event="devicemessages")
             elif self.lasttimestamp is not None:
-                # There are no self.iclient[self.device].messages, but self.lasttimestamp
+                # There are no deviceobject.messages, but self.lasttimestamp
                 # has a value, so there has been a change
                 self.lasttimestamp = None
                 return ServerSentEventMessage(event="devicemessages")
@@ -91,6 +98,10 @@ async def updatemessages(request: Request[str, str, State]) -> Template|ClientRe
     cookie = request.cookies.get('token', '')
     device = getuserdevice(cookie)
     iclient = get_indiclient()
+    if iclient.stop:
+        return ClientRedirect("/")
+    if not iclient.connected:
+        return ClientRedirect("/")
     if device not in iclient:
         return ClientRedirect("/")
     if not iclient[device].enable:

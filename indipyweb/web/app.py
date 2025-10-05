@@ -98,7 +98,9 @@ class ShowMessages:
         "Whenever there is a new message, return a ServerSentEventMessage message"
         while True:
             if self.iclient.stop:
-                raise StopAsyncIteration
+                asyncio.sleep(2)
+                return ServerSentEventMessage(event="newmessage")
+
             if self.iclient.connected != self.connected:
                 self.connected = self.iclient.connected
                 return ServerSentEventMessage(event="newmessage")
@@ -199,6 +201,8 @@ async def updateinstruments() -> Template:
 async def updatemessages() -> Template:
     "Updates the messages on the main public page"
     iclient = get_indiclient()
+    if iclient.stop:
+        return HTMXTemplate(template_name="messages.html", context={"messages":["Error: client application has stopped"]})
     messages = list(iclient.messages)
     messagelist = list(localtimestring(t) + "  " + m for t,m in messages)
     messagelist.reverse()
