@@ -2,6 +2,7 @@
 Handles all routes beneath /device
 """
 
+import asyncio
 
 from litestar import Litestar, get, post, Request, Router
 from litestar.plugins.htmx import HTMXTemplate, ClientRedirect
@@ -48,14 +49,14 @@ class ShowMessages:
             if not self.iclient.connected:                     #### note, check device exists, event to go back to main page?
                 raise StopAsyncIteration
             # get new message
-            if self.iclient[device].messages:
-                lasttimestamp = self.iclient[device].messages[0][0]
+            if self.iclient[self.device].messages:
+                lasttimestamp = self.iclient[self.device].messages[0][0]
                 if (self.lasttimestamp is None) or (lasttimestamp != self.lasttimestamp):
                     # a new message is received
                     self.lasttimestamp = lasttimestamp
                     return ServerSentEventMessage(event="devicemessages")
             elif self.lasttimestamp is not None:
-                # There are no self.iclient[device].messages, but self.lasttimestamp
+                # There are no self.iclient[self.device].messages, but self.lasttimestamp
                 # has a value, so there has been a change
                 self.lasttimestamp = None
                 return ServerSentEventMessage(event="devicemessages")
@@ -71,13 +72,14 @@ class ShowMessages:
 
 # SSE Handler
 @get(path="/messages", sync_to_thread=False)
-def messages() -> ServerSentEvent:
+def messages(request: Request[str, str, State]) -> ServerSentEvent:
     cookie = request.cookies.get('token', '')
     device = getuserdevice(cookie)
     return ServerSentEvent(ShowMessages(device))
 
+
 @get("/updatemessages")
-async def updatemessages() -> Template:
+async def updatemessages(request: Request[str, str, State]) -> Template:
     "Updates the messages on the main public page"
     cookie = request.cookies.get('token', '')
     device = getuserdevice(cookie)

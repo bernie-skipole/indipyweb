@@ -32,6 +32,6 @@ class IPyWebClient(ipc.IPyClient):
             MESSAGE_EVENT.set()
             MESSAGE_EVENT.clear()
             if event.devicename:
-                dme = get_device_messages_event(devicename)
+                dme = get_device_messages_event(event.devicename)
                 dme.set()
                 dme.clear()
