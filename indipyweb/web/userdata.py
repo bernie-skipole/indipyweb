@@ -410,7 +410,7 @@ def dbbackup() -> str|None:
 
 
 def setuserdevice(cookie:str, device:str) -> None:
-    "Sets the device this user is monitoring"
+    "Sets the device this user is monitoring, return None on failure, userauth on success"
     if not cookie:
         return
     userauth = getuserauth(cookie)
@@ -419,9 +419,10 @@ def setuserdevice(cookie:str, device:str) -> None:
     if not device:
         return
     userauth.device = device
+    return userauth
 
 def getuserdevice(cookie:str) -> str|None:
-    "Gets the device this user is monitoring"
+    "Gets the device this user is monitoring, return None on failure"
     if not cookie:
         return
     userauth = getuserauth(cookie)

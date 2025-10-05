@@ -20,17 +20,24 @@ from .userdata import setuserdevice, getuserdevice
 @get("/choosedevice/{device:str}")
 async def choosedevice(device:str, request: Request[str, str, State]) -> Template|Redirect:
     """A device has been selected"""
-    # have to check device exists #############################
-    cookie = request.cookies.get('token', '')
+    # have to check device exists
+    iclient = get_indiclient()
+    if device not in iclient:
+        return Redirect("/")
+    if not iclient[device].enable:
+        return Redirect("/")
     # associate this session with a device
-    setuserdevice(cookie, device)
+    cookie = request.cookies.get('token', '')
+    userauth = setuserdevice(cookie, device)
+    if userauth is None:
+        return Redirect("/")
     # add items to a context dictionary
     context = {"device":device}
     return Template(template_name="device/devicepage.html", context=context)   # The top device page
 
 
 class ShowMessages:
-    """Iterate with messages whenever a message change happens."""
+    """Iterate with messages whenever a device message change happens."""
 
     def __init__(self, device):
         self.lasttimestamp = None
@@ -79,11 +86,15 @@ def messages(request: Request[str, str, State]) -> ServerSentEvent:
 
 
 @get("/updatemessages")
-async def updatemessages(request: Request[str, str, State]) -> Template:
+async def updatemessages(request: Request[str, str, State]) -> Template|ClientRedirect:
     "Updates the messages on the main public page"
     cookie = request.cookies.get('token', '')
     device = getuserdevice(cookie)
     iclient = get_indiclient()
+    if device not in iclient:
+        return ClientRedirect("/")
+    if not iclient[device].enable:
+        return ClientRedirect("/")
     messages = list(iclient[device].messages)
     messagelist = list(localtimestring(t) + "  " + m for t,m in messages)
     messagelist.reverse()
