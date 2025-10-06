@@ -15,7 +15,7 @@ DEFINE_EVENT = asyncio.Event()
 
 MESSAGE_EVENT = asyncio.Event()
 
-DEVICE_MESSAGES = {}
+DEVICE_EVENTS = {}
 
 
 
@@ -65,8 +65,8 @@ def localtimestring(t):
     return f"{localtime.strftime('%H:%M:%S')}.{ms:0>2d}"
 
 
-def get_device_messages_event(device):
-    global DEVICE_MESSAGES
-    if device not in DEVICE_MESSAGES:
-        DEVICE_MESSAGES[device] = asyncio.Event()
-    return DEVICE_MESSAGES[device]
+def get_device_event(device):
+    global DEVICE_EVENTS
+    if device not in DEVICE_EVENTS:
+        DEVICE_EVENTS[device] = asyncio.Event()
+    return DEVICE_EVENTS[device]

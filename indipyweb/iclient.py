@@ -7,7 +7,7 @@ import asyncio
 
 import indipyclient as ipc
 
-from .register import DEFINE_EVENT, MESSAGE_EVENT, getconfig, get_device_messages_event
+from .register import DEFINE_EVENT, MESSAGE_EVENT, getconfig, get_device_event
 
 version = "0.0.1"
 
@@ -31,7 +31,7 @@ class IPyWebClient(ipc.IPyClient):
             MESSAGE_EVENT.set()
             MESSAGE_EVENT.clear()
             if event.devicename:
-                dme = get_device_messages_event(event.devicename)
+                dme = get_device_event(event.devicename)
                 dme.set()
                 dme.clear()
 
@@ -39,6 +39,6 @@ class IPyWebClient(ipc.IPyClient):
             if event.devicename:
                 # set a message event, so if the device is deleted
                 # when client sends an updatemessages it forces a redirect
-                dme = get_device_messages_event(event.devicename)
+                dme = get_device_event(event.devicename)
                 dme.set()
                 dme.clear()

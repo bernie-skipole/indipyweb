@@ -12,7 +12,7 @@ from litestar.datastructures import State
 from litestar.response import ServerSentEvent, ServerSentEventMessage
 from litestar.types import SSEData
 
-from ..register import indihostport, localtimestring, get_device_messages_event, get_indiclient
+from ..register import indihostport, localtimestring, get_device_event, get_indiclient
 
 from .userdata import setuserdevice, getuserdevice
 
@@ -31,18 +31,20 @@ async def choosedevice(device:str, request: Request[str, str, State]) -> Templat
     userauth = setuserdevice(cookie, device)
     if userauth is None:
         return Redirect("/")
-    # add items to a context dictionary
-    context = {"device":device}
+    # add items to a context dictionary,
+    vectors = list(iclient[device].keys())
+    vectors.sort()        ####### change from vectors to vector labels
+    context = {"device":device, "vectors":vectors}  # device name, list of vector names
     return Template(template_name="device/devicepage.html", context=context)   # The top device page
 
 
 class ShowMessages:
-    """Iterate with messages whenever a device message change happens."""
+    """Iterate with messages whenever a device change happens."""
 
     def __init__(self, device):
         self.lasttimestamp = None
         self.device = device
-        self.message_event = get_device_messages_event(device)
+        self.device_event = get_device_event(device)
         self.iclient = get_indiclient()
 
     def __aiter__(self):
@@ -74,13 +76,12 @@ class ShowMessages:
                 # has a value, so there has been a change
                 self.lasttimestamp = None
                 return ServerSentEventMessage(event="devicemessages")
-            # No change, wait, at most 5 seconds, for a device message event
+            # No change, wait, at most 5 seconds, for a device event
             try:
-
-                await asyncio.wait_for(self.message_event.wait(), timeout=5.0)
+                await asyncio.wait_for(self.device_event.wait(), timeout=5.0)
             except TimeoutError:
                 pass
-            # either a device message event has occurred, or 5 seconds since the last has passed
+            # either a device event has occurred, or 5 seconds since the last has passed
             # so continue the while loop to check for any new messages
 
 
@@ -94,9 +95,11 @@ def messages(request: Request[str, str, State]) -> ServerSentEvent:
 
 @get("/updatemessages")
 async def updatemessages(request: Request[str, str, State]) -> Template|ClientRedirect:
-    "Updates the messages on the main public page"
+    "Updates the messages on the device page, and redirects to / if device deleted"
     cookie = request.cookies.get('token', '')
     device = getuserdevice(cookie)
+    if device is None:
+        return ClientRedirect("/")
     iclient = get_indiclient()
     if iclient.stop:
         return ClientRedirect("/")
