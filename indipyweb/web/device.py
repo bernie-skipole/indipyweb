@@ -54,15 +54,15 @@ class ShowMessages:
         "Whenever there is a new message, return a ServerSentEventMessage message"
         while True:
             if self.iclient.stop or (not self.iclient.connected):
-                asyncio.sleep(2)
+                await asyncio.sleep(2)
                 return ServerSentEventMessage(event="devicemessages") # forces the client to send updatemessages
                                                                       # which checks status of the device
             if self.device not in self.iclient:
-                asyncio.sleep(2)
+                await asyncio.sleep(2)
                 return ServerSentEventMessage(event="devicemessages")
             deviceobject = self.iclient[self.device]
             if not deviceobject.enable:
-                asyncio.sleep(2)
+                await asyncio.sleep(2)
                 return ServerSentEventMessage(event="devicemessages")
             # So nothing wrong with the device, check for new message
             if deviceobject.messages:

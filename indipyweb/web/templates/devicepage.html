@@ -22,7 +22,6 @@
   </header>
 
 <div class="w3-panel">
-
   <div class="w3-container w3-border">
 
    <div hx-ext="sse" sse-connect="/device/messages">
@@ -32,11 +31,11 @@
    </div>
 
   </div>
-
-    % for vector in vectors:
-       <%include file="vector/base_vector.html" args="vector=vector"/>
-    % endfor
-
 </div>
+
+  % for vector in vectors:
+     <%include file="vector/base_vector.html" args="vector=vector"/>
+  % endfor
+
 </body>
 </html>
