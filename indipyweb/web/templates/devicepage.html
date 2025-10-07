@@ -21,6 +21,8 @@
     <h3>Device - ${device|h}</h3>
   </header>
 
+## Show the device panel
+
 <div class="w3-panel">
   <div class="w3-container w3-border">
 
@@ -32,6 +34,14 @@
 
   </div>
 </div>
+
+## Show the vector groups navigation panel
+
+<%include file="vector/groups.html"/>
+
+
+
+## For the displayed group, show the vectors in the group
 
   % for vector in vectors:
      <%include file="vector/base_vector.html" args="vector=vector"/>
