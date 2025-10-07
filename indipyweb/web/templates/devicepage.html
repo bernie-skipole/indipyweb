@@ -27,15 +27,7 @@
 
    <div hx-ext="sse" sse-connect="/device/messages">
     <div hx-get="/device/updatemessages" hx-trigger="sse:devicemessages">
-       <div class="w3-margin">
-          % if messages:
-                % for message in messages:
-                  <p>${message|h}</p>
-                % endfor
-          % else:
-            <p>Messages from ${device}: Waiting..</p>
-          % endif
-      </div>
+       <%include file="messages.html"/>
     </div>
    </div>
 

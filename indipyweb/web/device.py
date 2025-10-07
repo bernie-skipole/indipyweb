@@ -35,7 +35,7 @@ async def choosedevice(device:str, request: Request[str, str, State]) -> Templat
     vectors = list(iclient[device].keys())
     vectors.sort()        ####### change from vectors to vector labels
     context = {"device":device, "vectors":vectors}  # device name, list of vector names
-    return Template(template_name="device/devicepage.html", context=context)   # The top device page
+    return Template(template_name="devicepage.html", context=context)   # The top device page
 
 
 class ShowMessages:
