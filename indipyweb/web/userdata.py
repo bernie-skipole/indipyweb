@@ -54,6 +54,7 @@ class UserAuth():
     time:float           # time used for timing out the session
     page:int             # admins can see 'pages' of user data, this stores the current page number
     device:str           # the device being displayed
+    selectedgp:str       # the group selected
 
 
 def setupdbase():
@@ -130,7 +131,7 @@ def createcookie(user:str) -> str:
     """Given a user, create and return a cookie string value
        Also create and set a UserAuth object into USERCOOKIES"""
     randomstring = token_urlsafe(16)
-    USERCOOKIES[randomstring] = UserAuth(user, time.time(), 0, '')    # initially page is set to zero, no device
+    USERCOOKIES[randomstring] = UserAuth(user, time.time(), 0, '', '')    # initially page is set to zero, no device
     # The cookie returned will be the random string
     return randomstring
 
@@ -429,3 +430,24 @@ def getuserdevice(cookie:str) -> str|None:
     if userauth is None:
         return
     return userauth.device
+
+def setselectedgp(cookie:str, selectedgp:str) -> None:
+    "Sets the selectedgp this user is monitoring, return None on failure, userauth on success"
+    if not cookie:
+        return
+    userauth = getuserauth(cookie)
+    if userauth is None:
+        return
+    if not selectedgp:
+        return
+    userauth.selectedgp = selectedgp
+    return userauth
+
+def getselectedgp(cookie:str) -> str|None:
+    "Gets the selectedgp this user is monitoring, return None on failure"
+    if not cookie:
+        return
+    userauth = getuserauth(cookie)
+    if userauth is None:
+        return
+    return userauth.selectedgp

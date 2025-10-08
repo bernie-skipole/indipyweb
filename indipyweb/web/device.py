@@ -4,8 +4,10 @@ Handles all routes beneath /device
 
 import asyncio
 
+from asyncio.exceptions import TimeoutError
+
 from litestar import Litestar, get, post, Request, Router
-from litestar.plugins.htmx import HTMXTemplate, ClientRedirect
+from litestar.plugins.htmx import HTMXTemplate, ClientRedirect, ClientRefresh
 from litestar.response import Template, Redirect
 from litestar.datastructures import State
 
@@ -14,7 +16,7 @@ from litestar.types import SSEData
 
 from ..register import indihostport, localtimestring, get_device_event, get_indiclient
 
-from .userdata import setuserdevice, getuserdevice
+from .userdata import setuserdevice, getuserdevice, setselectedgp, getselectedgp
 
 
 @get("/choosedevice/{device:str}")
@@ -32,9 +34,23 @@ async def choosedevice(device:str, request: Request[str, str, State]) -> Templat
     if userauth is None:
         return Redirect("/")
     # add items to a context dictionary,
-    vectors = list(iclient[device].keys())
-    vectors.sort()        ####### change from vectors to vector labels
-    context = {"device":device, "vectors":vectors}  # device name, list of vector names
+    deviceobj = iclient[device]
+    vectornames = list(deviceobj.keys())
+    vectorobjects = list(deviceobj.values())
+    vectorlabels = list(set(vectorobj.label for vectorobj in vectorobjects))
+    groups = list(set(vectorobj.group for vectorobj in vectorobjects))
+    groups.sort()
+    selectedgp = getselectedgp(cookie)
+    if (not selectedgp) or (selectedgp not in groups):
+        selectedgp = groups[0]
+        setselectedgp(cookie, selectedgp)
+    vectornames.sort()        ####### change from vectors to vector labels
+    vectorlabels.sort()
+    context = {"device":device,
+               "vectors":vectorlabels,
+               "groups":groups,
+               "selectedgp":selectedgp,
+               "messages":["Device messages : Waiting.."]}
     return Template(template_name="devicepage.html", context=context)   # The top device page
 
 
@@ -110,6 +126,8 @@ async def updatemessages(request: Request[str, str, State]) -> Template|ClientRe
     if not iclient[device].enable:
         return ClientRedirect("/")
     messages = list(iclient[device].messages)
+    if not messages:
+        return HTMXTemplate(template_name="messages.html", context={"messages":["Device messages : Waiting.."]})
     messagelist = list(localtimestring(t) + "  " + m for t,m in messages)
     messagelist.reverse()
     # Show last three messages
@@ -119,8 +137,21 @@ async def updatemessages(request: Request[str, str, State]) -> Template|ClientRe
 
 
 
+@get("/changegroup/{group:str}")
+async def changegroup(group:str, request: Request[str, str, State]) -> Template|ClientRedirect|ClientRefresh:
+    "Set chosen group, force a client refresh"
+    # check valid group
+    cookie = request.cookies.get('token', '')
+    setselectedgp(cookie, group)
+    return ClientRefresh()
+
+
+
+
+
 
 device_router = Router(path="/device", route_handlers=[choosedevice,
                                                        messages,
-                                                       updatemessages
+                                                       updatemessages,
+                                                       changegroup
                                                        ])

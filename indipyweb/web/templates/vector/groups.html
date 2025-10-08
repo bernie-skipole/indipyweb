@@ -1,36 +1,24 @@
 
 ## groups.html show groups navigation panel
 
-<div class="w3-bar w3-light-grey">
-
-
-  <a href="#" class="w3-bar-item w3-button">groups[0]</a>
-
-  % for group in groups[1:]:
-    <a href="#" class="w3-bar-item w3-button w3-hide-small">group</a>
-  % endfor
-
-  <a href="javascript:void(0)" class="w3-bar-item w3-button w3-right w3-hide-large w3-hide-medium" onclick="myFunction()">&#9776;</a>
-</div>
-
-<div id="demo" class="w3-bar-block w3-light-grey w3-hide w3-hide-large w3-hide-medium">
-
-  % for group in groups[1:]:
-   <a href="#" class="w3-bar-item w3-button">group</a>
-  % endfor
-
+<div class="w3-panel">
+    <div class="w3-bar w3-light-grey" >
+      % for group in groups:
+        % if selectedgp == group:
+            <a hx-get="/device/changegroup/${group|h}" class="w3-bar-item w3-button w3-mobile w3-green">${group|h}</a>
+        % else:
+            <a hx-get="/device/changegroup/${group|h}"  class="w3-bar-item w3-button w3-mobile">${group|h}</a>
+        % endif
+      % endfor
+    </div>
 </div>
 
 
-## replace with Alpine
 
-<script>
-function myFunction() {
-  var x = document.getElementById("demo");
-  if (x.className.indexOf("w3-show") == -1) {
-    x.className += " w3-show";
-  } else {
-    x.className = x.className.replace(" w3-show", "");
-  }
-}
-</script>
+
+
+## For the displayed group, show the vectors in the group
+
+  % for vector in vectors:
+     <%include file="base_vector.html" args="vector=vector"/>
+  % endfor
