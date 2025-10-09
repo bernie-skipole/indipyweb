@@ -34,20 +34,21 @@ async def choosedevice(device:str, request: Request[str, str, State]) -> Templat
     if userauth is None:
         return Redirect("/")
     # add items to a context dictionary,
-    deviceobj = iclient[device]
-    vectornames = list(deviceobj.keys())
-    vectorobjects = list(deviceobj.values())
-    vectorlabels = list(set(vectorobj.label for vectorobj in vectorobjects))
+    deviceobj = iclient.get(device)
+    if (deviceobj is None) or not deviceobj.enable:
+        return Redirect("/")
+    vectorobjects = list(vectorobj for vectorobj in deviceobj.values() if vectorobj.enable)
     groups = list(set(vectorobj.group for vectorobj in vectorobjects))
     groups.sort()
     selectedgp = getselectedgp(cookie)
     if (not selectedgp) or (selectedgp not in groups):
         selectedgp = groups[0]
         setselectedgp(cookie, selectedgp)
-    vectornames.sort()        ####### change from vectors to vector labels
-    vectorlabels.sort()
+    groupvectornames = list(vectorobj.name for vectorobj in vectorobjects if vectorobj.group == selectedgp)
+
+    groupvectornames.sort()        ####### To Do sort by label rather than by name
     context = {"device":device,
-               "vectors":vectorlabels,
+               "vectors":groupvectornames,
                "groups":groups,
                "selectedgp":selectedgp,
                "messages":["Device messages : Waiting.."]}

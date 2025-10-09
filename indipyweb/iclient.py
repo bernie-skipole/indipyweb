@@ -7,7 +7,7 @@ import asyncio
 
 import indipyclient as ipc
 
-from .register import DEFINE_EVENT, MESSAGE_EVENT, getconfig, get_device_event
+from .register import DEFINE_EVENT, MESSAGE_EVENT, getconfig, get_device_event, get_vector_event
 
 version = "0.0.1"
 
@@ -42,3 +42,9 @@ class IPyWebClient(ipc.IPyClient):
                 dme = get_device_event(event.devicename)
                 dme.set()
                 dme.clear()
+
+        if event.devicename and event.vectorname:
+           # set vector event when a vector is updated
+           ve = get_vector_event(event.devicename, event.vectorname)
+           ve.set()
+           ve.clear()

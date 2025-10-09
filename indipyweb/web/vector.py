@@ -1,0 +1,110 @@
+"""
+Handles all routes beneath /vector
+"""
+
+import asyncio
+
+from asyncio.exceptions import TimeoutError
+
+from litestar import Litestar, get, post, Request, Router
+from litestar.plugins.htmx import HTMXTemplate, ClientRedirect, ClientRefresh
+from litestar.response import Template, Redirect
+from litestar.datastructures import State
+
+from litestar.response import ServerSentEvent, ServerSentEventMessage
+from litestar.types import SSEData
+
+from ..register import indihostport, localtimestring, get_vector_event, get_indiclient
+
+from .userdata import setuserdevice, getuserdevice, setselectedgp, getselectedgp
+
+
+class VectorEvent:
+    """Iterate with whenever a vector change happens."""
+
+    def __init__(self, device, vector):
+        self.lasttimestamp = None
+        self.device = device
+        self.vector = vector
+        self.vector_event = get_vector_event(device, vector)
+        self.iclient = get_indiclient()
+
+    def __aiter__(self):
+        return self
+
+    async def __anext__(self):
+        "Whenever there is a new vector event, return a ServerSentEventMessage message"
+        while True:
+            if self.iclient.stop or (not self.iclient.connected):
+                await asyncio.sleep(2)
+                return ServerSentEventMessage(event=self.vector) # forces the client to send update
+                                                                 # which requests new vector
+            if self.device not in self.iclient:
+                await asyncio.sleep(2)
+                return ServerSentEventMessage(event=self.vector)
+            deviceobject = self.iclient.get(self.device)
+            if (deviceobject is None) or not deviceobject.enable:
+                await asyncio.sleep(2)
+                return ServerSentEventMessage(event=self.vector)
+            vectorobject = deviceobject.get(self.vector)
+            if (vectorobject is None) or not vectorobject.enable:
+                await asyncio.sleep(2)
+                return ServerSentEventMessage(event=self.vector)
+            # So nothing wrong with the vector, check timestamp
+            lasttimestamp = vectorobject.timestamp
+            if (self.lasttimestamp is None) or (lasttimestamp != self.lasttimestamp):
+                # the vector has been updated
+                self.lasttimestamp = lasttimestamp
+                return ServerSentEventMessage(event=self.vector)
+            # No change, wait, at most 5 seconds, for a vector event
+            try:
+                await asyncio.wait_for(self.vector_event.wait(), timeout=5.0)
+            except TimeoutError:
+                pass
+            # either a vector event has occurred, or 5 seconds since the last has passed
+            # so continue the while loop to check for any new events
+
+
+# SSE Handler
+@get(path="/vectorsse/{vector:str}", sync_to_thread=False)
+def vectorsse(vector:str, request: Request[str, str, State]) -> ServerSentEvent:
+    cookie = request.cookies.get('token', '')
+    device = getuserdevice(cookie)
+    return ServerSentEvent(VectorEvent(device, vector))
+
+
+
+@get("/update/{vector:str}")
+async def update(vector:str, request: Request[str, str, State]) -> Template|ClientRedirect|ClientRefresh:
+    "Update vector"
+    # check valid vector
+    if not vector:
+        return ClientRedirect("/")
+    cookie = request.cookies.get('token', '')
+    device = getuserdevice(cookie)
+    if device is None:
+        return ClientRedirect("/")
+    iclient = get_indiclient()
+    if iclient.stop:
+        return ClientRedirect("/")
+    if not iclient.connected:
+        return ClientRedirect("/")
+    if device not in iclient:
+        return ClientRedirect("/")
+    deviceobj = iclient[device]
+    if not deviceobj.enable:
+        return ClientRedirect("/")
+    if vector not in deviceobj:
+        return ClientRefresh()
+    vectorobj = deviceobj[vector]
+    if not vectorobj.enable:
+        return ClientRefresh()
+
+    # have to return a vector html template here
+    return HTMXTemplate(None,
+                        template_str=f"<p>{vectorobj.label}</p>")
+
+
+
+
+vector_router = Router(path="/vector", route_handlers=[update, vectorsse])

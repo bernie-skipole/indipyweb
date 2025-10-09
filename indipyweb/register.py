@@ -17,6 +17,8 @@ MESSAGE_EVENT = asyncio.Event()
 
 DEVICE_EVENTS = {}
 
+VECTOR_EVENTS = {}
+
 
 
 def set_indiclient(iclient):
@@ -70,3 +72,10 @@ def get_device_event(device):
     if device not in DEVICE_EVENTS:
         DEVICE_EVENTS[device] = asyncio.Event()
     return DEVICE_EVENTS[device]
+
+
+def get_vector_event(device, vector):
+    global VECTOR_EVENTS
+    if (device,vector) not in VECTOR_EVENTS:
+        VECTOR_EVENTS[device,vector] = asyncio.Event()
+    return VECTOR_EVENTS[device,vector]

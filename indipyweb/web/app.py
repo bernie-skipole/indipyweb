@@ -29,7 +29,7 @@ from litestar.exceptions import NotAuthorizedException
 from litestar.response import ServerSentEvent, ServerSentEventMessage
 from litestar.types import SSEData
 
-from . import userdata, edit, device
+from . import userdata, edit, device, vector
 
 
 from ..register import DEFINE_EVENT, MESSAGE_EVENT, indihostport, localtimestring, get_indiclient
@@ -267,6 +267,7 @@ def ipywebapp():
                         messages,
                         edit.edit_router,     # This router in edit.py deals with routes below /edit
                         device.device_router, # This router in device.py deals with routes below /device
+                        vector.vector_router, # This router in vector.py deals with routes below /vector
                         create_static_files_router(path="/static", directories=[STATICFILES]),
                        ],
         exception_handlers={ NotAuthorizedException: gotologin_error_handler},
