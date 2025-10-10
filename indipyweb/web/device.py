@@ -7,7 +7,7 @@ import asyncio
 from asyncio.exceptions import TimeoutError
 
 from litestar import Litestar, get, post, Request, Router
-from litestar.plugins.htmx import HTMXTemplate, ClientRedirect, ClientRefresh
+from litestar.plugins.htmx import HTMXTemplate, ClientRedirect
 from litestar.response import Template, Redirect
 from litestar.datastructures import State
 
@@ -16,7 +16,7 @@ from litestar.types import SSEData
 
 from ..register import indihostport, localtimestring, get_device_event, get_indiclient
 
-from .userdata import setuserdevice, getuserdevice, setselectedgp, getselectedgp
+from .userdata import getuserdevice, setselectedgp, getuserauth
 
 
 @get("/choosedevice/{device:str}")
@@ -29,11 +29,16 @@ async def choosedevice(device:str, request: Request[str, str, State]) -> Templat
         return Redirect("/")
     # associate this session with a device
     cookie = request.cookies.get('token', '')
-    userauth = setuserdevice(cookie, device)
+    userauth = getuserauth(cookie)
     if userauth is None:
         return Redirect("/")
-    # get either the group already stored in userauth, or the first group of the device
-    selectedgp = userauth.selectedgp
+    if userauth.device == device:
+        # no change in the device, or selected group
+        selectedgp = userauth.selectedgp
+    else:
+        # device has changed, so selected group will change
+        selectedgp = ""
+        userauth.device = device
     groups = list(set(vectorobj.group for vectorobj in deviceobj.values() if vectorobj.enable))
     groups.sort()
     if (not selectedgp) or (selectedgp not in groups):
@@ -42,7 +47,7 @@ async def choosedevice(device:str, request: Request[str, str, State]) -> Templat
     context = {"device":device,
                "group":selectedgp,
                "messages":["Device messages : Waiting.."]}
-    return Template(template_name="devicepage.html", context=context)   # The top device page
+    return Template(template_name="devicepage.html", context=context)
 
 
 class ShowMessages:
@@ -129,7 +134,7 @@ async def updatemessages(request: Request[str, str, State]) -> Template|ClientRe
 
 
 @get("/changegroup/{group:str}")
-async def changegroup(group:str, request: Request[str, str, State]) -> Template|ClientRedirect|ClientRefresh:
+async def changegroup(group:str, request: Request[str, str, State]) -> Template|ClientRedirect:
     "Set chosen group, populate group tabs and group vectors"
     # check valid group
     cookie = request.cookies.get('token', '')
@@ -149,6 +154,7 @@ async def changegroup(group:str, request: Request[str, str, State]) -> Template|
     if (deviceobj is None) or not deviceobj.enable:
         return ClientRedirect("/")
     vectorobjects = list(vectorobj for vectorobj in deviceobj.values() if vectorobj.enable)
+    vectorobjects = sorted(vectorobjects, key=lambda vectorobj: vectorobj.label)   # sort by label
     groups = list(set(vectorobj.group for vectorobj in vectorobjects))
     groups.sort()
     if group not in groups:
@@ -156,12 +162,10 @@ async def changegroup(group:str, request: Request[str, str, State]) -> Template|
     setselectedgp(cookie, group)
     # get vectors in this group
     vectornames = list(vectorobj.name for vectorobj in vectorobjects if vectorobj.group == group)
-    vectornames.sort()        ####### To Do sort by label rather than by name
     context = { "vectors":vectornames,
                 "groups":groups,
                 "selectedgp":group }
     return HTMXTemplate(template_name="group.html", context=context)
-
 
 
 
