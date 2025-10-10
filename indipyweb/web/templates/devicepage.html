@@ -35,26 +35,8 @@
   </div>
 </div>
 
-<div class="w3-panel">
-    <div class="w3-bar w3-light-grey" >
-      % for group in groups:
-        % if selectedgp == group:
-            <a hx-get="/device/changegroup/${group|h}" class="w3-bar-item w3-button w3-mobile w3-green">${group|h}</a>
-        % else:
-            <a hx-get="/device/changegroup/${group|h}"  class="w3-bar-item w3-button w3-mobile">${group|h}</a>
-        % endif
-      % endfor
-    </div>
+<div id="grouptabs" hx-get="/device/changegroup/${group}" hx-trigger="load delay:100ms" hx-target="#grouptabs" hx-swap="innerHTML">
 </div>
-
-
-
-## For the displayed group, show the vectors in the group
-
-  % for vector in vectors:
-     <%include file="vector/base_vector.html" args="vector=vector"/>
-  % endfor
-
 
 
 

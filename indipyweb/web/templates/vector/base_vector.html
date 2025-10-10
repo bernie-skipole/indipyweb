@@ -9,8 +9,7 @@
 
 
    <div hx-ext="sse" sse-connect="/vector/vectorsse/${vector|h}">
-    <div hx-get="/vector/update/${vector|h}" hx-trigger="sse:${vector|h}">
-      <p>Error obtaining information for ${device|h} - ${vector|h}.</p>
+    <div hx-get="/vector/update/${vector|h}" hx-trigger="sse:${vector|h}" hx-target=this>
     </div>
    </div>
 

@@ -24,33 +24,23 @@ async def choosedevice(device:str, request: Request[str, str, State]) -> Templat
     """A device has been selected"""
     # have to check device exists
     iclient = get_indiclient()
-    if device not in iclient:
-        return Redirect("/")
-    if not iclient[device].enable:
+    deviceobj = iclient.get(device)
+    if (deviceobj is None) or not deviceobj.enable:
         return Redirect("/")
     # associate this session with a device
     cookie = request.cookies.get('token', '')
     userauth = setuserdevice(cookie, device)
     if userauth is None:
         return Redirect("/")
-    # add items to a context dictionary,
-    deviceobj = iclient.get(device)
-    if (deviceobj is None) or not deviceobj.enable:
-        return Redirect("/")
-    vectorobjects = list(vectorobj for vectorobj in deviceobj.values() if vectorobj.enable)
-    groups = list(set(vectorobj.group for vectorobj in vectorobjects))
+    # get either the group already stored in userauth, or the first group of the device
+    selectedgp = userauth.selectedgp
+    groups = list(set(vectorobj.group for vectorobj in deviceobj.values() if vectorobj.enable))
     groups.sort()
-    selectedgp = getselectedgp(cookie)
     if (not selectedgp) or (selectedgp not in groups):
         selectedgp = groups[0]
         setselectedgp(cookie, selectedgp)
-    groupvectornames = list(vectorobj.name for vectorobj in vectorobjects if vectorobj.group == selectedgp)
-
-    groupvectornames.sort()        ####### To Do sort by label rather than by name
     context = {"device":device,
-               "vectors":groupvectornames,
-               "groups":groups,
-               "selectedgp":selectedgp,
+               "group":selectedgp,
                "messages":["Device messages : Waiting.."]}
     return Template(template_name="devicepage.html", context=context)   # The top device page
 
@@ -140,12 +130,37 @@ async def updatemessages(request: Request[str, str, State]) -> Template|ClientRe
 
 @get("/changegroup/{group:str}")
 async def changegroup(group:str, request: Request[str, str, State]) -> Template|ClientRedirect|ClientRefresh:
-    "Set chosen group, force a client refresh"
+    "Set chosen group, populate group tabs and group vectors"
     # check valid group
     cookie = request.cookies.get('token', '')
+    device = getuserdevice(cookie)
+    if device is None:
+        return ClientRedirect("/")
+    iclient = get_indiclient()
+    if iclient.stop:
+        return ClientRedirect("/")
+    if not iclient.connected:
+        return ClientRedirect("/")
+    if device not in iclient:
+        return ClientRedirect("/")
+    if not iclient[device].enable:
+        return ClientRedirect("/")
+    deviceobj = iclient.get(device)
+    if (deviceobj is None) or not deviceobj.enable:
+        return ClientRedirect("/")
+    vectorobjects = list(vectorobj for vectorobj in deviceobj.values() if vectorobj.enable)
+    groups = list(set(vectorobj.group for vectorobj in vectorobjects))
+    groups.sort()
+    if group not in groups:
+        group = groups[0]
     setselectedgp(cookie, group)
-    return ClientRefresh()
-
+    # get vectors in this group
+    vectornames = list(vectorobj.name for vectorobj in vectorobjects if vectorobj.group == group)
+    vectornames.sort()        ####### To Do sort by label rather than by name
+    context = { "vectors":vectornames,
+                "groups":groups,
+                "selectedgp":group }
+    return HTMXTemplate(template_name="group.html", context=context)
 
 
 

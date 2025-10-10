@@ -1,0 +1,31 @@
+
+
+## group.html - Showing group tab buttons with vectors in the group
+
+
+  <div class="w3-panel">
+    <div class="w3-bar w3-light-grey" >
+      % for group in groups:
+        % if selectedgp == group:
+            <a hx-get="/device/changegroup/${group|h}" class="w3-bar-item w3-button w3-mobile w3-green">${group|h}</a>
+        % else:
+            <a hx-get="/device/changegroup/${group|h}"  class="w3-bar-item w3-button w3-mobile">${group|h}</a>
+        % endif
+      % endfor
+    </div>
+  </div>
+
+## For the displayed group, show the vectors in the group
+
+  % for vector in vectors:
+    <div class="w3-panel">
+      <div class="w3-container w3-border">
+
+       <div hx-ext="sse" sse-connect="/vector/vectorsse/${vector|h}">
+        <div hx-get="/vector/update/${vector|h}" hx-trigger="sse:${vector|h}" hx-target=this>
+        </div>
+       </div>
+
+      </div>
+    </div>
+  % endfor
