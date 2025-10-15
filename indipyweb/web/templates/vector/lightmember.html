@@ -1,0 +1,21 @@
+
+<%page args="vectorob, memberobj"/>
+
+
+<div class="w3-content" style="max-width:400px;margin-top:1vh">
+ <div class="w3-row">
+  <div class="w3-container w3-threequarter">
+      <p>${memberobj.label}</p>
+  </div>
+  % if memberobj.membervalue == "Ok":
+      <div class="w3-container w3-quarter w3-green">
+  % elif memberobj.membervalue == "Busy":
+      <div class="w3-container w3-quarter w3-yellow">
+  % elif memberobj.membervalue == "Alert":
+      <div class="w3-container w3-quarter w3-red">
+  % else:
+      <div class="w3-container w3-quarter">
+  % endif
+      <p>${memberobj.membervalue}</p>
+  </div>
+</div>
