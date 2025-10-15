@@ -1,12 +1,36 @@
 
 
-## getvector.html - The page showing a vector
+## getvector.html - Shows a vector
 
-    <p>${vectorobj.label}</p>
 
+ <div class="w3-row w3-border-top">
+  <div class="w3-container w3-threequarter">
+    <h3>${vectorobj.label}</h3>
+  </div>
+  % if vectorobj.state == "Ok":
+      <div class="w3-container w3-quarter w3-green">
+  % elif vectorobj.state == "Busy":
+      <div class="w3-container w3-quarter w3-yellow">
+  % elif vectorobj.state == "Alert":
+      <div class="w3-container w3-quarter w3-red">
+  % else:
+      <div class="w3-container w3-quarter">
+  % endif
+
+    <p>State ${timestamp} : ${vectorobj.state}</p>
+  </div>
+</div>
+
+  <div class="w3-container">
+    % if vectorobj.message:
+       <p>${message_timestamp} : ${vectorobj.message|h}</p>
+    % else:
+       <p>${vectorobj.label} message: Waiting...</p>
+    % endif
+  </div>
 
  % if vectorobj.vectortype == "LightVector":
-
-    <p>${vectorobj.state}</p>
-
+    % for memberobj in sorted(vectorobj.members().values(), key=lambda memberobj: memberobj.label):
+      <%include file="lightmember.html" args="vectorob=vectorobj, memberobj=memberobj"/>
+    % endfor
  % endif

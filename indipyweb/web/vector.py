@@ -95,7 +95,9 @@ async def update(device:str, vector:str, request: Request[str, str, State]) -> T
         return ClientRefresh()
 
     # have to return a vector html template here
-    return HTMXTemplate(template_name="vector/getvector.html", context={"vectorobj":vectorobj})
+    return HTMXTemplate(template_name="vector/getvector.html", context={"vectorobj":vectorobj,
+                                                                        "timestamp":localtimestring(vectorobj.timestamp),
+                                                                        "message_timestamp":localtimestring(vectorobj.message_timestamp)})
 
 
 

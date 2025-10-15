@@ -50,8 +50,8 @@ class UserInfo():
 
 # UserAuth objects are created as users are logged in and stored in the USERCOOKIES
 # dictionary, with cookies as the dictionary keys.
-# These store the user associated with the cookie, and can also be used to store any
-# temporary data associated with a particular logged in session.
+# These store the user associated with the cookie
+
 
 @dataclass
 class UserAuth():

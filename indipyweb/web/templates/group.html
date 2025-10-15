@@ -19,13 +19,11 @@
 
   % for vector in vectors:
     <div class="w3-panel">
-      <div class="w3-container w3-border">
 
        <div hx-ext="sse" sse-connect="/vector/vectorsse/${device|h}/${vector|h}">
         <div hx-get="/vector/update/${device|h}/${vector|h}" hx-trigger="sse:${vector|h}" hx-target=this>
         </div>
        </div>
 
-      </div>
     </div>
   % endfor
