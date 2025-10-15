@@ -13,7 +13,7 @@ from litestar.datastructures import State
 
 from litestar.response import ServerSentEvent, ServerSentEventMessage
 
-from ..register import indihostport, localtimestring, get_device_event, get_indiclient
+from ..register import localtimestring, get_device_event, get_indiclient
 
 
 @get("/choosedevice/{device:str}")

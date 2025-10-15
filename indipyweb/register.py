@@ -46,9 +46,18 @@ def read_configuration(config):
 def getconfig(parameter):
     return _PARAMETERS.get(parameter)
 
+
 def indihostport():
     "Returns the string 'hostname:port' for the INDI server"
     return f"{_PARAMETERS['indihost']}:{_PARAMETERS['indiport']}"
+
+
+def connectedtext():
+    iclient = _PARAMETERS["indiclient"]
+    if iclient.connected:
+        return f"Connected to INDI service at: {_PARAMETERS['indihost']}:{_PARAMETERS['indiport']}"
+    else:
+        return f"Connecting to INDI service at: {_PARAMETERS['indihost']}:{_PARAMETERS['indiport']}"
 
 
 def userdbase_location():

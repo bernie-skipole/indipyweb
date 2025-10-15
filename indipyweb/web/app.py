@@ -32,7 +32,7 @@ from litestar.types import SSEData
 from . import userdata, edit, device, vector
 
 
-from ..register import DEFINE_EVENT, MESSAGE_EVENT, indihostport, localtimestring, get_indiclient
+from ..register import DEFINE_EVENT, MESSAGE_EVENT, connectedtext, localtimestring, get_indiclient
 
 
 # location of static files, for CSS and javascript
@@ -183,7 +183,7 @@ async def publicroot(request: Request) -> Template:
         userauth = userdata.getuserauth(cookie)
         if userauth is not None:
             loggedin = True
-    return Template("landing.html", context={"hostname":indihostport(),
+    return Template("landing.html", context={"hostname":connectedtext(),
                                              "instruments":None,
                                              "messages":None,
                                              "loggedin":loggedin})
@@ -212,7 +212,7 @@ async def updatemessages() -> Template:
 @get("/login", exclude_from_auth=True)
 async def login_page() -> Template:
     "Render the login page"
-    return Template("edit/login.html", context={"hostname":indihostport()})
+    return Template("edit/login.html", context={"hostname":connectedtext()})
 
 
 @post("/login", exclude_from_auth=True)
@@ -250,7 +250,7 @@ async def logout(request: Request[str, str, State]) -> Template:
         return
     # log the user out
     userdata.logout(request.cookies['token'])
-    return Template("edit/loggedout.html", context={"hostname":indihostport()})
+    return Template("edit/loggedout.html", context={"hostname":connectedtext()})
 
 
 
