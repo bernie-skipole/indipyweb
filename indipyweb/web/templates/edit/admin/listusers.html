@@ -1,0 +1,62 @@
+
+## listusers.html - creates a table of users, each row having a link to /edit/edituser/<username>
+
+## Also includes buttons and text showing links to previous and next pages which are hidden or shown
+## as required. Note the logic has pages starting at zero, so the legends here add one to show pages
+## starting at one.
+
+
+<div hx-get="/edit/tableupdate?thispage=${thispage}" hx-trigger="sse:tablechange" hx-swap="outerHTML">
+
+<div class="w3-panel" hx-swap="innerHTML">
+  <div class="w3-auto">
+
+      <table class="w3-table-all">
+        <tr>
+          <th>Username</th>
+          <th>Full name</th>
+          <th>Authorisation</th>
+          <th class="w3-center">Edit this user</th>
+        </tr>
+
+        % for row in users:
+          <tr>
+            % for item in row:
+                <td>${item}</td>
+            % endfor
+            <td class="w3-center"><button hx-get="/edit/edituser/${row[0]}" hx-target="#editoptions" class="w3-button w3-black w3-ripple w3-round w3-small">Edit</button></td>
+          </tr>
+        % endfor
+
+      </table>
+
+
+    <div hx-vals='{"thispage":${thispage}}' class="w3-display-container"  style="margin-top:5vh">
+
+      % if prevpage < thispage:
+       <div class="w3-display-left">
+      % else:
+       <div class="w3-display-left w3-hide">
+      % endif
+          <button class="w3-button w3-black w3-ripple w3-round w3-small" hx-get="/edit/prevpage" hx-target="#userlist">Previous Page ${prevpage+1}</button>
+      </div>
+
+      % if lastpage:
+       <div class="w3-display-middle">
+        <p>Page ${thispage+1} of ${lastpage+1}</p>
+       </div>
+      % endif
+
+      % if nextpage > thispage:
+       <div class="w3-display-right">
+      % else:
+       <div class="w3-display-right w3-hide">
+      % endif
+          <button class="w3-button w3-black w3-ripple w3-round w3-small" hx-get="/edit/nextpage" hx-target="#userlist">Next Page ${nextpage+1}</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+</div>

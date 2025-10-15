@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+
+## userdeleted.html
+
+## on a user, or administrator, deleting himself, this is shown
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Account Deleted</title>
+<link rel="stylesheet" href="/static/w3.css">
+<link rel="stylesheet" href="/static/w3-colors-flat.css">
+<script src="/static/htmx.min.js"></script>
+<script src="/static/alpinejs.min.js" defer></script>
+
+<body class="w3-flat-clouds">
+
+  <header class="w3-container w3-flat-silver w3-block">
+    <%include file="../min_header.html"/>
+  </header>
+
+  <div class="w3-content" style="max-width:400px;margin-top:8vh">
+    <div class="w3-container w3-card">
+      <h2 class="w3-center">Account : ${user|h} has been deleted</h2>
+    </div>
+  </div>
+
+</body>
+</html>
