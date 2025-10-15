@@ -12,7 +12,6 @@ from litestar.response import Template, Redirect
 from litestar.datastructures import State
 
 from litestar.response import ServerSentEvent, ServerSentEventMessage
-from litestar.types import SSEData
 
 from ..register import indihostport, localtimestring, get_device_event, get_indiclient
 
@@ -23,6 +22,8 @@ from .userdata import getuserdevice, setselectedgp, getuserauth
 async def choosedevice(device:str, request: Request[str, str, State]) -> Template|Redirect:
     """A device has been selected"""
     # have to check device exists
+    if not device:
+        return Redirect("/")
     iclient = get_indiclient()
     deviceobj = iclient.get(device)
     if (deviceobj is None) or not deviceobj.enable:
@@ -58,6 +59,7 @@ class ShowMessages:
         self.device = device
         self.device_event = get_device_event(device)
         self.iclient = get_indiclient()
+        print(device)
 
     def __aiter__(self):
         return self
@@ -98,19 +100,15 @@ class ShowMessages:
 
 
 # SSE Handler
-@get(path="/messages", sync_to_thread=False)
-def messages(request: Request[str, str, State]) -> ServerSentEvent:
-    cookie = request.cookies.get('token', '')
-    device = getuserdevice(cookie)
+@get(path="/messages/{device:str}", sync_to_thread=False)
+def messages(device:str, request: Request[str, str, State]) -> ServerSentEvent:
     return ServerSentEvent(ShowMessages(device))
 
 
-@get("/updatemessages")
-async def updatemessages(request: Request[str, str, State]) -> Template|ClientRedirect:
+@get("/updatemessages/{device:str}")
+async def updatemessages(device:str, request: Request[str, str, State]) -> Template|ClientRedirect:
     "Updates the messages on the device page, and redirects to / if device deleted"
-    cookie = request.cookies.get('token', '')
-    device = getuserdevice(cookie)
-    if device is None:
+    if not device:
         return ClientRedirect("/")
     iclient = get_indiclient()
     if iclient.stop:
@@ -133,13 +131,14 @@ async def updatemessages(request: Request[str, str, State]) -> Template|ClientRe
 
 
 
-@get("/changegroup/{group:str}")
-async def changegroup(group:str, request: Request[str, str, State]) -> Template|ClientRedirect:
+@get("/changegroup/{device:str}/{group:str}")
+async def changegroup(device:str, group:str, request: Request[str, str, State]) -> Template|ClientRedirect:
     "Set chosen group, populate group tabs and group vectors"
     # check valid group
     cookie = request.cookies.get('token', '')
-    device = getuserdevice(cookie)
-    if device is None:
+    if not group:
+        return ClientRedirect("/")
+    if not device:
         return ClientRedirect("/")
     iclient = get_indiclient()
     if iclient.stop:
@@ -162,7 +161,8 @@ async def changegroup(group:str, request: Request[str, str, State]) -> Template|
     setselectedgp(cookie, group)
     # get vectors in this group
     vectornames = list(vectorobj.name for vectorobj in vectorobjects if vectorobj.group == group)
-    context = { "vectors":vectornames,
+    context = { "device":device,
+                "vectors":vectornames,
                 "groups":groups,
                 "selectedgp":group }
     return HTMXTemplate(template_name="group.html", context=context)

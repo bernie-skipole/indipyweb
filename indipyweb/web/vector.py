@@ -66,23 +66,19 @@ class VectorEvent:
 
 
 # SSE Handler
-@get(path="/vectorsse/{vector:str}", sync_to_thread=False)
-def vectorsse(vector:str, request: Request[str, str, State]) -> ServerSentEvent:
-    cookie = request.cookies.get('token', '')
-    device = getuserdevice(cookie)
+@get(path="/vectorsse/{device:str}/{vector:str}", sync_to_thread=False)
+def vectorsse(device:str, vector:str, request: Request[str, str, State]) -> ServerSentEvent:
     return ServerSentEvent(VectorEvent(device, vector))
 
 
 
-@get("/update/{vector:str}")
-async def update(vector:str, request: Request[str, str, State]) -> Template|ClientRedirect|ClientRefresh:
+@get("/update/{device:str}/{vector:str}")
+async def update(device:str, vector:str, request: Request[str, str, State]) -> Template|ClientRedirect|ClientRefresh:
     "Update vector"
     # check valid vector
     if not vector:
         return ClientRedirect("/")
-    cookie = request.cookies.get('token', '')
-    device = getuserdevice(cookie)
-    if device is None:
+    if not device:
         return ClientRedirect("/")
     iclient = get_indiclient()
     if iclient.stop:
@@ -101,8 +97,7 @@ async def update(vector:str, request: Request[str, str, State]) -> Template|Clie
         return ClientRefresh()
 
     # have to return a vector html template here
-    return HTMXTemplate(None,
-                        template_str=f"<p>{vectorobj.label}</p>")
+    return HTMXTemplate(template_name="vector/getvector.html", context={"vectorobj":vectorobj})
 
 
 

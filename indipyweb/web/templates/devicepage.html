@@ -26,8 +26,8 @@
 <div class="w3-panel">
   <div class="w3-container w3-border">
 
-   <div hx-ext="sse" sse-connect="/device/messages">
-    <div hx-get="/device/updatemessages" hx-trigger="sse:devicemessages">
+   <div hx-ext="sse" sse-connect="/device/messages/${device|h}">
+    <div hx-get="/device/updatemessages/${device|h}" hx-trigger="sse:devicemessages">
        <%include file="messages.html"/>
     </div>
    </div>
@@ -35,7 +35,7 @@
   </div>
 </div>
 
-<div id="grouptabs" hx-get="/device/changegroup/${group}" hx-trigger="load delay:100ms" hx-target="#grouptabs" hx-swap="innerHTML">
+<div id="grouptabs" hx-get="/device/changegroup/${device|h}/${group|h}" hx-trigger="load delay:100ms" hx-target="#grouptabs" hx-swap="innerHTML">
 </div>
 
 

@@ -7,9 +7,9 @@
     <div class="w3-bar w3-light-grey" >
       % for group in groups:
         % if selectedgp == group:
-            <a hx-get="/device/changegroup/${group|h}" class="w3-bar-item w3-button w3-mobile w3-green">${group|h}</a>
+            <a hx-get="/device/changegroup/${device|h}/${group|h}" class="w3-bar-item w3-button w3-mobile w3-green">${group|h}</a>
         % else:
-            <a hx-get="/device/changegroup/${group|h}"  class="w3-bar-item w3-button w3-mobile">${group|h}</a>
+            <a hx-get="/device/changegroup/${device|h}/${group|h}"  class="w3-bar-item w3-button w3-mobile">${group|h}</a>
         % endif
       % endfor
     </div>
@@ -21,8 +21,8 @@
     <div class="w3-panel">
       <div class="w3-container w3-border">
 
-       <div hx-ext="sse" sse-connect="/vector/vectorsse/${vector|h}">
-        <div hx-get="/vector/update/${vector|h}" hx-trigger="sse:${vector|h}" hx-target=this>
+       <div hx-ext="sse" sse-connect="/vector/vectorsse/${device|h}/${vector|h}">
+        <div hx-get="/vector/update/${device|h}/${vector|h}" hx-trigger="sse:${vector|h}" hx-target=this>
         </div>
        </div>
 
