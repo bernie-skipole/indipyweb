@@ -15,7 +15,7 @@ from litestar.response import ServerSentEvent, ServerSentEventMessage
 
 from ..register import indihostport, localtimestring, get_device_event, get_indiclient
 
-from .userdata import getuserdevice, setselectedgp, getuserauth
+from .userdata import getuserauth
 
 
 @get("/choosedevice/{device:str}")
@@ -44,7 +44,6 @@ async def choosedevice(device:str, request: Request[str, str, State]) -> Templat
     groups.sort()
     if (not selectedgp) or (selectedgp not in groups):
         selectedgp = groups[0]
-        setselectedgp(cookie, selectedgp)
     context = {"device":device,
                "group":selectedgp,
                "messages":["Device messages : Waiting.."]}
@@ -158,7 +157,6 @@ async def changegroup(device:str, group:str, request: Request[str, str, State]) 
     groups.sort()
     if group not in groups:
         group = groups[0]
-    setselectedgp(cookie, group)
     # get vectors in this group
     vectornames = list(vectorobj.name for vectorobj in vectorobjects if vectorobj.group == group)
     context = { "device":device,

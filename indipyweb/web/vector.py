@@ -16,8 +16,6 @@ from litestar.types import SSEData
 
 from ..register import indihostport, localtimestring, get_vector_event, get_indiclient
 
-from .userdata import setuserdevice, getuserdevice, setselectedgp, getselectedgp
-
 
 class VectorEvent:
     """Iterate with whenever a vector change happens."""
