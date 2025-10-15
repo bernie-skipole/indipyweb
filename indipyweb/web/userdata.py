@@ -1,6 +1,10 @@
-"""This module defines users and passwords on a database"""
+"""This module defines users and passwords on a database,
+   on first being imported if the file users.sqlite does not exist, an
+   sqlite database will be created with the single user 'admin' and password 'password!'
+   You should immediately log in as this user and change the password.
+   """
 
-import sqlite3, os, time
+import sqlite3, os, time, asyncio
 
 from datetime import datetime, timezone
 
@@ -21,6 +25,8 @@ from ..register import userdbase_location, userdbase_file
 USERDBASE_LOCATION = None
 USERDBASE = None
 
+# This event is set whenever the table of users needs updating
+TABLE_EVENT = asyncio.Event()
 
 # Dictionary of cookie:userauth, built as cookies are created
 # The cookie is a random string sent as the cookie token
@@ -52,8 +58,6 @@ class UserAuth():
     "Class used to hold a logged in user details"
     user:str             # The username
     time:float           # time used for timing out the session
-    page:int             # admins can see 'pages' of user data, this stores the current page number
-
 
 
 def setupdbase():
@@ -130,7 +134,7 @@ def createcookie(user:str) -> str:
     """Given a user, create and return a cookie string value
        Also create and set a UserAuth object into USERCOOKIES"""
     randomstring = token_urlsafe(16)
-    USERCOOKIES[randomstring] = UserAuth(user, time.time(), 0)    # initially page is set to zero,
+    USERCOOKIES[randomstring] = UserAuth(user, time.time())
     # The cookie returned will be the random string
     return randomstring
 
@@ -212,9 +216,16 @@ def newfullname(user:str, newfullname:str) -> str|None:
     con = sqlite3.connect(USERDBASE)
     with con:
         cur = con.cursor()
-        cur.execute("UPDATE users SET fullname = ? WHERE username = ?", (newfullname, user))
+        cur.execute("SELECT count(*) FROM users WHERE username = ?", (user,))
+        result = cur.fetchone()[0]
+        if result:
+            cur.execute("UPDATE users SET fullname = ? WHERE username = ?", (newfullname, user))
     cur.close()
     con.close()
+    if not result:
+        # invalid user
+        logoutuser(user)
+        return "User not found"
     # clear cache
     getuserinfo.cache_clear()
 
@@ -337,18 +348,12 @@ def adduser(user:str, password:str, auth:str, fullname:str) -> str|None:
 
 
 
-def userlist(cookie:str, requestedpage:str="", numinpage:int = 10) -> dict|None:
+def userlist(thispage:int, requestedpage:str = "", numinpage:int = 10) -> dict|None:
     """requestedpage = '' for current page
                        '-' for previous page
                        '+' for next page
        numinpage is the number of results in the returned page
-       Returns a dict of {users:list of [(username, fullname) ... ] for a page, ...plus page information}
-       If cookie not found, returns None"""
-    if not cookie:
-        return
-    userauth = getuserauth(cookie)
-    if userauth is None:
-        return
+       Returns a dict of {users:list of [(username, fullname) ... ] for a page, ...plus pagination information}"""
     if not numinpage:
         return
     con = sqlite3.connect(USERDBASE)
@@ -358,39 +363,37 @@ def userlist(cookie:str, requestedpage:str="", numinpage:int = 10) -> dict|None:
     # number is total number of users
     lastpage = (number - 1) // numinpage
     # lastpage is the last page to show
-    currentpage = userauth.page
-    if requestedpage == "+" and currentpage < lastpage:
-        page = currentpage + 1
-    elif requestedpage == "-" and currentpage:
-        page = currentpage - 1
+    if requestedpage == "+" and thispage < lastpage:
+        newpage = thispage + 1
+    elif requestedpage == "-" and thispage:
+        newpage = thispage - 1
     else:
-        page = currentpage
-    if page > lastpage:
+        newpage = thispage
+    if newpage > lastpage:
         # this could happen if users have been deleted
-        page = lastpage
-    # page is the page number required, starting at page 0
+        newpage = lastpage
+    # newpage is the page number required, starting at page 0
     # with numinpage results per page, calculate the number of lines to skip
-    skip = numinpage*page
+    skip = numinpage*newpage
     cur.execute("SELECT username, fullname, auth FROM users ORDER BY fullname COLLATE NOCASE, username COLLATE NOCASE LIMIT ?, ?", (skip, numinpage))
     users = cur.fetchall()
     cur.close()
     con.close()
     # get previous page and next page
-    if page<lastpage:
+    if newpage<lastpage:
         # There are further users to come
-        nextpage = page+1
+        nextpage = newpage+1
     else:
         # No further users
-        nextpage = page
-    if page:
+        nextpage = newpage
+    if newpage:
         # Not the first page, so previous pages must exist
-        prevpage = page-1
+        prevpage = newpage-1
     else:
         # This is page 0, no previous page
         prevpage = 0
-    # Update the recorded page in userauth
-    userauth.page = page
-    return {"users":users, "nextpage":nextpage, "prevpage":prevpage, "thispage":page, "lastpage":lastpage}
+
+    return {"users":users, "nextpage":nextpage, "prevpage":prevpage, "thispage":newpage, "lastpage":lastpage}
 
 
 def dbbackup() -> str|None:

@@ -1,14 +1,36 @@
-## login.html - The login form
+<!DOCTYPE html>
+<html lang="en">
 
-## Calls /login and shows a cookie notice, which can be closed.
-## On failure an invalid message is shown in paragraph id result
+## login.html
 
-<%inherit file="base_loginout.html"/>
-
-<%block name="title">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Login</title>
-</%block>
+<style>
+html, body {
+  height: 100%;
+  margin: 0;
+  }
+@keyframes fader{ 0%{opacity:1}
+                100%{opacity:0}}
+.vanish {
+  animation-name: fader;
+  animation-duration: 3s;
+  animation-timing-function: ease-in;
+  animation-delay: 2s;
+  animation-fill-mode: forwards;
+}
+</style>
+<link rel="stylesheet" href="/static/w3.css">
+<link rel="stylesheet" href="/static/w3-colors-flat.css">
+<script src="/static/htmx.min.js"></script>
+<script src="/static/alpinejs.min.js" defer></script>
 
+<body>
+    <div class="w3-display-container w3-flat-clouds" style="height:100%">
+      <header class="w3-container w3-display-topleft w3-flat-silver w3-block">
+        <%include file="min_header.html"/>
+      </header>
 
       <div class="w3-container w3-card w3-display-middle" style="width:80%;max-width:400px">
         <form hx-post="/login" hx-target="#result" hx-swap="outerHTML">
@@ -30,3 +52,8 @@
         <h5>Cookies</h5>
         <p>This site only uses strictly necessary cookies for its operation. If you do not wish to accept any cookies, please do not log in.</p>
       </footer>
+
+    </div>
+
+</body>
+</html>
