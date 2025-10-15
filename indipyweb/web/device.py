@@ -15,8 +15,6 @@ from litestar.response import ServerSentEvent, ServerSentEventMessage
 
 from ..register import indihostport, localtimestring, get_device_event, get_indiclient
 
-from .userdata import getuserauth
-
 
 @get("/choosedevice/{device:str}")
 async def choosedevice(device:str, request: Request[str, str, State]) -> Template|Redirect:
@@ -28,24 +26,10 @@ async def choosedevice(device:str, request: Request[str, str, State]) -> Templat
     deviceobj = iclient.get(device)
     if (deviceobj is None) or not deviceobj.enable:
         return Redirect("/")
-    # associate this session with a device
-    cookie = request.cookies.get('token', '')
-    userauth = getuserauth(cookie)
-    if userauth is None:
-        return Redirect("/")
-    if userauth.device == device:
-        # no change in the device, or selected group
-        selectedgp = userauth.selectedgp
-    else:
-        # device has changed, so selected group will change
-        selectedgp = ""
-        userauth.device = device
     groups = list(set(vectorobj.group for vectorobj in deviceobj.values() if vectorobj.enable))
     groups.sort()
-    if (not selectedgp) or (selectedgp not in groups):
-        selectedgp = groups[0]
     context = {"device":device,
-               "group":selectedgp,
+               "group":groups[0],
                "messages":["Device messages : Waiting.."]}
     return Template(template_name="devicepage.html", context=context)
 
