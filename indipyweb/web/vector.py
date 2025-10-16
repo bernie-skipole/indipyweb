@@ -100,6 +100,32 @@ async def update(device:str, vector:str, request: Request[str, str, State]) -> T
                                                                         "message_timestamp":localtimestring(vectorobj.message_timestamp)})
 
 
+@get("/submit/{device:str}/{vector:str}")
+async def submit(device:str, vector:str, request: Request[str, str, State]) -> Template|ClientRedirect|ClientRefresh:
+    # check valid vector
+    if not vector:
+        return ClientRedirect("/")
+    if not device:
+        return ClientRedirect("/")
+    iclient = get_indiclient()
+    if iclient.stop:
+        return ClientRedirect("/")
+    if not iclient.connected:
+        return ClientRedirect("/")
+    if device not in iclient:
+        return ClientRedirect("/")
+    deviceobj = iclient[device]
+    if not deviceobj.enable:
+        return ClientRedirect("/")
+    if vector not in deviceobj:
+        return ClientRefresh()
+    vectorobj = deviceobj[vector]
+    if not vectorobj.enable:
+        return ClientRefresh()
+    form_data = await request.form()
+    newfullname = form_data.get("fullname")
 
 
-vector_router = Router(path="/vector", route_handlers=[update, vectorsse])
+
+
+vector_router = Router(path="/vector", route_handlers=[update, vectorsse, submit])

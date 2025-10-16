@@ -45,7 +45,7 @@
 
 % if vectorobj.perm != "ro":
    <div class="w3-panel w3-center">
-       <button hx-post="/example/${vectorobj.devicename|h}/${vectorobj.name|h}" hx-include="inherit" class="w3-button w3-black w3-ripple w3-round">
+       <button hx-post="/vector/submit/${vectorobj.devicename|h}/${vectorobj.name|h}" hx-include="inherit" class="w3-button w3-black w3-ripple w3-round">
          Submit
        </button>
    </div>
