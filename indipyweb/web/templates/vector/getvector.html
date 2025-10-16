@@ -29,8 +29,25 @@
     % endif
   </div>
 
- % if vectorobj.vectortype == "LightVector":
-    % for memberobj in sorted(vectorobj.members().values(), key=lambda memberobj: memberobj.label):
+% if vectorobj.perm != "ro":
+ <div hx-include=this>
+% endif
+
+ % for memberobj in sorted(vectorobj.members().values(), key=lambda memberobj: memberobj.label):
+    ## For each member, sorted by member label
+    % if vectorobj.vectortype == "LightVector":
       <%include file="lightmember.html" args="vectorob=vectorobj, memberobj=memberobj"/>
-    % endfor
- % endif
+    % elif vectorobj.vectortype == "TextVector":
+      <%include file="textmember.html" args="vectorob=vectorobj, memberobj=memberobj"/>
+    % endif
+ % endfor
+
+
+% if vectorobj.perm != "ro":
+   <div class="w3-panel w3-center">
+       <button hx-post="/example/${vectorobj.devicename|h}/${vectorobj.name|h}" hx-include="inherit" class="w3-button w3-black w3-ripple w3-round">
+         Submit
+       </button>
+   </div>
+ </div>
+% endif
