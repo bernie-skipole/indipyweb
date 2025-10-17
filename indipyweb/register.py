@@ -2,6 +2,8 @@ import asyncio
 
 from pathlib import Path
 
+from datetime import datetime, timezone
+
 
 _PARAMETERS = {
 
@@ -68,8 +70,10 @@ def userdbase_file():
     return userdbase_location() / "users.sqlite"
 
 
-def localtimestring(t):
+def localtimestring(t=None):
     "Return a string of the local time (not date)"
+    if t is None:
+        t = datetime.now(tz=timezone.utc)
     localtime = t.astimezone(tz=None)
     # convert microsecond to integer between 0 and 100
     ms = localtime.microsecond//10000

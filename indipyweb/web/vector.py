@@ -100,7 +100,7 @@ async def update(device:str, vector:str, request: Request[str, str, State]) -> T
                                                                         "message_timestamp":localtimestring(vectorobj.message_timestamp)})
 
 
-@get("/submit/{device:str}/{vector:str}")
+@post("/submit/{device:str}/{vector:str}")
 async def submit(device:str, vector:str, request: Request[str, str, State]) -> Template|ClientRedirect|ClientRefresh:
     # check valid vector
     if not vector:
@@ -122,8 +122,14 @@ async def submit(device:str, vector:str, request: Request[str, str, State]) -> T
     vectorobj = deviceobj[vector]
     if not vectorobj.enable:
         return ClientRefresh()
+
     form_data = await request.form()
-    newfullname = form_data.get("fullname")
+    members = {name:value for name,value in form_data.items() if value and (name in vectorobj)}
+    if not members:
+        return HTMXTemplate(None, template_str="<p>Nothing to send!</p>")
+    await iclient.send_newVector(device, vector, members=members)
+    return HTMXTemplate(template_name="vector/result.html", context={stateid:f"state_{vectorobj.name}",
+                                                                    timestamp:localtimestring()})
 
 
 

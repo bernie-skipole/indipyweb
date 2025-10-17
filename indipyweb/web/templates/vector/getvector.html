@@ -8,13 +8,13 @@
     <h3>${vectorobj.label}</h3>
   </div>
   % if vectorobj.state == "Ok":
-      <div class="w3-container w3-quarter w3-green">
+      <div id="state_${vectorobj.name}" class="w3-container w3-quarter w3-green">
   % elif vectorobj.state == "Busy":
-      <div class="w3-container w3-quarter w3-yellow">
+      <div id="state_${vectorobj.name}" class="w3-container w3-quarter w3-yellow">
   % elif vectorobj.state == "Alert":
-      <div class="w3-container w3-quarter w3-red">
+      <div id="state_${vectorobj.name}" class="w3-container w3-quarter w3-red">
   % else:
-      <div class="w3-container w3-quarter">
+      <div id="state_${vectorobj.name}" class="w3-container w3-quarter">
   % endif
 
     <p>State ${timestamp} : ${vectorobj.state}</p>
@@ -25,7 +25,7 @@
     % if vectorobj.message:
        <p>${message_timestamp} : ${vectorobj.message|h}</p>
     % else:
-       <p>${vectorobj.label} message: Waiting...</p>
+       <p>Message: Waiting...</p>
     % endif
   </div>
 
@@ -44,10 +44,15 @@
 
 
 % if vectorobj.perm != "ro":
-   <div class="w3-panel w3-center">
-       <button hx-post="/vector/submit/${vectorobj.devicename|h}/${vectorobj.name|h}" hx-include="inherit" class="w3-button w3-black w3-ripple w3-round">
+  <div class="w3-row w3-panel">
+    <div id="result_${vectorobj.name}" class="w3-container w3-threequarter">
+       <p></p>
+    </div>
+    <div class="w3-container w3-quarter">
+       <button hx-post="/vector/submit/${vectorobj.devicename|h}/${vectorobj.name|h}" hx-include="inherit" hx-target="#result_${vectorobj.name}" class="w3-button w3-black w3-ripple w3-round">
          Submit
        </button>
-   </div>
+    </div>
+  </div>
  </div>
 % endif
