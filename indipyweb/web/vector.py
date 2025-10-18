@@ -128,8 +128,8 @@ async def submit(device:str, vector:str, request: Request[str, str, State]) -> T
     if not members:
         return HTMXTemplate(None, template_str="<p>Nothing to send!</p>")
     await iclient.send_newVector(device, vector, members=members)
-    return HTMXTemplate(template_name="vector/result.html", context={stateid:f"state_{vectorobj.name}",
-                                                                    timestamp:localtimestring()})
+    return HTMXTemplate(template_name="vector/result.html", context={"stateid":f"state_{vectorobj.name}",
+                                                                    "timestamp":localtimestring()})
 
 
 
