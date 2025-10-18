@@ -94,6 +94,15 @@ async def update(device:str, vector:str, request: Request[str, str, State]) -> T
     if not vectorobj.enable:
         return ClientRefresh()
 
+    if vectorobj.user_string:
+        # This is not a full update, just an update of the result and state fields
+        return HTMXTemplate(template_name="vector/result.html",
+                            re_target=f"#result_{vectorobj.name}",
+                            context={"state":f"{vectorobj.state}",
+                                     "stateid":f"state_{vectorobj.name}",
+                                     "timestamp":localtimestring(vectorobj.timestamp),
+                                     "result":vectorobj.user_string})
+
     # have to return a vector html template here
     return HTMXTemplate(template_name="vector/getvector.html", context={"vectorobj":vectorobj,
                                                                         "timestamp":localtimestring(vectorobj.timestamp),
@@ -128,8 +137,10 @@ async def submit(device:str, vector:str, request: Request[str, str, State]) -> T
     if not members:
         return HTMXTemplate(None, template_str="<p>Nothing to send!</p>")
     await iclient.send_newVector(device, vector, members=members)
-    return HTMXTemplate(template_name="vector/result.html", context={"stateid":f"state_{vectorobj.name}",
-                                                                    "timestamp":localtimestring()})
+    return HTMXTemplate(template_name="vector/result.html", context={"state":"Busy",
+                                                                     "stateid":f"state_{vectorobj.name}",
+                                                                     "timestamp":localtimestring(),
+                                                                     "result":"Vector changes sent"})
 
 
 
