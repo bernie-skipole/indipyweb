@@ -143,14 +143,22 @@ async def submit(device:str, vector:str, request: Request[str, str, State]) -> T
             # Have to apply minimum and maximum rules
             for name, value in members.items():
                 memberobj = vectorobj.member(name)
-                floatval = memberobj.getfloat(value)
-                maxfloat = memberobj.getfloat(memberobj.max)
                 minfloat = memberobj.getfloat(memberobj.min)
-                if floatval > maxfloat:
-                    members[name] = maxfloat
-                elif floatval < minfloat:
-                    members[name] = minfloat
+                floatval = memberobj.getfloat(value)
+                # check step, and round floatval to nearest step value
+                stepvalue = memberobj.getfloat(memberobj.step)
+                if stepvalue:
+                    floatval = round(floatval / stepvalue) * stepvalue
+                if memberobj.max != memberobj.min:
+                    maxfloat = memberobj.getfloat(memberobj.max)
+                    if floatval > maxfloat:
+                        floatval = maxfloat
+                    elif floatval < minfloat:
+                        floatval = minfloat
+                members[name] = floatval
+
     except Exception as e:
+        print(e)
         return HTMXTemplate(template_name="vector/result.html", context={"state":"Alert",
                                                                          "stateid":f"state_{vectorobj.name}",
                                                                          "timestamp":localtimestring(),
