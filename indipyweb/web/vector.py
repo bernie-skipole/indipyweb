@@ -136,6 +136,27 @@ async def submit(device:str, vector:str, request: Request[str, str, State]) -> T
     members = {name:value for name,value in form_data.items() if value and (name in vectorobj)}
     if not members:
         return HTMXTemplate(None, template_str="<p>Nothing to send!</p>")
+
+    # deal with number vectors
+    try:
+        if vectorobj.vectortype  == "NumberVector":
+            # Have to apply minimum and maximum rules
+            for name, value in members.items():
+                memberobj = vectorobj.member(name)
+                floatval = memberobj.getfloat(value)
+                maxfloat = memberobj.getfloat(memberobj.max)
+                minfloat = memberobj.getfloat(memberobj.min)
+                if floatval > maxfloat:
+                    members[name] = maxfloat
+                elif floatval < minfloat:
+                    members[name] = minfloat
+    except Exception as e:
+        return HTMXTemplate(template_name="vector/result.html", context={"state":"Alert",
+                                                                         "stateid":f"state_{vectorobj.name}",
+                                                                         "timestamp":localtimestring(),
+                                                                         "result":"Unable to parse number value"})
+
+    # this is ok for light and text vectors
     await iclient.send_newVector(device, vector, members=members)
     return HTMXTemplate(template_name="vector/result.html", context={"state":"Busy",
                                                                      "stateid":f"state_{vectorobj.name}",

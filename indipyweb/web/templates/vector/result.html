@@ -1,0 +1,17 @@
+
+
+% if state == "Ok":
+  <div id="${stateid}" class="w3-container w3-quarter w3-green" hx-swap-oob="true">
+% elif state == "Busy":
+  <div id="${stateid}" class="w3-container w3-quarter w3-yellow" hx-swap-oob="true">
+% elif state == "Alert":
+  <div id="${stateid}" class="w3-container w3-quarter w3-red" hx-swap-oob="true">
+% else:
+  <div id="${stateid}" class="w3-container w3-quarter" hx-swap-oob="true">
+% endif
+
+    <p>State ${timestamp} : ${state}</p>
+  </div>
+
+
+<p>${result}</p>

@@ -39,6 +39,8 @@
       <%include file="lightmember.html" args="vectorob=vectorobj, memberobj=memberobj"/>
     % elif vectorobj.vectortype == "TextVector":
       <%include file="textmember.html" args="vectorob=vectorobj, memberobj=memberobj"/>
+    % elif vectorobj.vectortype == "NumberVector":
+      <%include file="numbermember.html" args="vectorob=vectorobj, memberobj=memberobj"/>
     % endif
  % endfor
 
