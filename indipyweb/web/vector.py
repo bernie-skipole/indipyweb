@@ -132,6 +132,9 @@ async def submit(device:str, vector:str, request: Request[str, str, State]) -> T
     if not vectorobj.enable:
         return ClientRefresh()
 
+    if vectorobj.perm == "ro":
+        return HTMXTemplate(None, template_str="<p>INVALID: This is a Read Only vector!</p>")
+
     form_data = await request.form()
     members = {name:value for name,value in form_data.items() if value and (name in vectorobj)}
     if not members:
@@ -158,13 +161,30 @@ async def submit(device:str, vector:str, request: Request[str, str, State]) -> T
                 members[name] = floatval
 
     except Exception as e:
-        print(e)
         return HTMXTemplate(template_name="vector/result.html", context={"state":"Alert",
                                                                          "stateid":f"state_{vectorobj.name}",
                                                                          "timestamp":localtimestring(),
                                                                          "result":"Unable to parse number value"})
+    # deal with switch vectors
+    if vectorobj.vectortype  == "SwitchVector" and vectorobj.rule != 'AnyOfMany':
+        # Have to test 'OneOfMany', and 'AtMostOne' rules
+        # Since not all members may be submitted, get all members
+        currentmembers = dict(vectorobj)
+        # update this with members from the form
+        currentmembers.update(members)
+        oncount = list(currentmembers.values()).count("On")
+        if vectorobj.rule == "OneOfMany" and oncount != 1:
+            return HTMXTemplate(template_name="vector/result.html", context={"state":"Alert",
+                                                                             "stateid":f"state_{vectorobj.name}",
+                                                                             "timestamp":localtimestring(),
+                                                                             "result":"OneOfMany rule requires one switch only to be On"})
+        if vectorobj.rule == "AtMostOne" and oncount > 1:
+            return HTMXTemplate(template_name="vector/result.html", context={"state":"Alert",
+                                                                             "stateid":f"state_{vectorobj.name}",
+                                                                             "timestamp":localtimestring(),
+                                                                             "result":"AtMostOne rule requires no more than one On switch"})
 
-    # this is ok for light and text vectors
+    # and send the vector
     await iclient.send_newVector(device, vector, members=members)
     return HTMXTemplate(template_name="vector/result.html", context={"state":"Busy",
                                                                      "stateid":f"state_{vectorobj.name}",
