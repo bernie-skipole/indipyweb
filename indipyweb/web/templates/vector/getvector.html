@@ -30,7 +30,17 @@
   </div>
 
 % if vectorobj.perm != "ro":
+ ## this ensures these input elements are included in the button submission
  <div hx-include=this>
+
+% if vectorobj.vectortype == "SwitchVector" and vectorobj.rule != "AnyOfMany":
+     <div x-data="{
+% for membername in vectorobj.keys():
+${membername|h}:'Off',
+% endfor
+}">
+% endif
+
 % endif
 
  % for memberobj in sorted(vectorobj.members().values(), key=lambda memberobj: memberobj.label):
@@ -48,6 +58,11 @@
 
 
 % if vectorobj.perm != "ro":
+
+   % if vectorobj.vectortype == "SwitchVector" and vectorobj.rule != "AnyOfMany":
+     </div>
+   % endif
+
   <div class="w3-row w3-panel">
     <div id="result_${vectorobj.name}" class="w3-container w3-threequarter">
        <p></p>

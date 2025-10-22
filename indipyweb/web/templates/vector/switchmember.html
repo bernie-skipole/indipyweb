@@ -42,6 +42,8 @@
    <div class="w3-container w3-third">
      <div class="w3-row">
 
+  % if vectorobj.rule == "AnyOfMany":
+
       % if memberobj.membervalue == "On":
         <div class="w3-container w3-half">
           <input id="inputon_${vectorob.name|h}_${memberobj.name|h}" class="w3-radio" type="radio" name="${memberobj.name|h}" value="On" checked hx-preserve />
@@ -61,6 +63,30 @@
           <label>Off</label>
         </div>
       % endif
+
+  % else:
+
+      % if memberobj.membervalue == "On":
+        <div class="w3-container w3-half">
+          <input id="inputon_${vectorob.name|h}_${memberobj.name|h}" class="w3-radio" type="radio" x-model="${memberobj.name|h}" name="${memberobj.name|h}" value="On" checked hx-preserve />
+          <label>On</label>
+        </div>
+        <div class="w3-container w3-half">
+          <input id="inputoff_${vectorob.name|h}_${memberobj.name|h}"  class="w3-radio" type="radio" x-model="${memberobj.name|h}" name="${memberobj.name|h}" value="Off" hx-preserve />
+          <label>Off</label>
+        </div>
+      % else:
+        <div class="w3-container w3-half">
+          <input id="inputon_${vectorob.name|h}_${memberobj.name|h}" class="w3-radio" type="radio" x-model="${memberobj.name|h}" name="${memberobj.name|h}" value="On" hx-preserve />
+          <label>On</label>
+        </div>
+        <div class="w3-container w3-half">
+          <input id="inputoff_${vectorob.name|h}_${memberobj.name|h}"  class="w3-radio" type="radio" x-model="${memberobj.name|h}" name="${memberobj.name|h}" value="Off" checked hx-preserve />
+          <label>Off</label>
+        </div>
+      % endif
+
+  % endif
 
      </div>
    </div>
