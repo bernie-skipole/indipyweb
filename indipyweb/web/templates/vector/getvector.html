@@ -34,11 +34,11 @@
  <div hx-include=this>
 
 % if vectorobj.vectortype == "SwitchVector" and vectorobj.rule != "AnyOfMany":
-     <div x-data="{
+     <div x-data="{switches:{
 % for membername in vectorobj.keys():
 ${membername|h}:'Off',
 % endfor
-}">
+}}" x-init="$watch('switches', value => console.log(value))">
 % endif
 
 % endif
