@@ -37,13 +37,13 @@
  % for memberobj in sorted(vectorobj.members().values(), key=lambda memberobj: memberobj.label):
     ## For each member, sorted by member label
     % if vectorobj.vectortype == "LightVector":
-      <%include file="lightmember.html" args="vectorob=vectorobj, memberobj=memberobj"/>
+      <%include file="lightmember.html" args="vectorobj=vectorobj, memberobj=memberobj"/>
     % elif vectorobj.vectortype == "TextVector":
-      <%include file="textmember.html" args="vectorob=vectorobj, memberobj=memberobj"/>
+      <%include file="textmember.html" args="vectorobj=vectorobj, memberobj=memberobj"/>
     % elif vectorobj.vectortype == "NumberVector":
-      <%include file="numbermember.html" args="vectorob=vectorobj, memberobj=memberobj"/>
+      <%include file="numbermember.html" args="vectorobj=vectorobj, memberobj=memberobj"/>
     % elif vectorobj.vectortype == "SwitchVector":
-      <%include file="switchmember.html" args="vectorob=vectorobj, memberobj=memberobj"/>
+      <%include file="switchmember.html" args="vectorobj=vectorobj, memberobj=memberobj"/>
     % endif
  % endfor
 

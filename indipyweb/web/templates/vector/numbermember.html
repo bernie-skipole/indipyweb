@@ -1,7 +1,7 @@
 
 ## numbermember.html
 
-<%page args="vectorob, memberobj"/>
+<%page args="vectorobj, memberobj"/>
 
 
 <div class="w3-content" style="max-width:70%;margin-top:1vh">
@@ -9,7 +9,7 @@
   <div class="w3-container w3-quarter">
       <p>${memberobj.label}</p>
   </div>
-  % if vectorob.perm == "ro":
+  % if vectorobj.perm == "ro":
       <div class="w3-container w3-threequarter w3-flat-asbestos">
           % if not memberobj.membervalue:
              <p>&nbsp;</p>
@@ -26,7 +26,7 @@
           %endif
 
          <div class="w3-container w3-margin">
-           <input id="input_${vectorob.name|h}_${memberobj.name|h}" class="w3-input" type="text" name="${memberobj.name|h}" placeholder="Input new value" hx-preserve />
+           <input id="input_${vectorobj.name|h}_${memberobj.name|h}" class="w3-input" type="text" name="${memberobj.name|h}" placeholder="Input new value" hx-preserve />
          </div>
 
       </div>

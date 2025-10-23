@@ -2,10 +2,10 @@
 
 ## switchmember.html
 
-<%page args="vectorob, memberobj"/>
+<%page args="vectorobj, memberobj"/>
 
 
- % if vectorob.perm == "ro":
+ % if vectorobj.perm == "ro":
 
  <div class="w3-content" style="max-width:60%;margin-top:1vh">
   <div class="w3-row">
@@ -45,20 +45,34 @@
 
       % if memberobj.membervalue == "On":
         <div class="w3-container w3-half">
-          <input id="inputon_${vectorob.name|h}_${memberobj.name|h}" class="w3-radio" type="radio" name="${memberobj.name|h}" value="On" checked hx-preserve />
+          <input id="inputon_${vectorobj.name|h}_${memberobj.name|h}" onclick="switchFunction([
+% for membername in vectorobj:
+   % if membername != memberobj.name:
+'inputoff_${vectorobj.name|h}_${membername|h}',
+   % endif
+%endfor
+
+])" class="w3-radio" type="radio" name="${memberobj.name|h}" value="On" checked hx-preserve />
           <label>On</label>
         </div>
         <div class="w3-container w3-half">
-          <input id="inputoff_${vectorob.name|h}_${memberobj.name|h}"  class="w3-radio" type="radio" name="${memberobj.name|h}" value="Off" hx-preserve />
+          <input id="inputoff_${vectorobj.name|h}_${memberobj.name|h}"  class="w3-radio" type="radio" name="${memberobj.name|h}" value="Off" hx-preserve />
           <label>Off</label>
         </div>
       % else:
         <div class="w3-container w3-half">
-          <input id="inputon_${vectorob.name|h}_${memberobj.name|h}" class="w3-radio" type="radio" name="${memberobj.name|h}" value="On" hx-preserve />
+          <input id="inputon_${vectorobj.name|h}_${memberobj.name|h}" onclick="switchFunction([
+% for membername in vectorobj:
+   % if membername != memberobj.name:
+'inputoff_${vectorobj.name|h}_${membername|h}',
+   % endif
+%endfor
+
+])" class="w3-radio" type="radio" name="${memberobj.name|h}" value="On" hx-preserve />
           <label>On</label>
         </div>
         <div class="w3-container w3-half">
-          <input id="inputoff_${vectorob.name|h}_${memberobj.name|h}"  class="w3-radio" type="radio" name="${memberobj.name|h}" value="Off" checked hx-preserve />
+          <input id="inputoff_${vectorobj.name|h}_${memberobj.name|h}"  class="w3-radio" type="radio" name="${memberobj.name|h}" value="Off" checked hx-preserve />
           <label>Off</label>
         </div>
       % endif
