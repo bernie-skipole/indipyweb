@@ -45,14 +45,21 @@
 
       % if memberobj.membervalue == "On":
         <div class="w3-container w3-half">
-          <input id="inputon_${vectorobj.name|h}_${memberobj.name|h}" onclick="switchFunction([
+          <input id="inputon_${vectorobj.name|h}_${memberobj.name|h}"
+
+% if vectorobj.rule != "AnyOfMany":
+
+onclick="switchFunction([
 % for membername in vectorobj:
    % if membername != memberobj.name:
 'inputoff_${vectorobj.name|h}_${membername|h}',
    % endif
 %endfor
+])"
 
-])" class="w3-radio" type="radio" name="${memberobj.name|h}" value="On" checked hx-preserve />
+% endif
+
+   class="w3-radio" type="radio" name="${memberobj.name|h}" value="On" checked hx-preserve />
           <label>On</label>
         </div>
         <div class="w3-container w3-half">
@@ -61,14 +68,21 @@
         </div>
       % else:
         <div class="w3-container w3-half">
-          <input id="inputon_${vectorobj.name|h}_${memberobj.name|h}" onclick="switchFunction([
+          <input id="inputon_${vectorobj.name|h}_${memberobj.name|h}"
+
+% if vectorobj.rule != "AnyOfMany":
+
+onclick="switchFunction([
 % for membername in vectorobj:
    % if membername != memberobj.name:
 'inputoff_${vectorobj.name|h}_${membername|h}',
    % endif
 %endfor
+])"
 
-])" class="w3-radio" type="radio" name="${memberobj.name|h}" value="On" hx-preserve />
+% endif
+
+   class="w3-radio" type="radio" name="${memberobj.name|h}" value="On" hx-preserve />
           <label>On</label>
         </div>
         <div class="w3-container w3-half">
