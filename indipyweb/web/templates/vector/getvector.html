@@ -32,6 +32,7 @@
 % if vectorobj.perm != "ro":
  ## this ensures these input elements are included in the button submission
  <div hx-include=this>
+ <form>
 % endif
 
  % for memberobj in sorted(vectorobj.members().values(), key=lambda memberobj: memberobj.label):
@@ -60,5 +61,6 @@
        </button>
     </div>
   </div>
+  </form>
  </div>
 % endif
