@@ -30,9 +30,7 @@
   </div>
 
 % if vectorobj.perm != "ro":
- ## this ensures these input elements are included in the button submission
- <div hx-include=this>
- <form>
+ <form hx-post="/vector/submit/${vectorobj.devicename|h}/${vectorobj.name|h}" hx-target="#result_${vectorobj.name}">
 % endif
 
  % for memberobj in sorted(vectorobj.members().values(), key=lambda memberobj: memberobj.label):
@@ -48,7 +46,6 @@
     % endif
  % endfor
 
-
 % if vectorobj.perm != "ro":
 
   <div class="w3-row w3-panel">
@@ -56,11 +53,10 @@
        <p></p>
     </div>
     <div class="w3-container w3-quarter">
-       <button hx-post="/vector/submit/${vectorobj.devicename|h}/${vectorobj.name|h}" hx-include="inherit" hx-target="#result_${vectorobj.name}" class="w3-button w3-black w3-ripple w3-round">
+       <button  class="w3-button w3-black w3-ripple w3-round" type="submit">
          Submit
        </button>
     </div>
   </div>
-  </form>
- </div>
+</form>
 % endif

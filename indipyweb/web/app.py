@@ -234,7 +234,7 @@ async def login(request: Request) -> Template|ClientRedirect:
         # returns an 'Invalid' template which the htmx javascript
         # puts in the right place on the login page
         return HTMXTemplate(None,
-                            template_str="<p id=\"result\" class=\"w3-animate-right\" style=\"color:red\">Invalid</p>")
+                            template_str="<p id=\"result\" class=\"vanish\" style=\"color:red\">Invalid</p>")
     # The user checks out ok, create a cookie for this user and set redirect to the /,
     loggedincookie = userdata.createcookie(userinfo.user)
     # redirect with the loggedincookie

@@ -11,20 +11,12 @@ html, body {
   height: 100%;
   margin: 0;
   }
-@keyframes fader{ 0%{opacity:1}
-                100%{opacity:0}}
-.vanish {
-  animation-name: fader;
-  animation-duration: 3s;
-  animation-timing-function: ease-in;
-  animation-delay: 2s;
-  animation-fill-mode: forwards;
-}
 </style>
 <link rel="stylesheet" href="/static/w3.css">
 <link rel="stylesheet" href="/static/w3-colors-flat.css">
+<link rel="stylesheet" href="/static/indipyweb.css">
 <script src="/static/htmx.min.js"></script>
-<script src="/static/alpinejs.min.js" defer></script>
+<script src="/static/indipyweb.js"></script>
 
 <body>
     <div class="w3-display-container w3-flat-clouds" style="height:100%">
@@ -47,8 +39,8 @@ html, body {
         <p id="result">Please login to continue</p>
       </div>
 
-      <footer class="w3-container w3-display-bottomleft w3-flat-silver w3-block" x-data="{ open: true }" x-show="open">
-        <button class="w3-button w3-black w3-ripple w3-round w3-right" x-on:click="open=false">X</button>
+      <footer id="cookienotice" class="w3-container w3-display-bottomleft w3-flat-silver w3-block">
+        <button class="w3-button w3-black w3-ripple w3-round w3-right" onclick="hidebyid('cookienotice')">X</button>
         <h5>Cookies</h5>
         <p>This site only uses strictly necessary cookies for its operation. If you do not wish to accept any cookies, please do not log in.</p>
       </footer>
