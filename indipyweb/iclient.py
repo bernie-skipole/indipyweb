@@ -43,7 +43,7 @@ class IPyWebClient(ipc.IPyClient):
                 dme.set()
                 dme.clear()
 
-        if event.devicename and event.vectorname:
+        if event.vector:
            if event.eventtype == "TimeOut":
                event.vector.user_string = "Response has timed out"
                event.vector.state = 'Alert'
