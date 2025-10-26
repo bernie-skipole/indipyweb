@@ -67,7 +67,7 @@ def userdbase_location():
 
 
 def userdbase_file():
-    return userdbase_location() / "users.sqlite"
+    return userdbase_location() / "indipyweb.db"
 
 
 def localtimestring(t=None):

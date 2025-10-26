@@ -399,7 +399,7 @@ def userlist(thispage:int, requestedpage:str = "", numinpage:int = 10) -> dict|N
 def dbbackup() -> str|None:
     "Create database backup file, return the file name, or None on failure"
 
-    backupfilename = datetime.now(tz=timezone.utc).strftime('%Y%m%d_%H%M%S') + ".sqlite"
+    backupfilename = datetime.now(tz=timezone.utc).strftime('%Y%m%d_%H%M%S') + ".db"
     backupfilepath = USERDBASE_LOCATION / backupfilename
 
     try:
