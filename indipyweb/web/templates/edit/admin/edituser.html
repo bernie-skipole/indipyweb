@@ -1,12 +1,12 @@
-<div x-data="{ open: false }" class="w3-content" style="max-width:400px;margin-top:8vh">
+<div class="w3-content" style="max-width:400px;margin-top:8vh">
 
   <h2 style="margin-bottom:3vh">Account: ${user | h}</h2>
 
   <div>
-    <button x-on:click="open=!open" x-text="open ? 'Close' : 'New user password'" class="w3-button w3-black w3-ripple w3-round" style="width:100%"></button>
+    <button onclick="btntogglenhide(this, 'Close','New user password', 'userpwdchange', 'pwdconfirm')" class="w3-button w3-black w3-ripple w3-round" style="width:100%">New user password</button>
   </div>
 
-  <div x-show="open" class="w3-container w3-card" style="margin-top:5vh;">
+  <div id="userpwdchange" class="w3-container w3-card" style="margin-top:5vh; display:none">
     <p>Set password for user: ${user | h}</p>
     <form hx-post="/edit/changeuserpwd" hx-target="#pwdconfirm" hx-swap="outerHTML" hx-on::after-request="if(event.detail.successful) this.reset()">
       <p><label for="password1">New Password:</label>
@@ -17,19 +17,19 @@
         <button class="w3-button w3-black w3-ripple w3-round" type="submit">Submit</button></p>
       <input type="hidden" name="username" value="${user | h}" />
     </form>
-    <span x-html="open ? '&lt;p id=&quot;pwdconfirm&quot;&gt;&lt;/p&gt;' : '&lt;p&gt;&lt;/p&gt;'"></span>
+    <p id="pwdconfirm"></p>
   </div>
 
 </div>
 
 
-<div x-data="{ open: false }" class="w3-content" style="max-width:400px;margin-top:5vh">
+<div class="w3-content" style="max-width:400px;margin-top:5vh">
 
   <div>
-    <button x-on:click="open=!open" x-text="open ? 'Close' : 'Set user full name'" class="w3-button w3-black w3-ripple w3-round" style="width:100%"></button>
+    <button onclick="btntogglenhide(this, 'Close','Set user full name', 'fullnamechange', 'nameconfirm')" class="w3-button w3-black w3-ripple w3-round" style="width:100%">Set user full name</button>
   </div>
 
-  <div x-show="open" class="w3-container w3-card" style="margin-top:5vh;">
+  <div id="fullnamechange" class="w3-container w3-card" style="margin-top:5vh; display:none">
     <p>Set a new full name for: ${user | h}</p>
     <form hx-post="/edit/userfullname" hx-target="#nameconfirm" hx-swap="outerHTML">
       <p><label for="fullname">Users full name:</label>
@@ -38,22 +38,24 @@
         <button class="w3-button w3-black w3-ripple w3-round" type="submit">Submit</button></p>
       <input type="hidden" name="username" value="${user | h}" />
     </form>
-    <span x-html="open ? '&lt;p id=&quot;nameconfirm&quot;&gt;&lt;/p&gt;' : '&lt;p&gt;&lt;/p&gt;'"></span>
+    <p id="nameconfirm"></p>
   </div>
 
 </div>
 
 
-<div x-data="{ open: false }" class="w3-content" style="max-width:400px;margin-top:5vh">
+<div class="w3-content" style="max-width:400px;margin-top:5vh">
+
+
 
   <div>
-    <button x-on:click="open=!open" x-text="open ? 'Do not delete the account' : 'Delete this account'" class="w3-button w3-black w3-ripple w3-round" style="width:100%"></button>
+    <button onclick="btntogglenhide(this, 'Do not delete the account', 'Delete this account', 'deleteacc', 'delresult')" class="w3-button w3-black w3-ripple w3-round" style="width:100%">Delete this account</button>
   </div>
 
-  <div x-show="open" class="w3-center" style="margin-top:5vh;">
+  <div id="deleteacc" class="w3-center" style="margin-top:5vh; display:none">
     <p>This deletes the ${user | h} account. Are you sure you want to do this?</p>
     <p><button hx-post="/edit/userdelete" hx-vals='{"username": "${user | h}"}' hx-target="#delresult" class="w3-button w3-black w3-ripple w3-round">Yes, Please delete this account</button></p>
-    <p id="delresult" class="w3-red" x-text="open ? '' : ''"></p>
+    <p id="delresult" class="w3-red"></p>
   </div>
 
 </div>
