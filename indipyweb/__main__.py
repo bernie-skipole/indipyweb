@@ -10,7 +10,7 @@ from .web.app import ipywebapp
 
 from .web.userdata import setupdbase
 
-from .register import read_configuration, set_indiclient
+from .register import set_configuration, set_indiclient
 
 
 if sys.version_info < (3, 10):
@@ -21,18 +21,28 @@ def getconfig():
 
     parser = argparse.ArgumentParser(usage="indipyweb [options]",
                                      description="Web server to communicate to an INDI service.")
-    parser.add_argument("--config", help="Path to configuration file.")
+    parser.add_argument("--port", type=int, help="Listening port of the web server.")
+    parser.add_argument("--host", help="Hostname/IP of the web server.")
+    parser.add_argument("--db", help="Folder where the database will be set.")
     parser.add_argument("--version", action="version", version=version)
     args = parser.parse_args()
 
-    if not args.config:
-        # No configfile given, defaults will be used
-        return
 
-    message = read_configuration(args.config)
-    if message:
-        print(f"Error: {message}")
-        sys.exit(1)
+    if args.db:
+        try:
+            dbfolder = pathlib.Path(args.dbfolder).expanduser().resolve()
+        except Exception:
+            print("Error: If given, the database folder should be an existing directory")
+            return 1
+        else:
+            if not dbfolder.is_dir():
+                print("Error: If given, the database folder should be an existing directory")
+                return 1
+    else:
+        dbfolder = pathlib.Path.cwd()
+
+    set_configuration(args.host, args.port, dbfolder)
+
 
 
 

@@ -32,18 +32,12 @@ def get_indiclient():
     return _PARAMETERS["indiclient"]
 
 
-def read_configuration(config):
-    "Return None on success, message on failure"
-    ### read the config file here and update _PARAMETERS
-    try:
-        configfile = pathlib.Path(config).expanduser().resolve()
-    except Exception:
-        return "If given, the config file must exist"
-    if not configfile.is_file():
-        return "If given, the config file must exist"
-    ### read the config file here and update _PARAMETERS
-    return
-
+def set_configuration(host, port, dbfolder):
+    "Return None"
+    global _PARAMETERS
+    _PARAMETERS["host"] = host
+    _PARAMETERS["port"] = port
+    _PARAMETERS["dbfolder"] = dbfolder
 
 def getconfig(parameter):
     return _PARAMETERS.get(parameter)
