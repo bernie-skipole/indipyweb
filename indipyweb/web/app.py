@@ -27,7 +27,6 @@ from litestar.connection import ASGIConnection
 from litestar.exceptions import NotAuthorizedException
 
 from litestar.response import ServerSentEvent, ServerSentEventMessage
-from litestar.types import SSEData
 
 from . import userdata, edit, device, vector
 

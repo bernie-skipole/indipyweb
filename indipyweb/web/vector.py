@@ -12,7 +12,6 @@ from litestar.response import Template, Redirect
 from litestar.datastructures import State
 
 from litestar.response import ServerSentEvent, ServerSentEventMessage
-from litestar.types import SSEData
 
 from .userdata import localtimestring, get_vector_event, get_indiclient
 
@@ -64,7 +63,7 @@ class VectorEvent:
 
 
 # SSE Handler
-@get(path="/vectorsse/{device:str}/{vector:str}", sync_to_thread=False)
+@get(path="/vectorsse/{device:str}/{vector:str}", exclude_from_auth=True, sync_to_thread=False)
 def vectorsse(device:str, vector:str, request: Request[str, str, State]) -> ServerSentEvent:
     return ServerSentEvent(VectorEvent(device, vector))
 

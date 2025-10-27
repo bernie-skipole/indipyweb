@@ -28,7 +28,7 @@ class TableChange:
 
 
 # SSE Handler
-@get(path="/tablechange", sync_to_thread=False)
+@get(path="/tablechange", exclude_from_auth=True, sync_to_thread=False)
 def tablechange(request: Request[str, str, State]) -> ServerSentEvent:
     return ServerSentEvent(TableChange())
 

@@ -83,7 +83,7 @@ class ShowMessages:
 
 
 # SSE Handler
-@get(path="/messages/{device:str}", sync_to_thread=False)
+@get(path="/messages/{device:str}", exclude_from_auth=True, sync_to_thread=False)
 def messages(device:str, request: Request[str, str, State]) -> ServerSentEvent:
     return ServerSentEvent(ShowMessages(device))
 
