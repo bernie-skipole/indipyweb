@@ -28,14 +28,14 @@ def readconfig():
 
     if args.db:
         try:
-            dbfolder = pathlib.Path(args.dbfolder).expanduser().resolve()
+            dbfolder = pathlib.Path(args.db).expanduser().resolve()
         except Exception:
             print("Error: If given, the database folder should be an existing directory")
-            return 1
+            sys.exit(1)
         else:
             if not dbfolder.is_dir():
                 print("Error: If given, the database folder should be an existing directory")
-                return 1
+                sys.exit(1)
     else:
         dbfolder = pathlib.Path.cwd()
 

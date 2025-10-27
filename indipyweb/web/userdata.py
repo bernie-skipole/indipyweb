@@ -145,7 +145,7 @@ def setupdbase(host, port, dbfolder):
 
 
     # defaults
-    webhost, webport, indihost, indiport = 'localhost', 8000, 'localhost', 8000
+    webhost, webport, indihost, indiport = 'localhost', 8000, 'localhost', 7624
 
 
     if not dbase.is_file():
@@ -171,7 +171,7 @@ def setupdbase(host, port, dbfolder):
             con.execute("INSERT INTO users VALUES(:username, :password, :auth, :salt, :fullname)",
                   {'username':'admin', 'password':encoded_password, 'auth':'admin', 'salt':salt, 'fullname':'Default Administrator'})
 
-            con.execute("CREATE TABLE parameters(host, port, indihost, indiport))
+            con.execute("CREATE TABLE parameters(host, port, indihost, indiport)")
             con.execute("INSERT INTO parameters VALUES(:host, :port, :indihost, :indiport)", {'host':webhost, 'port':webport, 'indihost':indihost, 'indiport':indiport})
         con.close()
 

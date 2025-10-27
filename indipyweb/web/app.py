@@ -154,7 +154,7 @@ class LoggedInAuth(AbstractAuthenticationMiddleware):
         return AuthenticationResult(user=userinfo.user, auth=userinfo.auth)
 
 
-def gotologin_error_handler(request: Request, exc: Exception) -> Redirect:
+def gotologin_error_handler(request: Request, exc: Exception) -> ClientRedirect|Redirect:
     """If a NotAuthorizedException is raised, this handles it, and redirects
        the caller to the login page"""
     if request.htmx:
