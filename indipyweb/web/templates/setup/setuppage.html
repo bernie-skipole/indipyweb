@@ -39,6 +39,30 @@
 </div>
 
 
+<div class="w3-content" style="max-width:400px;margin-top:5vh">
+
+  <div>
+    <button onclick="btntogglenhide(this, 'Close','Set web service host', 'webhost', 'webhostconfirm')" class="w3-button w3-black w3-ripple w3-round" style="width:100%">Set web service host</button>
+  </div>
+
+  <div id="webhost" class="w3-container w3-card" style="margin-top:5vh; display:none">
+    <p>Set the web host value: XXXX</p>
+    <form hx-post="/setup/webhost" hx-target="#webhostconfirm" hx-swap="outerHTML">
+      <p><label for="webhostinput">Host:</label>
+        <input class="w3-input" type="text" id="webhostinput" name="webhostinput" value="XXXXX" required /></p>
+      <p class="w3-center">
+        <button class="w3-button w3-black w3-ripple w3-round" type="submit">Submit</button></p>
+    </form>
+    <p id="webhostconfirm"></p>
+  </div>
+
+</div>
+
+
+
+
+
+
 
 ##                "host":None,
 ##                "port":None,
