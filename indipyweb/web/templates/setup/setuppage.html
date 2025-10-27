@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+
+## setuppage.html - The setup page showing a database setup
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>System Setup</title>
+<link rel="stylesheet" href="/static/w3.css">
+<link rel="stylesheet" href="/static/w3-colors-flat.css">
+<link rel="stylesheet" href="/static/indipyweb.css">
+<script src="/static/htmx.min.js"></script>
+<script src="/static/sse.js"></script>
+<script src="/static/indipyweb.js"></script>
+
+<body class="w3-flat-clouds">
+
+  <header class="w3-container w3-flat-silver w3-block">
+    <p class="w3-margin-right w3-left"><a href="/" class="w3-button w3-black w3-ripple w3-round w3-medium">Devices</a></p>
+    <p class="w3-right"><a href="/logout" class="w3-button w3-black w3-ripple w3-round w3-small">Logout</a></p>
+    <p class="w3-right"><a href="/edit" class="w3-button w3-black w3-ripple w3-round w3-small w3-margin-right">Edit</a></p>
+    <h3>System Setup</h3>
+  </header>
+
+## Create backup button
+
+<div class="w3-content" style="max-width:400px;margin-top:8vh">
+    <p><button hx-get="/setup/backupdb" hx-target="#backupfile" class="w3-button w3-black w3-ripple w3-round" style="width:100%">Create backup file</button></p>
+    <p id="backupfile"></p>
+</div>
+
+<div class="w3-content" style="max-width:600px;margin-top:5vh;">
+  <div style="margin-left:5px;margin-right:5px">
+    <p>As users are created, they will be set into the database 'indipyweb.db'. Besides user data the following values will be read after the service is restarted.</p>
+    <p>The folder containing the database should be set on the command line argument, if not set the current working directory will be used.</p>
+    <p>To move the database file, create a backup using the above button, and move and rename the backup file.<p>
+    <p>If web host and port are set on the command line, they will have priority, if not set, then the values from the database will be used.</p>
+  </div>
+</div>
+
+
+
+##                "host":None,
+##                "port":None,
+##                "indihost":"localhost",
+##                "indiport":7624,
+
+
+
+
+</body>
+</html>
