@@ -18,12 +18,26 @@ from dataclasses import dataclass
 
 from functools import lru_cache
 
-from ..register import userdbase_location, userdbase_file
 
+_PARAMETERS = {
+                "host":None,
+                "port":None,
+                "indihost":"localhost",
+                "indiport":7624,
+                "indiclient":None,
+                "dbfolder":None,
+                "dbase":None,
+                "indiclient":None,
+              }
 
-# These global values will be set by a call to setupdbase()
-USERDBASE_LOCATION = None
-USERDBASE = None
+DEFINE_EVENT = asyncio.Event()
+
+MESSAGE_EVENT = asyncio.Event()
+
+DEVICE_EVENTS = {}
+
+VECTOR_EVENTS = {}
+
 
 # This event is set whenever the table of users needs updating
 TABLE_EVENT = asyncio.Event()
@@ -60,15 +74,81 @@ class UserAuth():
     time:float           # time used for timing out the session
 
 
-def setupdbase():
-
-    global USERDBASE_LOCATION, USERDBASE
-
-    USERDBASE_LOCATION = userdbase_location()
-    USERDBASE = userdbase_file()
+########## Functions to set and read _PARAMETERS and events
 
 
-    if not USERDBASE.is_file():
+def get_indiclient():
+    global _PARAMETERS
+    return _PARAMETERS["indiclient"]
+
+
+def getconfig(parameter):
+    return _PARAMETERS.get(parameter)
+
+def setconfig(parameter, value):
+    global _PARAMETERS
+    if parameter in _PARAMETERS:
+        _PARAMETERS[parameter] = value
+
+
+def indihostport():
+    "Returns the string 'hostname:port' for the INDI server"
+    return f"{_PARAMETERS['indihost']}:{_PARAMETERS['indiport']}"
+
+
+def connectedtext():
+    global _PARAMETERS
+    iclient = _PARAMETERS["indiclient"]
+    if iclient.connected:
+        return f"Connected to INDI service at: {_PARAMETERS['indihost']}:{_PARAMETERS['indiport']}"
+    else:
+        return f"Connecting to INDI service at: {_PARAMETERS['indihost']}:{_PARAMETERS['indiport']}"
+
+
+def localtimestring(t=None):
+    "Return a string of the local time (not date)"
+    if t is None:
+        t = datetime.now(tz=timezone.utc)
+    localtime = t.astimezone(tz=None)
+    # convert microsecond to integer between 0 and 100
+    ms = localtime.microsecond//10000
+    return f"{localtime.strftime('%H:%M:%S')}.{ms:0>2d}"
+
+
+def get_device_event(device):
+    global DEVICE_EVENTS
+    if device not in DEVICE_EVENTS:
+        DEVICE_EVENTS[device] = asyncio.Event()
+    return DEVICE_EVENTS[device]
+
+
+def get_vector_event(device, vector):
+    global VECTOR_EVENTS
+    if (device,vector) not in VECTOR_EVENTS:
+        VECTOR_EVENTS[device,vector] = asyncio.Event()
+    return VECTOR_EVENTS[device,vector]
+
+
+########### Functions to set and read the database
+
+
+def setupdbase(host, port, dbfolder):
+
+    global _PARAMETERS
+    _PARAMETERS["host"] = host
+    _PARAMETERS["port"] = port
+    _PARAMETERS["dbfolder"] = dbfolder
+
+    dbase = dbfolder / "indipyweb.db"
+
+    _PARAMETERS["dbase"] = dbase
+
+
+    # defaults
+    webhost, webport, indihost, indiport = 'localhost', 8000, 'localhost', 8000
+
+
+    if not dbase.is_file():
         # create a database file, initially with user 'admin', password 'password!', and auth 'admin'
         # where auth is either 'admin' or 'user'. passwords are stored as scrypt hashes
 
@@ -84,13 +164,35 @@ def setupdbase():
                                    maxmem=0,
                                    dklen=64)
 
-        con = sqlite3.connect(USERDBASE)
+        con = sqlite3.connect(dbase)
 
         with con:
             con.execute("CREATE TABLE users(username TEXT PRIMARY KEY, password TEXT NOT NULL, auth TEXT NOT NULL, salt TEXT NOT NULL, fullname TEXT) WITHOUT ROWID")
             con.execute("INSERT INTO users VALUES(:username, :password, :auth, :salt, :fullname)",
                   {'username':'admin', 'password':encoded_password, 'auth':'admin', 'salt':salt, 'fullname':'Default Administrator'})
+
+            con.execute("CREATE TABLE parameters(host, port, indihost, indiport))
+            con.execute("INSERT INTO parameters VALUES(:host, :port, :indihost, :indiport)", {'host':webhost, 'port':webport, 'indihost':indihost, 'indiport':indiport})
         con.close()
+
+    else:
+        # dbase exists, so read host, port, indihost, indiport
+
+        con = sqlite3.connect(dbase)
+        cur = con.cursor()
+        cur.execute("SELECT host, port, indihost, indiport FROM parameters")
+        result = cur.fetchone()
+        cur.close()
+        con.close()
+        webhost, webport, indihost, indiport = result
+
+    if not _PARAMETERS["host"]:        # command line argument has priority if it exists
+        _PARAMETERS["host"] = webhost
+    if not _PARAMETERS["port"]:        # command line argument has priority if it exists
+        _PARAMETERS["port"] = webport
+    _PARAMETERS["indihost"] = indihost
+    _PARAMETERS["indiport"] = indiport
+
 
 
 
@@ -106,7 +208,7 @@ def checkuserpassword(user:str, password:str) -> UserInfo|None:
         return
     if len(password)<8:
         return
-    con = sqlite3.connect(USERDBASE)
+    con = sqlite3.connect(_PARAMETERS["dbase"])
     cur = con.cursor()
     cur.execute("SELECT password,auth,salt,fullname FROM users WHERE username = ?", (user,))
     result = cur.fetchone()
@@ -146,7 +248,7 @@ def getuserinfo(user:str) -> UserInfo:
     # Note this is cached, so repeated calls for the same user
     # do not need sqlite lookups.
 
-    con = sqlite3.connect(USERDBASE)
+    con = sqlite3.connect(_PARAMETERS["dbase"])
     cur = con.cursor()
     cur.execute("SELECT auth, fullname FROM users WHERE username = ?", (user,))
     result = cur.fetchone()
@@ -213,7 +315,7 @@ def newfullname(user:str, newfullname:str) -> str|None:
         return "An empty full name is insufficient"
     if len(newfullname) > 30:
         return "A full name should be at most 30 characters"
-    con = sqlite3.connect(USERDBASE)
+    con = sqlite3.connect(_PARAMETERS["dbase"])
     with con:
         cur = con.cursor()
         cur.execute("SELECT count(*) FROM users WHERE username = ?", (user,))
@@ -251,7 +353,7 @@ def changepassword(user:str, newpassword:str) -> str|None:
                                maxmem=0,
                                dklen=64)
 
-    con = sqlite3.connect(USERDBASE)
+    con = sqlite3.connect(_PARAMETERS["dbase"])
     with con:
         cur = con.cursor()
         cur.execute("SELECT count(*) FROM users WHERE username = ?", (user,))
@@ -270,7 +372,7 @@ def deluser(user:str) -> str|None:
     "Deletes the user, on success returns None, on failure returns an error message"
     if not user:
         return "No user given"
-    con = sqlite3.connect(USERDBASE)
+    con = sqlite3.connect(_PARAMETERS["dbase"])
     cur = con.cursor()
     cur.execute("SELECT auth FROM users WHERE username = ?", (user,))
     result = cur.fetchone()
@@ -317,7 +419,7 @@ def adduser(user:str, password:str, auth:str, fullname:str) -> str|None:
     elif len(fullname)>30:
         return "Your full name should be at most 30 characters"
 
-    con = sqlite3.connect(USERDBASE)
+    con = sqlite3.connect(_PARAMETERS["dbase"])
     cur = con.cursor()
     cur.execute("SELECT count(*) FROM users WHERE username = ?", (user,))
     number = cur.fetchone()[0]
@@ -356,7 +458,7 @@ def userlist(thispage:int, requestedpage:str = "", numinpage:int = 10) -> dict|N
        Returns a dict of {users:list of [(username, fullname) ... ] for a page, ...plus pagination information}"""
     if not numinpage:
         return
-    con = sqlite3.connect(USERDBASE)
+    con = sqlite3.connect(_PARAMETERS["dbase"])
     cur = con.cursor()
     cur.execute("SELECT count(username) FROM users")
     number = cur.fetchone()[0]
@@ -398,12 +500,13 @@ def userlist(thispage:int, requestedpage:str = "", numinpage:int = 10) -> dict|N
 
 def dbbackup() -> str|None:
     "Create database backup file, return the file name, or None on failure"
+    global _PARAMETERS
 
     backupfilename = datetime.now(tz=timezone.utc).strftime('%Y%m%d_%H%M%S') + ".db"
-    backupfilepath = USERDBASE_LOCATION / backupfilename
+    backupfilepath = _PARAMETERS["dbfolder"] / backupfilename
 
     try:
-        con = sqlite3.connect(USERDBASE)
+        con = sqlite3.connect(_PARAMETERS["dbase"])
         with con:
             con.execute("VACUUM INTO ?", (str(backupfilepath),))
         con.close()

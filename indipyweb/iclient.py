@@ -7,7 +7,7 @@ import asyncio
 
 import indipyclient as ipc
 
-from .register import DEFINE_EVENT, MESSAGE_EVENT, getconfig, get_device_event, get_vector_event
+from .web.userdata import DEFINE_EVENT, MESSAGE_EVENT, getconfig, get_device_event, get_vector_event
 
 version = "0.0.1"
 

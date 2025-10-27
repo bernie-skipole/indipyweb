@@ -32,7 +32,7 @@ from litestar.types import SSEData
 from . import userdata, edit, device, vector
 
 
-from ..register import DEFINE_EVENT, MESSAGE_EVENT, connectedtext, localtimestring, get_indiclient
+from .userdata import DEFINE_EVENT, MESSAGE_EVENT, connectedtext, localtimestring, get_indiclient
 
 
 # location of static files, for CSS and javascript

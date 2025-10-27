@@ -8,16 +8,14 @@ from .iclient import ipywebclient, version
 
 from .web.app import ipywebapp
 
-from .web.userdata import setupdbase
-
-from .register import set_configuration, set_indiclient
+from .web.userdata import setupdbase, setconfig, getconfig
 
 
 if sys.version_info < (3, 10):
     raise ImportError('indipyweb requires Python >= 3.10')
 
 
-def getconfig():
+def readconfig():
 
     parser = argparse.ArgumentParser(usage="indipyweb [options]",
                                      description="Web server to communicate to an INDI service.")
@@ -41,19 +39,28 @@ def getconfig():
     else:
         dbfolder = pathlib.Path.cwd()
 
-    set_configuration(args.host, args.port, dbfolder)
+    setupdbase(args.host, args.port, dbfolder)
+
+    # create the client
+    indiclient = ipywebclient()   ######### set indihost/port in client, still to do
+
+    # stores indiclient so other parts of the program can retrieve it
+    setconfig("indiclient", indiclient)
+
+    host = getconfig('host')
+    port = getconfig('port')
+
+    return host, port, indiclient
 
 
 
 
 async def main():
 
-    # create the client, and set it into register.py
-    indiclient = ipywebclient()
-    set_indiclient(indiclient)
-
+    # Read the program arguments
+    host, port, indiclient = readconfig()
     app = ipywebapp()
-    config = uvicorn.Config(app=app, port=8000, log_level="info")
+    config = uvicorn.Config(app=app, host=host, port=port, log_level="info")
     server = uvicorn.Server(config)
 
     await asyncio.gather(server.serve(), indiclient.asyncrun())
@@ -61,9 +68,6 @@ async def main():
 
 
 if __name__ == "__main__":
-    # Read the program arguments, and the configuration file
-    getconfig()
-    # Once configuration file is read, setup the database
-    setupdbase()
+
     # And run main
     asyncio.run(main())

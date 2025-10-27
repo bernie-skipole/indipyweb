@@ -11,8 +11,6 @@ from litestar.datastructures import State
 from litestar.response import ServerSentEvent, ServerSentEventMessage
 
 from . import userdata
-from .. import register
-
 
 
 ##################
@@ -56,7 +54,7 @@ async def edit(request: Request[str, str, State]) -> Template|ClientRedirect|Red
     if auth != "admin":
         return Template(template_name="edit/user/useredit.html", context={"user": user,
                                                                           "fullname":uinfo.fullname,
-                                                                          "hostname":register.connectedtext() })
+                                                                          "hostname":userdata.connectedtext() })
     # So the user is an administrator, show further buttons
     # plus a table of users
     thispage = 0
@@ -68,7 +66,7 @@ async def edit(request: Request[str, str, State]) -> Template|ClientRedirect|Red
     # add further items to this context dictionary
     context["user"] = user
     context["fullname"] = uinfo.fullname
-    context["hostname"] = register.connectedtext()
+    context["hostname"] = userdata.connectedtext()
     return Template(template_name="edit/admin/adminedit.html", context=context)
 
 
@@ -193,7 +191,7 @@ async def delete(request: Request[str, str, State]) -> Template|ClientRedirect:
 async def deleted(user:str) -> Template:
     "Render the deleted page, showing the users name, with account deleted message"
     return Template(template_name="edit/user/userdeleted.html", context={"user": user,
-                                                                         "hostname":register.connectedtext()})
+                                                                         "hostname":userdata.connectedtext()})
 
 ##################################################
 
@@ -257,7 +255,7 @@ async def edituser(user:str, request: Request[str, str, State]) -> Template|Redi
     if uinfo is None:
         return Redirect("/")   ### no such user
     # add further items to this context dictionary
-    context = {"user": user, "fullname": uinfo.fullname, "hostname":register.connectedtext()}
+    context = {"user": user, "fullname": uinfo.fullname, "hostname":userdata.connectedtext()}
     if user == request.user:
         # chosen yourself from the table, options to edit yourself are displayed
         return HTMXTemplate(template_name="edit/admin/editoptions.html", context=context)

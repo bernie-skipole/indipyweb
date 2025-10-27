@@ -14,7 +14,7 @@ from litestar.datastructures import State
 from litestar.response import ServerSentEvent, ServerSentEventMessage
 from litestar.types import SSEData
 
-from ..register import localtimestring, get_vector_event, get_indiclient
+from .userdata import localtimestring, get_vector_event, get_indiclient
 
 
 class VectorEvent:
