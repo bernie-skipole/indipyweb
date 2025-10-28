@@ -31,9 +31,9 @@
 
 <div class="w3-content" style="max-width:600px;margin-top:5vh;">
   <div style="margin-left:5px;margin-right:5px">
-    <p>As users are created, they will be set into the database 'indipyweb.db'. Besides user data the values set below will be read after the service is restarted.</p>
-    <p>The folder containing the database should be set on the command line argument, if not set the current working directory will be used.</p>
-    <p>To move the database file, create a backup using the above button, and move and rename the backup file.<p>
+    <p>As users are created, they will be set into the database file 'indipyweb.db'. If the file cannot be found a new file containing a single user will be created.  The values set below are also saved in the database and will be read when the service is restarted.</p>
+    <p>The folder containing the database file should be set as a command line argument, if not set the current working directory will be used.</p>
+    <p>To move the file, create a backup using the above button, and move and rename the backup file.<p>
     <p>If web host and port are set on the command line, they will have priority, if not set, then the values from the database will be used.</p>
   </div>
 </div>
@@ -42,14 +42,14 @@
 <div class="w3-content" style="max-width:400px;margin-top:5vh">
 
   <div>
-    <button onclick="btntogglenhide(this, 'Close','Set web service host', 'webhost', 'webhostconfirm')" class="w3-button w3-black w3-ripple w3-round" style="width:100%">Set web service host</button>
+    <button onclick="btntogglenhide(this, 'Close','Set web service host/IP', 'webhost', 'webhostconfirm')" class="w3-button w3-black w3-ripple w3-round" style="width:100%">Set web service host/IP</button>
   </div>
 
   <div id="webhost" class="w3-container w3-card" style="margin-top:5vh; display:none">
-    <p>Set the web host value: XXXX</p>
+    <p>Set the web host value:</p>
     <form hx-post="/setup/webhost" hx-target="#webhostconfirm" hx-swap="outerHTML">
       <p><label for="webhostinput">Host:</label>
-        <input class="w3-input" type="text" id="webhostinput" name="webhostinput" value="XXXXX" required /></p>
+        <input class="w3-input" type="text" id="webhostinput" name="webhostinput" value="${webhost}" required /></p>
       <p class="w3-center">
         <button class="w3-button w3-black w3-ripple w3-round" type="submit">Submit</button></p>
     </form>
@@ -68,6 +68,8 @@
 ##                "port":None,
 ##                "indihost":"localhost",
 ##                "indiport":7624,
+##                "blobfolder":None,
+##                "apienable":False,
 
 
 

@@ -24,6 +24,8 @@ _PARAMETERS = {
                 "port":None,
                 "indihost":"localhost",
                 "indiport":7624,
+                "blobfolder":None,
+                "apienable":False,
                 "indiclient":None,
                 "dbfolder":None,
                 "dbase":None,

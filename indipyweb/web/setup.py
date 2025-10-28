@@ -29,7 +29,7 @@ async def setup(request: Request[str, str, State]) -> Template:
     if request.auth != "admin":
         return logout(request)
     # get parameters from database and set up in context
-    context = {}
+    context = {"webhost":userdata.getconfig("host")}
     return Template(template_name="setup/setuppage.html", context=context)
 
 
@@ -47,7 +47,23 @@ async def backupdb(request: Request[str, str, State]) -> Template|Redirect:
                         template_str="<p id=\"backupfile\"  style=\"color:red\" class=\"w3-animate-right\">Backup failed!</p>")
 
 
+@post("/webhost")
+async def webhost(request: Request[str, str, State]) -> Template:
+    "An admin is setting the webhost"
+    if request.auth != "admin":
+        return logout(request)
+    form_data = await request.form()
+    webhost = form_data.get("webhostinput")
+    if not webhost:   # further checks required here
+        return HTMXTemplate(None,
+                        template_str=f"<p id=\"webhostconfirm\" class=\"vanish\" style=\"color:red\">Invalid host name/IP</p>")
+    userdata.setconfig("host", webhost)
+    return HTMXTemplate(None,
+                 template_str=f"<p id=\"webhostconfirm\" class=\"vanish\" style=\"color:green\">Host changed to {webhost}</p>")
+
+
 
 setup_router = Router(path="/setup", route_handlers=[setup,
                                                      backupdb,
+                                                     webhost
                                                     ])
