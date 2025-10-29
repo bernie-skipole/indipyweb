@@ -45,11 +45,13 @@
     <button onclick="btntogglenhide(this, 'Close','Set web service host/IP', 'webhost', 'webhostconfirm')" class="w3-button w3-black w3-ripple w3-round" style="width:100%">Set web service host/IP</button>
   </div>
 
-  <div id="webhost" class="w3-container w3-card" style="margin-top:5vh; display:none">
-    <p>Set the web host value:</p>
+  <div id="webhost" class="w3-container w3-card" style="margin-top:1vh; display:none">
+        <h3>Web service host/IP</h3>
+        <p>Current value: ${currentwebhost}</p>
+        <p id="storedwebhost">Stored value: ${storedwebhost}</p>
     <form hx-post="/setup/webhost" hx-target="#webhostconfirm" hx-swap="outerHTML">
-      <p><label for="webhostinput">Host:</label>
-        <input class="w3-input" type="text" id="webhostinput" name="webhostinput" value="${webhost}" required /></p>
+      <p><label for="webhostinput">Set new stored value:</label>
+        <input class="w3-input" type="text" id="webhostinput" name="webhostinput" value="${storedwebhost}" required /></p>
       <p class="w3-center">
         <button class="w3-button w3-black w3-ripple w3-round" type="submit">Submit</button></p>
     </form>
@@ -58,14 +60,30 @@
 
 </div>
 
+<div class="w3-content" style="max-width:400px;margin-top:5vh">
+
+  <div>
+    <button onclick="btntogglenhide(this, 'Close','Set web service port', 'webport', 'webportconfirm')" class="w3-button w3-black w3-ripple w3-round" style="width:100%">Set web service port</button>
+  </div>
+
+  <div id="webport" class="w3-container w3-card" style="margin-top:1vh; display:none">
+        <h3>Web service port</h3>
+        <p>Current value: ${currentwebport}</p>
+        <p id="storedwebport">Stored value: ${storedwebport}</p>
+    <form hx-post="/setup/webport" hx-target="#webportconfirm" hx-swap="outerHTML">
+      <p><label for="webportinput">Host:</label>
+        <input class="w3-input" type="text" id="webportinput" name="webportinput" value="${storedwebport}" required /></p>
+      <p class="w3-center">
+        <button class="w3-button w3-black w3-ripple w3-round" type="submit">Submit</button></p>
+    </form>
+    <p id="webportconfirm"></p>
+  </div>
+
+</div>
 
 
 
 
-
-
-##                "host":None,
-##                "port":None,
 ##                "indihost":"localhost",
 ##                "indiport":7624,
 ##                "blobfolder":None,

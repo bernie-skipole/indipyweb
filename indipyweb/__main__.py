@@ -8,7 +8,7 @@ from .iclient import ipywebclient, version
 
 from .web.app import ipywebapp
 
-from .web.userdata import setupdbase, setconfig, getconfig
+from .web.userdata import setupdbase, setconfig, getconfig, get_indiclient
 
 
 if sys.version_info < (3, 10):
@@ -41,16 +41,13 @@ def readconfig():
 
     setupdbase(args.host, args.port, dbfolder)
 
-    # create the client
-    indiclient = ipywebclient()   ######### set indihost/port in client, still to do
-
-    # stores indiclient so other parts of the program can retrieve it
-    setconfig("indiclient", indiclient)
+    # create the client, store it for later access with get_indiclient()
+    ipywebclient()
 
     host = getconfig('host')
     port = getconfig('port')
 
-    return host, port, indiclient
+    return host, port
 
 
 
@@ -58,12 +55,15 @@ def readconfig():
 async def main():
 
     # Read the program arguments
-    host, port, indiclient = readconfig()
+    host, port = readconfig()
     app = ipywebapp()
     config = uvicorn.Config(app=app, host=host, port=port, log_level="info")
     server = uvicorn.Server(config)
 
+    indiclient = get_indiclient()
     await asyncio.gather(server.serve(), indiclient.asyncrun())
+
+    # ? can indiclient be run as app lifetime call, may need an async do_shutdown method on iclient
 
 
 

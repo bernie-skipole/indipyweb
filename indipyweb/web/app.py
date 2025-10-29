@@ -31,9 +31,6 @@ from litestar.response import ServerSentEvent, ServerSentEventMessage
 from . import userdata, edit, device, vector, setup
 
 
-from .userdata import DEFINE_EVENT, MESSAGE_EVENT, connectedtext, localtimestring, get_indiclient
-
-
 # location of static files, for CSS and javascript
 STATICFILES = Path(__file__).parent.resolve() / "static"
 
@@ -47,7 +44,7 @@ class ShowInstruments:
     def __init__(self):
         self.instruments = set()
         self.connected = False
-        self.iclient = get_indiclient()
+        self.iclient = userdata.get_indiclient()
 
     def __aiter__(self):
         return self
@@ -65,7 +62,7 @@ class ShowInstruments:
             if newinstruments == self.instruments:
                 # No change, wait, at most 5 seconds, for a DEFINE_EVENT
                 try:
-                    await asyncio.wait_for(DEFINE_EVENT.wait(), timeout=5.0)
+                    await asyncio.wait_for(userdata.DEFINE_EVENT.wait(), timeout=5.0)
                 except TimeoutError:
                     pass
                 # either a DEFINE_EVENT has occurred, or 5 seconds since the last has passed
@@ -88,7 +85,7 @@ class ShowMessages:
     def __init__(self):
         self.lasttimestamp = None
         self.connected = False
-        self.iclient = get_indiclient()
+        self.iclient = userdata.get_indiclient()
 
     def __aiter__(self):
         return self
@@ -117,7 +114,7 @@ class ShowMessages:
                 return ServerSentEventMessage(event="newmessages")
             # No change, wait, at most 5 seconds, for a MESSAGE_EVENT
             try:
-                await asyncio.wait_for(MESSAGE_EVENT.wait(), timeout=5.0)
+                await asyncio.wait_for(userdata.MESSAGE_EVENT.wait(), timeout=5.0)
             except TimeoutError:
                 pass
             # either a MESSAGE_EVENT has occurred, or 5 seconds since the last has passed
@@ -182,7 +179,7 @@ async def publicroot(request: Request) -> Template:
         userauth = userdata.getuserauth(cookie)
         if userauth is not None:
             loggedin = True
-    return Template("landing.html", context={"hostname":connectedtext(),
+    return Template("landing.html", context={"hostname":userdata.connectedtext(),
                                              "instruments":None,
                                              "messages":None,
                                              "loggedin":loggedin})
@@ -190,7 +187,7 @@ async def publicroot(request: Request) -> Template:
 @get("/updateinstruments", exclude_from_auth=True)
 async def updateinstruments() -> Template:
     "Updates the instruments on the main public page"
-    iclient = get_indiclient()
+    iclient = userdata.get_indiclient()
     instruments = list(name for name,value in iclient.items() if value.enable)
     instruments.sort()
     return HTMXTemplate(template_name="instruments.html", context={"instruments":instruments})
@@ -199,11 +196,11 @@ async def updateinstruments() -> Template:
 @get("/updatemessages", exclude_from_auth=True)
 async def updatemessages() -> Template:
     "Updates the messages on the main public page"
-    iclient = get_indiclient()
+    iclient = userdata.get_indiclient()
     if iclient.stop:
         return HTMXTemplate(template_name="messages.html", context={"messages":["Error: client application has stopped"]})
     messages = list(iclient.messages)
-    messagelist = list(localtimestring(t) + "  " + m for t,m in messages)
+    messagelist = list(userdata.localtimestring(t) + "  " + m for t,m in messages)
     messagelist.reverse()
     return HTMXTemplate(template_name="messages.html", context={"messages":messagelist})
 
@@ -211,7 +208,7 @@ async def updatemessages() -> Template:
 @get("/login", exclude_from_auth=True)
 async def login_page() -> Template:
     "Render the login page"
-    return Template("edit/login.html", context={"hostname":connectedtext()})
+    return Template("edit/login.html", context={"hostname":userdata.connectedtext()})
 
 
 @post("/login", exclude_from_auth=True)
@@ -249,7 +246,7 @@ async def logout(request: Request[str, str, State]) -> Template:
         return
     # log the user out
     userdata.logout(request.cookies['token'])
-    return Template("edit/loggedout.html", context={"hostname":connectedtext()})
+    return Template("edit/loggedout.html", context={"hostname":userdata.connectedtext()})
 
 
 

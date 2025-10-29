@@ -87,6 +87,7 @@ def get_indiclient():
 def getconfig(parameter):
     return _PARAMETERS.get(parameter)
 
+
 def setconfig(parameter, value):
     global _PARAMETERS
     if parameter in _PARAMETERS:
@@ -131,6 +132,40 @@ def get_vector_event(device, vector):
     return VECTOR_EVENTS[device,vector]
 
 
+def get_stored_host():
+    "Gets host, returns None on failure"
+    con = sqlite3.connect(_PARAMETERS["dbase"])
+    cur = con.cursor()
+    cur.execute("SELECT host FROM parameters")
+    result = cur.fetchone()
+    cur.close()
+    con.close()
+    if not result:
+        return
+    return result[0]
+
+def set_stored_host(host):
+    "Sets web host value"
+    con = sqlite3.connect(_PARAMETERS["dbase"])
+    with con:
+        cur = con.cursor()
+        cur.execute("UPDATE parameters SET host = ?", (host,))
+    cur.close()
+    con.close()
+
+def set_stored_port(port):
+    "Sets web port value"
+    port = int(port)
+    con = sqlite3.connect(_PARAMETERS["dbase"])
+    with con:
+        cur = con.cursor()
+        cur.execute("UPDATE parameters SET port = ?", (port,))
+    cur.close()
+    con.close()
+
+
+
+
 ########### Functions to set and read the database
 
 
@@ -169,7 +204,7 @@ def setupdbase(host, port, dbfolder):
         con = sqlite3.connect(dbase)
 
         with con:
-            con.execute("CREATE TABLE users(username TEXT PRIMARY KEY, password TEXT NOT NULL, auth TEXT NOT NULL, salt TEXT NOT NULL, fullname TEXT) WITHOUT ROWID")
+            con.execute("CREATE TABLE users(username PRIMARY KEY, password NOT NULL, auth NOT NULL, salt NOT NULL, fullname) WITHOUT ROWID")
             con.execute("INSERT INTO users VALUES(:username, :password, :auth, :salt, :fullname)",
                   {'username':'admin', 'password':encoded_password, 'auth':'admin', 'salt':salt, 'fullname':'Default Administrator'})
 

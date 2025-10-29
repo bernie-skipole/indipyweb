@@ -29,7 +29,11 @@ async def setup(request: Request[str, str, State]) -> Template:
     if request.auth != "admin":
         return logout(request)
     # get parameters from database and set up in context
-    context = {"webhost":userdata.getconfig("host")}
+    context = {"currentwebhost":userdata.getconfig("host"),
+               "storedwebhost":userdata.get_stored_host(),
+               "currentwebport":8000,
+               "storedwebport":8000
+              }
     return Template(template_name="setup/setuppage.html", context=context)
 
 
@@ -42,7 +46,7 @@ async def backupdb(request: Request[str, str, State]) -> Template|Redirect:
     filename = userdata.dbbackup()
     if filename:
         return HTMXTemplate(None,
-                        template_str=f"<p id=\"backupfile\" style=\"color:green\" class=\"w3-animate-right\">Backup file created: {filename}</p>")
+                        template_str="<p id=\"backupfile\" style=\"color:green\" class=\"w3-animate-right\">Backup file created: ${filename|h}</p>", context={"filename":filename})
     return HTMXTemplate(None,
                         template_str="<p id=\"backupfile\"  style=\"color:red\" class=\"w3-animate-right\">Backup failed!</p>")
 
@@ -56,14 +60,32 @@ async def webhost(request: Request[str, str, State]) -> Template:
     webhost = form_data.get("webhostinput")
     if not webhost:   # further checks required here
         return HTMXTemplate(None,
-                        template_str=f"<p id=\"webhostconfirm\" class=\"vanish\" style=\"color:red\">Invalid host name/IP</p>")
-    userdata.setconfig("host", webhost)
-    return HTMXTemplate(None,
-                 template_str=f"<p id=\"webhostconfirm\" class=\"vanish\" style=\"color:green\">Host changed to {webhost}</p>")
+                        template_str="<p id=\"webhostconfirm\" class=\"vanish\" style=\"color:red\">Invalid host name/IP</p>")
+    userdata.set_stored_host(webhost)
+    return HTMXTemplate(template_name="setup/webhost.html", context={"storedwebhost":webhost})
+
+
+
+@post("/webport")
+async def webport(request: Request[str, str, State]) -> Template:
+    "An admin is setting the webport"
+    if request.auth != "admin":
+        return logout(request)
+    form_data = await request.form()
+    print("AAAAAAAAAAA")
+    webport = form_data.get("webportinput")
+    if not webport:   # further checks required here
+        return HTMXTemplate(None,
+                        template_str="<p id=\"webportconfirm\" class=\"vanish\" style=\"color:red\">Invalid port</p>")
+    print("BBBBBBBBBBB")
+    userdata.set_stored_port(webport)
+    return HTMXTemplate(template_name="setup/webport.html", context={"storedwebport":webport})
+
 
 
 
 setup_router = Router(path="/setup", route_handlers=[setup,
                                                      backupdb,
-                                                     webhost
+                                                     webhost,
+                                                     webport
                                                     ])

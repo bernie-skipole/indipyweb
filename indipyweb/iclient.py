@@ -7,18 +7,20 @@ import asyncio
 
 import indipyclient as ipc
 
-from .web.userdata import DEFINE_EVENT, MESSAGE_EVENT, getconfig, get_device_event, get_vector_event
+from .web.userdata import DEFINE_EVENT, MESSAGE_EVENT, getconfig, setconfig, get_device_event, get_vector_event
 
 version = "0.0.1"
 
 
 
 def ipywebclient():
-    "Create and return an instance of IPyWebClient"
+    "Create and store an instance of IPyWebClient"
 
     indihost = getconfig("indihost")
     indiport = getconfig("indiport")
-    return IPyWebClient(indihost=indihost, indiport=indiport)
+    indiclient = IPyWebClient(indihost=indihost, indiport=indiport)
+    setconfig("indiclient", indiclient)
+
 
 
 class IPyWebClient(ipc.IPyClient):
