@@ -34,7 +34,7 @@
   </div>
   <div class="w3-twothird">
 
-    <div class="w3-container w3-border">
+    <div class="w3-container w3-border" style="margin-top:5vh">
 
        <div hx-ext="sse" sse-connect="/messages">
         <div hx-get="/updatemessages" hx-trigger="sse:newmessages">
@@ -44,11 +44,12 @@
 
     </div>
 
-   <div style="margin-top:5vh">
+   <div style="margin-top:5vh; margin-left:20px;">
     <p>An api returning a JSON file showing the current state is available.</p>
     <p>call <strong>/api</strong> - returns the entire client state, including all devices</p>
     <p>call <strong>/api/&lt;devicename&gt;</strong> - returns the requested device state</p>
     <p>call <strong>/api/&lt;devicename&gt;/&lt;vectorname&gt;</strong> - returns the requested vector</p>
+    <p>Note: BLOB values will not be included in the JSON responses</p>
    </div>
 
   </div>
