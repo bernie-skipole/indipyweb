@@ -132,11 +132,22 @@ def get_vector_event(device, vector):
     return VECTOR_EVENTS[device,vector]
 
 
-def get_stored_host():
-    "Gets host, returns None on failure"
+def get_stored_item(item):
+    "Gets stored item from the database"
     con = sqlite3.connect(_PARAMETERS["dbase"])
     cur = con.cursor()
-    cur.execute("SELECT host FROM parameters")
+    if item == "host":
+        cur.execute("SELECT host FROM parameters")
+    elif item == "port":
+        cur.execute("SELECT port FROM parameters")
+    elif item == "indihost":
+        cur.execute("SELECT indihost FROM parameters")
+    elif item == "indiport":
+        cur.execute("SELECT indiport FROM parameters")
+    else:
+        cur.close()
+        con.close()
+        return
     result = cur.fetchone()
     cur.close()
     con.close()
@@ -144,32 +155,26 @@ def get_stored_host():
         return
     return result[0]
 
-def set_stored_host(host):
-    "Sets web host value"
+def set_stored_item(item, value):
+    "Sets parameter item value into the database"
     con = sqlite3.connect(_PARAMETERS["dbase"])
     with con:
         cur = con.cursor()
-        cur.execute("UPDATE parameters SET host = ?", (host,))
+        if item == "host":
+            cur.execute("UPDATE parameters SET host = ?", (value,))
+        elif item == "port":
+            cur.execute("UPDATE parameters SET port = ?", (value,))
+        elif item == "indihost":
+            cur.execute("UPDATE parameters SET indihost = ?", (value,))
+        elif item == "indiport":
+            cur.execute("UPDATE parameters SET indiport = ?", (value,))
     cur.close()
     con.close()
 
-def set_stored_port(port):
-    "Sets web port value"
-    port = int(port)
-    con = sqlite3.connect(_PARAMETERS["dbase"])
-    with con:
-        cur = con.cursor()
-        cur.execute("UPDATE parameters SET port = ?", (port,))
-    cur.close()
-    con.close()
-
-
-
-
-########### Functions to set and read the database
 
 
 def setupdbase(host, port, dbfolder):
+    "This is called on startup to setup the database and read initial parameters"
 
     global _PARAMETERS
     _PARAMETERS["host"] = host
@@ -231,7 +236,7 @@ def setupdbase(host, port, dbfolder):
     _PARAMETERS["indiport"] = indiport
 
 
-
+########### Functions to set and read user information from the database
 
 def checkuserpassword(user:str, password:str) -> UserInfo|None:
     """Given a user,password pair from a login form,

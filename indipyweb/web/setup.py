@@ -30,9 +30,13 @@ async def setup(request: Request[str, str, State]) -> Template:
         return logout(request)
     # get parameters from database and set up in context
     context = {"currentwebhost":userdata.getconfig("host"),
-               "storedwebhost":userdata.get_stored_host(),
-               "currentwebport":8000,
-               "storedwebport":8000
+               "storedwebhost":userdata.get_stored_item('host'),
+               "currentwebport":userdata.getconfig("port"),
+               "storedwebport":userdata.get_stored_item('port'),
+               "currentindihost":userdata.getconfig("indihost"),
+               "storedindihost":userdata.get_stored_item('indihost'),
+               "currentindiport":userdata.getconfig("indiport"),
+               "storedindiport":userdata.get_stored_item('indiport'),
               }
     return Template(template_name="setup/setuppage.html", context=context)
 
@@ -61,7 +65,7 @@ async def webhost(request: Request[str, str, State]) -> Template:
     if not webhost:   # further checks required here
         return HTMXTemplate(None,
                         template_str="<p id=\"webhostconfirm\" class=\"vanish\" style=\"color:red\">Invalid host name/IP</p>")
-    userdata.set_stored_host(webhost)
+    userdata.set_stored_item('host', webhost)
     return HTMXTemplate(template_name="setup/webhost.html", context={"storedwebhost":webhost})
 
 
@@ -72,14 +76,46 @@ async def webport(request: Request[str, str, State]) -> Template:
     if request.auth != "admin":
         return logout(request)
     form_data = await request.form()
-    print("AAAAAAAAAAA")
     webport = form_data.get("webportinput")
-    if not webport:   # further checks required here
+    try:
+        webport = int(webport)
+    except Exception:
         return HTMXTemplate(None,
                         template_str="<p id=\"webportconfirm\" class=\"vanish\" style=\"color:red\">Invalid port</p>")
-    print("BBBBBBBBBBB")
-    userdata.set_stored_port(webport)
-    return HTMXTemplate(template_name="setup/webport.html", context={"storedwebport":webport})
+    userdata.set_stored_item('port', webport)
+    return HTMXTemplate(template_name="setup/webport.html", context={"storedwebport":str(webport)})
+
+
+@post("/indihost")
+async def indihost(request: Request[str, str, State]) -> Template:
+    "An admin is setting the INDI server hostname"
+    if request.auth != "admin":
+        return logout(request)
+    form_data = await request.form()
+    indihost = form_data.get("indihostinput")
+    if not indihost:   # further checks required here
+        return HTMXTemplate(None,
+                        template_str="<p id=\"indihostconfirm\" class=\"vanish\" style=\"color:red\">Invalid host name/IP</p>")
+    userdata.set_stored_item('indihost', indihost)
+    return HTMXTemplate(template_name="setup/indihost.html", context={"storedindihost":indihost})
+
+
+
+@post("/indiport")
+async def indiport(request: Request[str, str, State]) -> Template:
+    "An admin is setting the INDI server port"
+    if request.auth != "admin":
+        return logout(request)
+    form_data = await request.form()
+    indiport = form_data.get("indiportinput")
+    try:
+        indiport = int(indiport)
+    except Exception:
+        return HTMXTemplate(None,
+                        template_str="<p id=\"indiportconfirm\" class=\"vanish\" style=\"color:red\">Invalid port</p>")
+    userdata.set_stored_item('indiport', indiport)
+    return HTMXTemplate(template_name="setup/indiport.html", context={"storedindiport":str(indiport)})
+
 
 
 
@@ -87,5 +123,7 @@ async def webport(request: Request[str, str, State]) -> Template:
 setup_router = Router(path="/setup", route_handlers=[setup,
                                                      backupdb,
                                                      webhost,
-                                                     webport
+                                                     webport,
+                                                     indihost,
+                                                     indiport
                                                     ])
