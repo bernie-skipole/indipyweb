@@ -30,6 +30,8 @@ from litestar.response import ServerSentEvent, ServerSentEventMessage
 
 from . import userdata, edit, device, vector, setup
 
+from ..iclient import do_startup, do_shutdown
+
 
 # location of static files, for CSS and javascript
 STATICFILES = Path(__file__).parent.resolve() / "static"
@@ -184,8 +186,9 @@ async def publicroot(request: Request) -> Template:
                                              "messages":None,
                                              "loggedin":loggedin})
 
+
 @get("/updateinstruments", exclude_from_auth=True)
-async def updateinstruments() -> Template:
+async def updateinstruments(request: Request) -> Template:
     "Updates the instruments on the main public page"
     iclient = userdata.get_indiclient()
     instruments = list(name for name,value in iclient.items() if value.enable)
@@ -270,6 +273,7 @@ def api(device:str="", vector:str="") -> dict:
 
 def ipywebapp():
     # Initialize the Litestar app with a Mako template engine and register the routes
+    iclient = userdata.get_indiclient()
     app = Litestar(
         route_handlers=[publicroot,
                         updateinstruments,
@@ -292,5 +296,7 @@ def ipywebapp():
         template_config=TemplateConfig(directory=TEMPLATEFILES,
                                        engine=MakoTemplateEngine,
                                       ),
+        on_startup=[do_startup],
+        on_shutdown=[do_shutdown]
         )
     return app

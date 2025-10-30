@@ -42,7 +42,6 @@ class ShowMessages:
         self.device = device
         self.device_event = get_device_event(device)
         self.iclient = get_indiclient()
-        print(device)
 
     def __aiter__(self):
         return self

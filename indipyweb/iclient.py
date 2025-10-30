@@ -7,7 +7,7 @@ import asyncio
 
 import indipyclient as ipc
 
-from .web.userdata import DEFINE_EVENT, MESSAGE_EVENT, getconfig, setconfig, get_device_event, get_vector_event
+from .web.userdata import DEFINE_EVENT, MESSAGE_EVENT, get_indiclient, getconfig, setconfig, get_device_event, get_vector_event
 
 version = "0.0.1"
 
@@ -22,6 +22,19 @@ def ipywebclient():
     indiclient.BLOBfolder = getconfig("blobfolder")
     setconfig("indiclient", indiclient)
 
+
+def do_startup():
+    """Start the client, called from Litestar app, the task is set into
+       the global config to ensure a strong reference to it remains"""
+    iclient = get_indiclient()
+    runclient = asyncio.create_task(iclient.asyncrun())
+    setconfig("runclient", runclient)
+
+async def do_shutdown():
+    "Stop the client, called from Litestar app"
+    iclient = get_indiclient()
+    iclient.shutdown()
+    await iclient.stopped.wait()
 
 
 class IPyWebClient(ipc.IPyClient):

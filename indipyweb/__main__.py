@@ -46,25 +46,20 @@ def readconfig():
 
     host = getconfig('host')
     port = getconfig('port')
+    app = ipywebapp()
 
-    return host, port
+    return app, host, port
 
 
 
 
 async def main():
 
-    # Read the program arguments
-    host, port = readconfig()
-    app = ipywebapp()
+    # Read the program arguments, setup the database and indi client
+    app, host, port = readconfig()
     config = uvicorn.Config(app=app, host=host, port=port, log_level="info")
     server = uvicorn.Server(config)
-
-    indiclient = get_indiclient()
-    await asyncio.gather(server.serve(), indiclient.asyncrun())
-
-    # ? can indiclient be run as app lifetime call, may need an async do_shutdown method on iclient
-
+    await server.serve()
 
 
 if __name__ == "__main__":

@@ -27,7 +27,8 @@ _PARAMETERS = {
                 "blobfolder":None,
                 "indiclient":None,
                 "dbfolder":None,
-                "dbase":None
+                "dbase":None,
+                "runclient":None
               }
 
 DEFINE_EVENT = asyncio.Event()
