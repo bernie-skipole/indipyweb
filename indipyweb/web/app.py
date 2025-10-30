@@ -248,6 +248,24 @@ async def logout(request: Request[str, str, State]) -> Template:
     userdata.logout(request.cookies['token'])
     return Template("edit/loggedout.html", context={"hostname":userdata.connectedtext()})
 
+@get(["/api", "/api/{device:str}", "/api/{device:str}/{vector:str}"], exclude_from_auth=True, sync_to_thread=False)
+def api(device:str="", vector:str="") -> dict:
+    iclient = userdata.get_indiclient()
+    if not device:
+        # return whole client dict
+        shot = iclient.snapshot()
+        return shot.dictdump()
+    deviceobj = iclient.get(device)
+    if deviceobj is None:
+        return {}
+    if vector:
+        vectorobj = deviceobj.data.get(vector)
+        if vectorobj is None:
+            return {}
+        shot = vectorobj.snapshot()
+        return shot.dictdump()
+    shot = deviceobj.snapshot()
+    return shot.dictdump()
 
 
 def ipywebapp():
@@ -261,6 +279,7 @@ def ipywebapp():
                         logout,
                         instruments,
                         messages,
+                        api,
                         edit.edit_router,     # This router in edit.py deals with routes below /edit
                         device.device_router, # This router in device.py deals with routes below /device
                         vector.vector_router, # This router in vector.py deals with routes below /vector

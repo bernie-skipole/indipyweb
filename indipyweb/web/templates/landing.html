@@ -32,12 +32,23 @@
    </div>
 
   </div>
-  <div class="w3-container w3-border w3-twothird">
+  <div class="w3-twothird">
 
-   <div hx-ext="sse" sse-connect="/messages">
-    <div hx-get="/updatemessages" hx-trigger="sse:newmessages">
-    <%include file="messages.html"/>
+    <div class="w3-container w3-border">
+
+       <div hx-ext="sse" sse-connect="/messages">
+        <div hx-get="/updatemessages" hx-trigger="sse:newmessages">
+        <%include file="messages.html"/>
+        </div>
+       </div>
+
     </div>
+
+   <div style="margin-top:5vh">
+    <p>An api returning a JSON file showing the current state is available.</p>
+    <p>call <strong>/api</strong> - returns the entire client state, including all devices</p>
+    <p>call <strong>/api/&lt;devicename&gt;</strong> - returns the requested device state</p>
+    <p>call <strong>/api/&lt;devicename&gt;/&lt;vectorname&gt;</strong> - returns the requested vector</p>
    </div>
 
   </div>

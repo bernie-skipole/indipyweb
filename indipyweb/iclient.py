@@ -19,6 +19,7 @@ def ipywebclient():
     indihost = getconfig("indihost")
     indiport = getconfig("indiport")
     indiclient = IPyWebClient(indihost=indihost, indiport=indiport)
+    indiclient.BLOBfolder = getconfig("blobfolder")
     setconfig("indiclient", indiclient)
 
 
