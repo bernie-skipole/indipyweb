@@ -25,11 +25,9 @@ _PARAMETERS = {
                 "indihost":"localhost",
                 "indiport":7624,
                 "blobfolder":None,
-                "apienable":False,
                 "indiclient":None,
                 "dbfolder":None,
-                "dbase":None,
-                "indiclient":None,
+                "dbase":None
               }
 
 DEFINE_EVENT = asyncio.Event()
@@ -144,6 +142,8 @@ def get_stored_item(item):
         cur.execute("SELECT indihost FROM parameters")
     elif item == "indiport":
         cur.execute("SELECT indiport FROM parameters")
+    elif item == "blobfolder":
+        cur.execute("SELECT blobfolder FROM parameters")
     else:
         cur.close()
         con.close()
@@ -168,6 +168,8 @@ def set_stored_item(item, value):
             cur.execute("UPDATE parameters SET indihost = ?", (value,))
         elif item == "indiport":
             cur.execute("UPDATE parameters SET indiport = ?", (value,))
+        elif item == "blobfolder":
+            cur.execute("UPDATE parameters SET blobfolder = ?", (value,))
     cur.close()
     con.close()
 
@@ -186,8 +188,12 @@ def setupdbase(host, port, dbfolder):
     _PARAMETERS["dbase"] = dbase
 
 
-    # defaults
-    webhost, webport, indihost, indiport = 'localhost', 8000, 'localhost', 7624
+    # set defaults
+    defaults = {'host':'localhost',
+                'port':8000,
+                'indihost':'localhost',
+                'indiport':7624,
+                'blobfolder':None}
 
 
     if not dbase.is_file():
@@ -213,27 +219,36 @@ def setupdbase(host, port, dbfolder):
             con.execute("INSERT INTO users VALUES(:username, :password, :auth, :salt, :fullname)",
                   {'username':'admin', 'password':encoded_password, 'auth':'admin', 'salt':salt, 'fullname':'Default Administrator'})
 
-            con.execute("CREATE TABLE parameters(host, port, indihost, indiport)")
-            con.execute("INSERT INTO parameters VALUES(:host, :port, :indihost, :indiport)", {'host':webhost, 'port':webport, 'indihost':indihost, 'indiport':indiport})
+            con.execute("CREATE TABLE parameters(host, port, indihost, indiport, blobfolder)")
+            con.execute("INSERT INTO parameters VALUES(:host, :port, :indihost, :indiport, :blobfolder)", defaults)
         con.close()
 
+        if not _PARAMETERS["host"]:        # command line argument has priority if it exists
+            _PARAMETERS["host"] = defaults['host']
+        if not _PARAMETERS["port"]:        # command line argument has priority if it exists
+            _PARAMETERS["port"] = defaults['port']
+        _PARAMETERS["indihost"] = defaults['indihost']
+        _PARAMETERS["indiport"] = defaults['indiport']
+        _PARAMETERS["blobfolder"] = defaults['blobfolder']
+
     else:
-        # dbase exists, so read host, port, indihost, indiport
+        # dbase exists, so read host, port, indihost, indiport, blobfolder
 
         con = sqlite3.connect(dbase)
         cur = con.cursor()
-        cur.execute("SELECT host, port, indihost, indiport FROM parameters")
+        cur.execute("SELECT host, port, indihost, indiport, blobfolder FROM parameters")
         result = cur.fetchone()
         cur.close()
         con.close()
-        webhost, webport, indihost, indiport = result
+        webhost, webport, indihost, indiport, blobfolder = result
 
-    if not _PARAMETERS["host"]:        # command line argument has priority if it exists
-        _PARAMETERS["host"] = webhost
-    if not _PARAMETERS["port"]:        # command line argument has priority if it exists
-        _PARAMETERS["port"] = webport
-    _PARAMETERS["indihost"] = indihost
-    _PARAMETERS["indiport"] = indiport
+        if not _PARAMETERS["host"]:        # command line argument has priority if it exists
+            _PARAMETERS["host"] = result[0]
+        if not _PARAMETERS["port"]:        # command line argument has priority if it exists
+            _PARAMETERS["port"] = result[1]
+        _PARAMETERS["indihost"] = result[2]
+        _PARAMETERS["indiport"] = result[3]
+        _PARAMETERS["blobfolder"] = result[4]
 
 
 ########### Functions to set and read user information from the database

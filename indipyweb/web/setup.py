@@ -2,6 +2,7 @@
 Handles all routes beneath /setup
 """
 
+import pathlib
 
 from litestar import Litestar, get, post, Request, Router
 from litestar.plugins.htmx import HTMXTemplate, ClientRedirect
@@ -28,6 +29,14 @@ async def setup(request: Request[str, str, State]) -> Template:
     "Get the setup page"
     if request.auth != "admin":
         return logout(request)
+
+    currentblobfolder = userdata.getconfig("blobfolder")
+    if currentblobfolder is None:
+        currentblobfolder = ""
+    storedblobfolder = userdata.get_stored_item('blobfolder')
+    if storedblobfolder is None:
+        storedblobfolder = ""
+
     # get parameters from database and set up in context
     context = {"currentwebhost":userdata.getconfig("host"),
                "storedwebhost":userdata.get_stored_item('host'),
@@ -37,6 +46,8 @@ async def setup(request: Request[str, str, State]) -> Template:
                "storedindihost":userdata.get_stored_item('indihost'),
                "currentindiport":userdata.getconfig("indiport"),
                "storedindiport":userdata.get_stored_item('indiport'),
+               "currentblobfolder":currentblobfolder,
+               "storedblobfolder":storedblobfolder
               }
     return Template(template_name="setup/setuppage.html", context=context)
 
@@ -100,7 +111,6 @@ async def indihost(request: Request[str, str, State]) -> Template:
     return HTMXTemplate(template_name="setup/indihost.html", context={"storedindihost":indihost})
 
 
-
 @post("/indiport")
 async def indiport(request: Request[str, str, State]) -> Template:
     "An admin is setting the INDI server port"
@@ -117,6 +127,30 @@ async def indiport(request: Request[str, str, State]) -> Template:
     return HTMXTemplate(template_name="setup/indiport.html", context={"storedindiport":str(indiport)})
 
 
+@post("/blobfolder")
+async def blobfolder(request: Request[str, str, State]) -> Template:
+    "An admin is setting the BLOB folder"
+    if request.auth != "admin":
+        return logout(request)
+    form_data = await request.form()
+    blobfolder = form_data.get("blobfolderinput")
+    if blobfolder:
+        try:
+            blobpath = pathlib.Path(blobfolder).expanduser().resolve()
+        except Exception:
+            return HTMXTemplate(None,
+                    template_str="<p id=\"blobfolderconfirm\" class=\"vanish\" style=\"color:red\">Invalid folder</p>")
+        else:
+            if not blobpath.is_dir():
+                return HTMXTemplate(None,
+                    template_str="<p id=\"blobfolderconfirm\" class=\"vanish\" style=\"color:red\">Folder does not exist</p>")
+        blobfolder = str(blobpath)
+    if not blobfolder:
+        userdata.set_stored_item('blobfolder', None)
+        blobfolder = ""
+    else:
+        userdata.set_stored_item('blobfolder', blobfolder)
+    return HTMXTemplate(template_name="setup/blobfolder.html", context={"storedblobfolder":blobfolder})
 
 
 
@@ -125,5 +159,6 @@ setup_router = Router(path="/setup", route_handlers=[setup,
                                                      webhost,
                                                      webport,
                                                      indihost,
-                                                     indiport
+                                                     indiport,
+                                                     blobfolder
                                                     ])

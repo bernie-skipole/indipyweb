@@ -130,14 +130,35 @@
 
 </div>
 
+## blobfolder
 
+<div class="w3-content" style="max-width:400px;margin-top:5vh">
 
-##                "indihost":"localhost",
-##                "indiport":7624,
-##                "blobfolder":None,
-##                "apienable":False,
+  <div>
+    <button onclick="btntogglenhide(this, 'Close','Set BLOBs folder', 'blobfolder', 'blobfolderconfirm')" class="w3-button w3-black w3-ripple w3-round" style="width:100%">Close</button>
+  </div>
 
+  <div id="blobfolder" class="w3-container w3-card" style="margin-top:1vh">
+        <h3>BLOB folder</h3>
+        <p>Current value: ${currentblobfolder}</p>
+        <p id="storedblobfolder">Stored value: ${storedblobfolder}</p>
+    <form hx-post="/setup/blobfolder" hx-target="#blobfolderconfirm" hx-swap="outerHTML">
+      <p><label for="blobfolderinput">Set new stored value:</label>
+        <input class="w3-input" type="text" id="blobfolderinput" name="blobfolderinput" value="${storedblobfolder}" /></p>
+      <p class="w3-center">
+        <button class="w3-button w3-black w3-ripple w3-round" type="submit">Submit</button></p>
+    </form>
+    <p id="blobfolderconfirm"></p>
+  </div>
 
+</div>
+
+<div class="w3-content" style="max-width:600px;margin-top:2vh;margin-bottom:2vh;">
+  <div style="margin-left:5px;margin-right:5px">
+    <p>The BLOB folder should be an existing folder on the web server, if set, then BLOBs transmitted from the INDI server will be saved to that folder.</p>
+    <p>It will be necessary for the system administrator to clear out old BLOB files, otherwise the folder could increase to an unwanted size.</p>
+  </div>
+</div>
 
 
 </body>
