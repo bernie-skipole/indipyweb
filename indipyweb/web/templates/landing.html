@@ -34,6 +34,12 @@
   </div>
   <div class="w3-twothird">
 
+    % if not loggedin:
+     <div class="w3-container" style="margin-top:5vh; margin-left:20px; max-width:600px">
+       <p>You have Read - Only access.  Login for read-write access.</p>
+     </div>
+    % endif
+
     <div class="w3-container w3-border" style="margin-top:5vh">
 
        <div hx-ext="sse" sse-connect="/messages">
