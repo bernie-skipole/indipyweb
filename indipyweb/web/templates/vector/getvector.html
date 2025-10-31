@@ -29,24 +29,24 @@
     % endif
   </div>
 
-% if vectorobj.perm != "ro":
+% if vectorobj.perm != "ro" and loggedin:
  <form hx-post="/vector/submit/${vectorobj.devicename|h}/${vectorobj.name|h}" hx-target="#result_${vectorobj.name}">
 % endif
 
  % for memberobj in sorted(vectorobj.members().values(), key=lambda memberobj: memberobj.label):
     ## For each member, sorted by member label
     % if vectorobj.vectortype == "LightVector":
-      <%include file="lightmember.html" args="vectorobj=vectorobj, memberobj=memberobj"/>
+      <%include file="lightmember.html" args="vectorobj=vectorobj, memberobj=memberobj, loggedin=loggedin"/>
     % elif vectorobj.vectortype == "TextVector":
-      <%include file="textmember.html" args="vectorobj=vectorobj, memberobj=memberobj"/>
+      <%include file="textmember.html" args="vectorobj=vectorobj, memberobj=memberobj, loggedin=loggedin"/>
     % elif vectorobj.vectortype == "NumberVector":
-      <%include file="numbermember.html" args="vectorobj=vectorobj, memberobj=memberobj"/>
+      <%include file="numbermember.html" args="vectorobj=vectorobj, memberobj=memberobj, loggedin=loggedin"/>
     % elif vectorobj.vectortype == "SwitchVector":
-      <%include file="switchmember.html" args="vectorobj=vectorobj, memberobj=memberobj"/>
+      <%include file="switchmember.html" args="vectorobj=vectorobj, memberobj=memberobj, loggedin=loggedin"/>
     % endif
  % endfor
 
-% if vectorobj.perm != "ro":
+% if vectorobj.perm != "ro" and loggedin:
 
   <div class="w3-row w3-panel">
     <div id="result_${vectorobj.name}" class="w3-container w3-threequarter">
@@ -59,4 +59,11 @@
     </div>
   </div>
 </form>
+
+% else:
+
+ <div id="result_${vectorobj.name}" class="w3-panel">
+   <p></p>
+ </div>
+
 % endif

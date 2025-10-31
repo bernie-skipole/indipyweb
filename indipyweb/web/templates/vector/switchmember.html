@@ -2,10 +2,10 @@
 
 ## switchmember.html
 
-<%page args="vectorobj, memberobj"/>
+<%page args="vectorobj, memberobj, loggedin"/>
 
 
- % if vectorobj.perm == "ro":
+ % if vectorobj.perm == "ro" or not loggedin:
 
 ## Show the read only switch status
 

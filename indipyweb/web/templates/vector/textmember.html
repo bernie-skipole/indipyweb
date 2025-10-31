@@ -2,7 +2,7 @@
 
 ## textmember.html
 
-<%page args="vectorobj, memberobj"/>
+<%page args="vectorobj, memberobj, loggedin"/>
 
 
 <div class="w3-content" style="max-width:70%;margin-top:1vh">
@@ -10,7 +10,7 @@
   <div class="w3-container w3-quarter">
       <p>${memberobj.label}</p>
   </div>
-  % if vectorobj.perm == "ro":
+  % if vectorobj.perm == "ro" or not loggedin:
       <div class="w3-container w3-threequarter w3-flat-asbestos">
           % if not memberobj.membervalue:
              <p>&nbsp;</p>

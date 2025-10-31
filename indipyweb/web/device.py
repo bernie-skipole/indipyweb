@@ -13,10 +13,10 @@ from litestar.datastructures import State
 
 from litestar.response import ServerSentEvent, ServerSentEventMessage
 
-from .userdata import localtimestring, get_device_event, get_indiclient
+from .userdata import localtimestring, get_device_event, get_indiclient, getuserauth
 
 
-@get("/choosedevice/{device:str}")
+@get("/choosedevice/{device:str}", exclude_from_auth=True)
 async def choosedevice(device:str, request: Request[str, str, State]) -> Template|Redirect:
     """A device has been selected"""
     # have to check device exists
@@ -26,10 +26,18 @@ async def choosedevice(device:str, request: Request[str, str, State]) -> Templat
     deviceobj = iclient.get(device)
     if (deviceobj is None) or not deviceobj.enable:
         return Redirect("/")
+    # Check if user is looged in
+    loggedin = False
+    cookie = request.cookies.get('token', '')
+    if cookie:
+        userauth = getuserauth(cookie)
+        if userauth is not None:
+            loggedin = True
     groups = list(set(vectorobj.group for vectorobj in deviceobj.values() if vectorobj.enable))
     groups.sort()
     context = {"device":device,
                "group":groups[0],
+               "loggedin":loggedin,
                "messages":["Device messages : Waiting.."]}
     return Template(template_name="devicepage.html", context=context)
 
@@ -87,7 +95,7 @@ def messages(device:str, request: Request[str, str, State]) -> ServerSentEvent:
     return ServerSentEvent(ShowMessages(device))
 
 
-@get("/updatemessages/{device:str}")
+@get("/updatemessages/{device:str}", exclude_from_auth=True)
 async def updatemessages(device:str, request: Request[str, str, State]) -> Template|ClientRedirect:
     "Updates the messages on the device page, and redirects to / if device deleted"
     if not device:
@@ -113,7 +121,7 @@ async def updatemessages(device:str, request: Request[str, str, State]) -> Templ
 
 
 
-@get("/changegroup/{device:str}/{group:str}")
+@get("/changegroup/{device:str}/{group:str}", exclude_from_auth=True)
 async def changegroup(device:str, group:str, request: Request[str, str, State]) -> Template|ClientRedirect:
     "Set chosen group, populate group tabs and group vectors"
     # check valid group

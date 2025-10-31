@@ -13,7 +13,7 @@ from litestar.datastructures import State
 
 from litestar.response import ServerSentEvent, ServerSentEventMessage
 
-from .userdata import localtimestring, get_vector_event, get_indiclient
+from .userdata import localtimestring, get_vector_event, get_indiclient, getuserauth
 
 
 class VectorEvent:
@@ -69,7 +69,7 @@ def vectorsse(device:str, vector:str, request: Request[str, str, State]) -> Serv
 
 
 
-@get("/update/{device:str}/{vector:str}")
+@get("/update/{device:str}/{vector:str}", exclude_from_auth=True)
 async def update(device:str, vector:str, request: Request[str, str, State]) -> Template|ClientRedirect|ClientRefresh:
     "Update vector"
     # check valid vector
@@ -93,6 +93,14 @@ async def update(device:str, vector:str, request: Request[str, str, State]) -> T
     if not vectorobj.enable:
         return ClientRefresh()
 
+    # Check if user is looged in
+    loggedin = False
+    cookie = request.cookies.get('token', '')
+    if cookie:
+        userauth = getuserauth(cookie)
+        if userauth is not None:
+            loggedin = True
+
     if vectorobj.user_string:
         # This is not a full update, just an update of the result and state fields
         return HTMXTemplate(template_name="vector/result.html",
@@ -105,6 +113,7 @@ async def update(device:str, vector:str, request: Request[str, str, State]) -> T
     # have to return a vector html template here
     return HTMXTemplate(template_name="vector/getvector.html", context={"vectorobj":vectorobj,
                                                                         "timestamp":localtimestring(vectorobj.timestamp),
+                                                                        "loggedin":loggedin,
                                                                         "message_timestamp":localtimestring(vectorobj.message_timestamp)})
 
 
