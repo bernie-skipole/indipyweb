@@ -2,18 +2,25 @@
 Handles all routes beneath /vector
 """
 
-import asyncio
+import asyncio, os
 
 from asyncio.exceptions import TimeoutError
 
-from litestar import Litestar, get, post, Request, Router
+from typing import Annotated
+
+from litestar import Litestar, get, post, Request, Router, MediaType
 from litestar.plugins.htmx import HTMXTemplate, ClientRedirect, ClientRefresh
 from litestar.response import Template, Redirect
-from litestar.datastructures import State
-
+from litestar.datastructures import State, UploadFile
+from litestar.enums import RequestEncodingType
+from litestar.params import Body
 from litestar.response import ServerSentEvent, ServerSentEventMessage
 
 from .userdata import localtimestring, get_vector_event, get_indiclient, getuserauth
+
+
+
+
 
 
 class VectorEvent:
@@ -114,6 +121,7 @@ async def update(device:str, vector:str, request: Request[str, str, State]) -> T
     return HTMXTemplate(template_name="vector/getvector.html", context={"vectorobj":vectorobj,
                                                                         "timestamp":localtimestring(vectorobj.timestamp),
                                                                         "loggedin":loggedin,
+                                                                        "blobfolder":iclient.BLOBfolder,
                                                                         "message_timestamp":localtimestring(vectorobj.message_timestamp)})
 
 
@@ -209,5 +217,50 @@ async def submit(device:str, vector:str, request: Request[str, str, State]) -> T
 
 
 
+@post(path="/blobsend/{device:str}/{vector:str}/{member:str}", media_type=MediaType.TEXT)
+async def blobsend(
+    device:str, vector:str, member:str,
+    request: Request[str, str, State],
+    data: Annotated[UploadFile, Body(media_type=RequestEncodingType.MULTI_PART)]) -> Template|ClientRedirect|ClientRefresh:
 
-vector_router = Router(path="/vector", route_handlers=[update, vectorsse, submit])
+    # check valid vector
+    if not vector:
+        return ClientRedirect("/")
+    if not device:
+        return ClientRedirect("/")
+    iclient = get_indiclient()
+    if iclient.stop:
+        return ClientRedirect("/")
+    if not iclient.connected:
+        return ClientRedirect("/")
+    if device not in iclient:
+        return ClientRedirect("/")
+    deviceobj = iclient[device]
+    if not deviceobj.enable:
+        return ClientRedirect("/")
+    if vector not in deviceobj:
+        return ClientRefresh()
+    vectorobj = deviceobj[vector]
+    if not vectorobj.enable:
+        return ClientRefresh()
+
+    if vectorobj.perm == "ro":
+        return HTMXTemplate(None, template_str="<p>INVALID: This is a Read Only vector!</p>")
+
+    content = await data.read()
+    filename = data.filename
+
+    name, extension = os.path.splitext(filename)
+
+    # memberdict of {membername:(value, blobsize, blobformat)}
+    await vectorobj.send_newBLOBVector(members={member:(content, 0, extension)})
+
+    return HTMXTemplate(template_name="vector/result.html", context={"state":"Busy",
+                                                                     "stateid":f"state_{vectorobj.name}",
+                                                                     "timestamp":localtimestring(),
+                                                                     "result":f"File {filename} sent"})
+
+
+
+
+vector_router = Router(path="/vector", route_handlers=[update, vectorsse, submit, blobsend])

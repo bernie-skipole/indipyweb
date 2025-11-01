@@ -1,0 +1,52 @@
+
+
+## blobmember.html
+
+<%page args="vectorobj, memberobj, loggedin, blobfolder"/>
+
+
+<div class="w3-content" style="max-width:70%;margin-top:1vh">
+ <div class="w3-row">
+  <div class="w3-container w3-quarter">
+      <p>${memberobj.label}</p>
+  </div>
+      <div class="w3-container w3-threequarter w3-flat-asbestos">
+          % if vectorobj.perm == "wo":
+             <p>RX data: --Write Only - nothing to receive--</p>
+          % elif not blobfolder:
+             <p>RX data: --No BLOB Folder set--</p>
+          % elif not memberobj.filename:
+             <p>RX data: --Nothing received yet--</p>
+          % else:
+             <p>RX data: ${memberobj.filename|h}</p>
+          % endif
+          % if vectorobj.perm == "ro":
+             <p>TX data: --Read Only - no send capability--</p>
+          % elif not memberobj.user_string:
+             <p>TX data: --Nothing sent--</p>
+          % else:
+             <p>TX data: ${memberobj.user_string|h}</p>
+          % endif
+
+  % if vectorobj.perm == "ro" or not loggedin:
+      </div>
+   % else:
+         <div class="w3-container w3-margin">
+
+<form id='form' hx-encoding='multipart/form-data' hx-post='/vector/blobsend/${vectorobj.devicename|h}/${vectorobj.name|h}/${memberobj.name|h}'  hx-target="#result_${vectorobj.name}">
+        <input type='file' name='file' class="w3-button w3-black w3-ripple w3-round w3-small">
+        <button class="w3-button w3-black w3-ripple w3-round w3-small">
+            Send File
+        </button>
+        <progress id='progress' value='0' max='100'></progress>
+    </form>
+    <script>
+        htmx.on('#form', 'htmx:xhr:progress', function(evt) {
+          htmx.find('#progress').setAttribute('value', evt.detail.loaded/evt.detail.total * 100)
+        });
+    </script>
+
+      </div>
+   % endif
+ </div>
+</div>
