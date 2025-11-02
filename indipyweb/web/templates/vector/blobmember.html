@@ -33,16 +33,16 @@
    % else:
          <div class="w3-container w3-margin">
 
-<form id='form' hx-encoding='multipart/form-data' hx-post='/vector/blobsend/${vectorobj.devicename|h}/${vectorobj.name|h}/${memberobj.name|h}'  hx-target="#result_${vectorobj.name}">
+<form id='blobform_${vectorobj.name|h}_${memberobj.name|h}' hx-encoding='multipart/form-data' hx-post='/vector/blobsend/${vectorobj.devicename|h}/${vectorobj.name|h}/${memberobj.name|h}'  hx-target="#result_${vectorobj.name}">
         <input type='file' name='file' class="w3-button w3-black w3-ripple w3-round w3-small">
         <button class="w3-button w3-black w3-ripple w3-round w3-small">
             Send File
         </button>
-        <progress id='progress' value='0' max='100'></progress>
+        <progress id='blobprog_${vectorobj.name|h}_${memberobj.name|h}' value='0' max='100'></progress>
     </form>
     <script>
-        htmx.on('#form', 'htmx:xhr:progress', function(evt) {
-          htmx.find('#progress').setAttribute('value', evt.detail.loaded/evt.detail.total * 100)
+        htmx.on('#blobform_${vectorobj.name|h}_${memberobj.name|h}', 'htmx:xhr:progress', function(evt) {
+          htmx.find('#blobprog_${vectorobj.name|h}_${memberobj.name|h}').setAttribute('value', evt.detail.loaded/evt.detail.total * 100)
         });
     </script>
 

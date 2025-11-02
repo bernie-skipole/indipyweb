@@ -243,12 +243,19 @@ async def blobsend(
     vectorobj = deviceobj[vector]
     if not vectorobj.enable:
         return ClientRefresh()
+    if not member:
+        return ClientRefresh()
+    if member not in vectorobj:
+        return ClientRefresh()
+
+    memberobj = vectorobj.member(member)
 
     if vectorobj.perm == "ro":
         return HTMXTemplate(None, template_str="<p>INVALID: This is a Read Only vector!</p>")
 
     content = await data.read()
     filename = data.filename
+    memberobj.user_string = filename
 
     name, extension = os.path.splitext(filename)
 
