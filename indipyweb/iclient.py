@@ -40,6 +40,7 @@ async def do_shutdown():
 class IPyWebClient(ipc.IPyClient):
 
     async def rxevent(self, event):
+
         if event.eventtype in ("Define", "Delete", "ConnectionMade", "ConnectionLost"):
             DEFINE_EVENT.set()
             DEFINE_EVENT.clear()

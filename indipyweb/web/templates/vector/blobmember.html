@@ -34,7 +34,7 @@
          <div class="w3-container w3-margin">
 
 <form id='blobform_${vectorobj.name|h}_${memberobj.name|h}' hx-encoding='multipart/form-data' hx-post='/vector/blobsend/${vectorobj.devicename|h}/${vectorobj.name|h}/${memberobj.name|h}'  hx-target="#result_${vectorobj.name}">
-        <input type='file' name='file' class="w3-button w3-black w3-ripple w3-round w3-small">
+        <input id='blobbrowse_${vectorobj.name|h}_${memberobj.name|h}' type='file' name='file' class="w3-button w3-black w3-ripple w3-round w3-small" hx-preserve>
         <button class="w3-button w3-black w3-ripple w3-round w3-small">
             Send File
         </button>

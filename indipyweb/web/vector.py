@@ -247,7 +247,6 @@ async def blobsend(
         return ClientRefresh()
     if member not in vectorobj:
         return ClientRefresh()
-
     memberobj = vectorobj.member(member)
 
     if vectorobj.perm == "ro":
@@ -255,7 +254,8 @@ async def blobsend(
 
     content = await data.read()
     filename = data.filename
-    memberobj.user_string = filename
+
+    memberobj.user_string = f"File {filename} sent"
 
     name, extension = os.path.splitext(filename)
 
