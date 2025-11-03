@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+
+## blobs.html - The page showing a list of received BLOBs
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Received BLOBs</title>
+<link rel="stylesheet" href="/static/w3.css">
+<link rel="stylesheet" href="/static/w3-colors-flat.css">
+<link rel="stylesheet" href="/static/indipyweb.css">
+<script src="/static/htmx.min.js"></script>
+<script src="/static/sse.js"></script>
+<script src="/static/indipyweb.js"></script>
+
+<body class="w3-flat-clouds">
+
+  <header class="w3-container w3-flat-silver w3-block">
+    <p class="w3-margin-right w3-left"><a href="/" class="w3-button w3-black w3-ripple w3-round w3-medium">Devices</a></p>
+    <p class="w3-right"><a href="/logout" class="w3-button w3-black w3-ripple w3-round w3-small w3-margin-right">Logout</a></p>
+    <p class="w3-right"><a href="/edit" class="w3-button w3-black w3-ripple w3-round w3-small w3-margin-right">Edit</a></p>
+    <h3>Received BLOB Files</h3>
+  </header>
+
+<div class="w3-content" style="max-width:800px;margin-top:8vh">
+
+<div class="w3-margin">
+
+% if blobfiles:
+
+  % if admin:
+   <p>Download or Delete File:</p>
+
+   % for blob in blobfiles:
+      <div class="w3-row w3-margin-top">
+        <div class="w3-container w3-threequarter">
+          <a href="/getblob/${blob|h}" class="w3-button w3-black w3-ripple w3-round w3-margin-right" style="width:100%;margin-top:5px;">${blob|h}</a>
+        </div>
+        <div class="w3-container w3-quarter">
+          <a href="/delblob/${blob|h}" class="w3-button w3-black w3-ripple w3-round" style="max-width:100px;width:100%;margin-top:5px;">Delete</a>
+        </div>
+      </div>
+   % endfor
+
+  % else:
+   <p>Download File:</p>
+
+   % for blob in blobfiles:
+        <div class="w3-container">
+          <a href="/getblob/${blob|h}" class="w3-button w3-black w3-ripple w3-round w3-margin" style="width:100%">${blob|h}</a>
+        </div>
+   % endfor
+
+  % endif
+
+
+% else:
+   <p>No BLOBs received yet</p>
+% endif
+
+</div>
+</div>
+
+</body>
+</html>

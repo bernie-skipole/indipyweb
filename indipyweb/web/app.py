@@ -8,6 +8,9 @@ Note, edit routes are set under edit.edit_router
 
 import asyncio
 
+from os import listdir
+from os.path import isfile, join
+
 from pathlib import Path
 
 from collections.abc import AsyncGenerator
@@ -174,6 +177,7 @@ auth_mw = DefineMiddleware(LoggedInAuth, exclude="static")
 @get("/", exclude_from_auth=True)
 async def publicroot(request: Request) -> Template:
     "This is the public root page of your site"
+    iclient = userdata.get_indiclient()
     # Check if user is looged in
     loggedin = False
     cookie = request.cookies.get('token', '')
@@ -181,10 +185,13 @@ async def publicroot(request: Request) -> Template:
         userauth = userdata.getuserauth(cookie)
         if userauth is not None:
             loggedin = True
+    blobfolder = True if iclient.BLOBfolder else False
+
     return Template("landing.html", context={"hostname":userdata.connectedtext(),
                                              "instruments":None,
                                              "messages":None,
-                                             "loggedin":loggedin})
+                                             "loggedin":loggedin,
+                                             "blobfolder":blobfolder})
 
 
 @get("/updateinstruments", exclude_from_auth=True)
@@ -251,6 +258,24 @@ async def logout(request: Request[str, str, State]) -> Template:
     userdata.logout(request.cookies['token'])
     return Template("edit/loggedout.html", context={"hostname":userdata.connectedtext()})
 
+
+@get("/blobs")
+async def blobs(request: Request[str, str, State]) -> Template|ClientRedirect|Redirect:
+    "Shows a page of blob files"
+    iclient = userdata.get_indiclient()
+    blobfolder = iclient.BLOBfolder
+    if blobfolder:
+        blobfiles = [f for f in listdir(blobfolder) if isfile(join(blobfolder, f))]
+        blobfiles.sort()
+    else:
+        blobfiles = []
+    admin = True if request.auth == "admin" else False
+    context = {'blobfiles':blobfiles,
+               'admin':admin}
+    return Template("blobs.html", context=context)
+
+
+
 @get(["/api", "/api/{device:str}", "/api/{device:str}/{vector:str}"], exclude_from_auth=True, sync_to_thread=False)
 def api(device:str="", vector:str="") -> dict:
     iclient = userdata.get_indiclient()
@@ -283,6 +308,7 @@ def ipywebapp():
                         logout,
                         instruments,
                         messages,
+                        blobs,
                         api,
                         edit.edit_router,     # This router in edit.py deals with routes below /edit
                         device.device_router, # This router in device.py deals with routes below /device
