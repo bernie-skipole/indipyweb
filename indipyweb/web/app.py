@@ -8,7 +8,7 @@ Note, edit routes are set under edit.edit_router
 
 import asyncio
 
-from os import listdir
+from os import listdir, remove
 from os.path import isfile, join
 
 from pathlib import Path
@@ -18,7 +18,7 @@ from collections.abc import AsyncGenerator
 from asyncio.exceptions import TimeoutError
 
 from litestar import Litestar, get, post, Request
-from litestar.plugins.htmx import HTMXPlugin, HTMXTemplate, ClientRedirect
+from litestar.plugins.htmx import HTMXPlugin, HTMXTemplate, ClientRedirect, ClientRefresh
 from litestar.contrib.mako import MakoTemplateEngine
 from litestar.template.config import TemplateConfig
 from litestar.response import Template, Redirect, File
@@ -309,6 +309,23 @@ async def getblob(blobfile:str, request: Request[str, str, State]) -> File:
         filename=blobfile
         )
 
+@get("/delblob/{blobfile:str}")
+async def delblob(blobfile:str, request: Request[str, str, State]) -> ClientRefresh:
+    "Deletes a blob"
+    auth = request.auth
+    if auth != "admin":
+        raise NotAuthorizedException()
+    iclient = userdata.get_indiclient()
+    blobfolder = iclient.BLOBfolder
+    if not blobfolder:
+        raise NotFoundException()
+    blobpath = iclient.BLOBfolder / blobfile
+    if not blobpath.is_file():
+        raise NotFoundException()
+    remove(blobpath)
+    return ClientRefresh()
+
+
 
 @get(["/api", "/api/{device:str}", "/api/{device:str}/{vector:str}"], exclude_from_auth=True, sync_to_thread=False)
 def api(device:str="", vector:str="") -> dict:
@@ -353,6 +370,7 @@ def ipywebapp():
                         messages,
                         blobs,
                         getblob,
+                        delblob,
                         api,
                         edit.edit_router,     # This router in edit.py deals with routes below /edit
                         device.device_router, # This router in device.py deals with routes below /device

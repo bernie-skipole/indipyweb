@@ -23,7 +23,6 @@
   </header>
 
 <div class="w3-content" style="max-width:800px;margin-top:8vh">
-
 <div class="w3-margin">
 
 % if blobfiles:
@@ -37,7 +36,8 @@
           <a href="/getblob/${blob|h}" class="w3-button w3-black w3-ripple w3-round w3-margin-right" style="width:100%;margin-top:5px;">${blob|h}</a>
         </div>
         <div class="w3-container w3-quarter">
-          <a href="/delblob/${blob|h}" class="w3-button w3-black w3-ripple w3-round" style="max-width:100px;width:100%;margin-top:5px;">Delete</a>
+
+<button hx-get="/delblob/${blob|h}" hx-confirm="Are you sure you wish to delete this file?" class="w3-button w3-black w3-ripple w3-round" style="max-width:100px;width:100%;margin-top:5px;">Delete</button>
         </div>
       </div>
    % endfor
