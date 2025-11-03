@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+
+## notfound.html - The page showing a not found message
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Not Found</title>
+<link rel="stylesheet" href="/static/w3.css">
+<link rel="stylesheet" href="/static/w3-colors-flat.css">
+
+<body class="w3-flat-clouds">
+
+  <header class="w3-container w3-flat-silver w3-block">
+    <p class="w3-margin-right w3-left"><a href="/" class="w3-button w3-black w3-ripple w3-round w3-medium">Devices</a></p>
+    % if loggedin:
+      <p class="w3-right"><a href="/logout" class="w3-button w3-black w3-ripple w3-round w3-small w3-margin-right">Logout</a></p>
+      <p class="w3-right"><a href="/edit" class="w3-button w3-black w3-ripple w3-round w3-small w3-margin-right">Edit</a></p>
+    % else:
+      <p class="w3-right"><a href="/login" class="w3-button w3-black w3-ripple w3-round w3-small w3-margin-right">Login</a></p>
+    % endif
+    <h3>${hostname|h}</h3>
+  </header>
+
+<div class="w3-content" style="margin-top:8vh">
+    <h3>Sorry, the page you requested has not been found</h3>
+</div>
+
+
+
+</body>
+</html>

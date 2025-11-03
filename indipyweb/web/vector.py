@@ -19,10 +19,6 @@ from litestar.response import ServerSentEvent, ServerSentEventMessage
 from .userdata import localtimestring, get_vector_event, get_indiclient, getuserauth
 
 
-
-
-
-
 class VectorEvent:
     """Iterate with whenever a vector change happens."""
 

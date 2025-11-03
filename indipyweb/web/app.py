@@ -27,7 +27,7 @@ from litestar.datastructures import Cookie, State
 
 from litestar.middleware import AbstractAuthenticationMiddleware, AuthenticationResult, DefineMiddleware
 from litestar.connection import ASGIConnection
-from litestar.exceptions import NotAuthorizedException
+from litestar.exceptions import NotAuthorizedException, NotFoundException
 
 from litestar.response import ServerSentEvent, ServerSentEventMessage
 
@@ -163,12 +163,28 @@ def gotologin_error_handler(request: Request, exc: Exception) -> ClientRedirect|
     return Redirect("/login")
 
 
-# This defines LoggedInAuth as middleware and also
-# excludes certain paths from authentication.
-# In this case it excludes all routes mounted at or under `/static*`
-# This allows CSS and javascript libraries to be placed there, which
-# therefore do not need authentication to be accessed
-auth_mw = DefineMiddleware(LoggedInAuth, exclude="static")
+def gotonotfound_error_handler(request: Request, exc: Exception) -> ClientRedirect|Redirect:
+    """If a NotFoundException is raised, this handles it, and redirects
+       the caller to the not found page"""
+    if request.htmx:
+        return ClientRedirect("/notfound")
+    return Redirect("/notfound")
+
+
+@get("/notfound", exclude_from_auth=True)
+async def notfound(request: Request) -> Template:
+    "This is the public root page of your site"
+    iclient = userdata.get_indiclient()
+    # Check if user is looged in
+    loggedin = False
+    cookie = request.cookies.get('token', '')
+    if cookie:
+        userauth = userdata.getuserauth(cookie)
+        if userauth is not None:
+            loggedin = True
+    return Template("notfound.html", context={"hostname":userdata.connectedtext(),
+                                             "loggedin":loggedin})
+
 
 
 # Note, all routes with 'exclude_from_auth=True' do not have cookie checked
@@ -216,8 +232,12 @@ async def updatemessages() -> Template:
 
 
 @get("/login", exclude_from_auth=True)
-async def login_page() -> Template:
+async def login_page(request: Request[str, str, State]) -> Template:
     "Render the login page"
+    cookie = request.cookies.get('token')
+    # log the user out
+    if cookie:
+        userdata.logout(request.cookies['token'])
     return Template("edit/login.html", context={"hostname":userdata.connectedtext()})
 
 
@@ -252,15 +272,15 @@ async def login(request: Request) -> Template|ClientRedirect:
 @get("/logout")
 async def logout(request: Request[str, str, State]) -> Template:
     "Logs the user out, and render the logout page"
-    if 'token' not in request.cookies:
-        return
+    cookie = request.cookies.get('token')
     # log the user out
-    userdata.logout(request.cookies['token'])
+    if cookie:
+        userdata.logout(request.cookies['token'])
     return Template("edit/loggedout.html", context={"hostname":userdata.connectedtext()})
 
 
 @get("/blobs")
-async def blobs(request: Request[str, str, State]) -> Template|ClientRedirect|Redirect:
+async def blobs(request: Request[str, str, State]) -> Template:
     "Shows a page of blob files"
     iclient = userdata.get_indiclient()
     blobfolder = iclient.BLOBfolder
@@ -278,14 +298,16 @@ async def blobs(request: Request[str, str, State]) -> Template|ClientRedirect|Re
 @get("/getblob/{blobfile:str}", media_type="application/octet")
 async def getblob(blobfile:str, request: Request[str, str, State]) -> File:
     iclient = userdata.get_indiclient()
+    blobfolder = iclient.BLOBfolder
+    if not blobfolder:
+        raise NotFoundException()
     blobpath = iclient.BLOBfolder / blobfile
     if not blobpath.is_file():
-        raise NotAuthorizedException()
+        raise NotFoundException()
     return File(
         path=blobpath,
         filename=blobfile
         )
-
 
 
 @get(["/api", "/api/{device:str}", "/api/{device:str}/{vector:str}"], exclude_from_auth=True, sync_to_thread=False)
@@ -308,6 +330,14 @@ def api(device:str="", vector:str="") -> dict:
     return shot.dictdump()
 
 
+# This defines LoggedInAuth as middleware and also
+# excludes certain paths from authentication.
+# In this case it excludes all routes mounted at or under `/static*`
+# This allows CSS and javascript libraries to be placed there, which
+# therefore do not need authentication to be accessed
+auth_mw = DefineMiddleware(LoggedInAuth, exclude="static")
+
+
 def ipywebapp():
     # Initialize the Litestar app with a Mako template engine and register the routes
     iclient = userdata.get_indiclient()
@@ -315,6 +345,7 @@ def ipywebapp():
         route_handlers=[publicroot,
                         updateinstruments,
                         updatemessages,
+                        notfound,
                         login_page,
                         login,
                         logout,
@@ -329,7 +360,7 @@ def ipywebapp():
                         setup.setup_router,   # This router in setup.py deals with routes below /setup
                         create_static_files_router(path="/static", directories=[STATICFILES]),
                        ],
-        exception_handlers={ NotAuthorizedException: gotologin_error_handler},
+        exception_handlers={ NotAuthorizedException: gotologin_error_handler, NotFoundException: gotonotfound_error_handler},
         plugins=[HTMXPlugin()],
         middleware=[auth_mw],
         template_config=TemplateConfig(directory=TEMPLATEFILES,
