@@ -21,7 +21,7 @@ from litestar import Litestar, get, post, Request
 from litestar.plugins.htmx import HTMXPlugin, HTMXTemplate, ClientRedirect
 from litestar.contrib.mako import MakoTemplateEngine
 from litestar.template.config import TemplateConfig
-from litestar.response import Template, Redirect
+from litestar.response import Template, Redirect, File
 from litestar.static_files import create_static_files_router
 from litestar.datastructures import Cookie, State
 
@@ -275,6 +275,18 @@ async def blobs(request: Request[str, str, State]) -> Template|ClientRedirect|Re
     return Template("blobs.html", context=context)
 
 
+@get("/getblob/{blobfile:str}", media_type="application/octet")
+async def getblob(blobfile:str, request: Request[str, str, State]) -> File:
+    iclient = userdata.get_indiclient()
+    blobpath = iclient.BLOBfolder / blobfile
+    if not blobpath.is_file():
+        raise NotAuthorizedException()
+    return File(
+        path=blobpath,
+        filename=blobfile
+        )
+
+
 
 @get(["/api", "/api/{device:str}", "/api/{device:str}/{vector:str}"], exclude_from_auth=True, sync_to_thread=False)
 def api(device:str="", vector:str="") -> dict:
@@ -309,6 +321,7 @@ def ipywebapp():
                         instruments,
                         messages,
                         blobs,
+                        getblob,
                         api,
                         edit.edit_router,     # This router in edit.py deals with routes below /edit
                         device.device_router, # This router in device.py deals with routes below /device
