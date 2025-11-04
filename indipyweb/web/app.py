@@ -297,6 +297,7 @@ async def blobs(request: Request[str, str, State]) -> Template:
 
 @get("/getblob/{blobfile:str}", media_type="application/octet")
 async def getblob(blobfile:str, request: Request[str, str, State]) -> File:
+    "Download a BLOB to the browser client"
     iclient = userdata.get_indiclient()
     blobfolder = iclient.BLOBfolder
     if not blobfolder:
