@@ -52,6 +52,11 @@ On startup, if an INDI service is not running you will see failed attemps to con
 
 Having logged in as admin, choose edit and change your password, you can also choose the system setup to set web and INDI hosts, ports and a folder where any BLOBs sent by the INDI service will be saved. These values will be saved in the database file and read on future startups.
 
+A typical session would look like:
+
+![Browser screenshot](https://raw.githubusercontent.com/bernie-skipole/indipyweb/main/indipyweb.png)
+
+
 This web service should work with any INDI service, however associated packages by the same author are:
 
 ## indipyserver
