@@ -51,18 +51,19 @@ def readconfig():
     return app, host, port
 
 
-
-
-async def main():
-
-    # Read the program arguments, setup the database and indi client
+async def indipywebrun():
+    "Read the program arguments, setup the database and run the webserver"
     app, host, port = readconfig()
     config = uvicorn.Config(app=app, host=host, port=port, log_level="info")
     server = uvicorn.Server(config)
     await server.serve()
 
 
-if __name__ == "__main__":
+def main():
+    "Run the program"
+    asyncio.run(indipywebrun())
 
+
+if __name__ == "__main__":
     # And run main
-    asyncio.run(main())
+    main()
