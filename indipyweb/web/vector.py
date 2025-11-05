@@ -72,8 +72,8 @@ def vectorsse(device:str, vector:str, request: Request[str, str, State]) -> Serv
 
 
 
-@get("/update/{device:str}/{vector:str}", exclude_from_auth=True)
-async def update(device:str, vector:str, request: Request[str, str, State]) -> Template|ClientRedirect|ClientRefresh:
+@get("/update/{device:str}/{vector:str}", exclude_from_auth=True, sync_to_thread=False)
+def update(device:str, vector:str, request: Request[str, str, State]) -> Template|ClientRedirect|ClientRefresh:
     "Update vector"
     # check valid vector
     if not vector:

@@ -48,9 +48,11 @@ The package help is:
       --db DB      Folder where the database will be set.
       --version    show program's version number and exit
 
-On startup, if an INDI service is not running you will see failed attemps to connect on your console. These can be ignored, and you can still use your browser to connect to the web service to create initial settings - though no devices will be available.
+You should start by connecting with a browser, on localhost:8000 unless you have changed the port with the above command line options.
 
-Having logged in as admin, choose edit and change your password, you can also choose the system setup to set web and INDI hosts, ports and a folder where any BLOBs sent by the INDI service will be saved. These values will be saved in the database file and read on future startups.
+On startup, if an INDI service is not running, or not present on localhost:7624 you will see failed connection attemps in the initial web page and no devices will be available. You can still login to add users and create initial settings, including setting the host and port where the INDI service can be found. These values will be saved in the database file and read on future startups.
+
+As the web service by default listens on 'localhost' only a browser running on the same machine will be able to connect. Set the host to '0.0.0.0' to listen on all interfaces.
 
 A typical session would look like:
 

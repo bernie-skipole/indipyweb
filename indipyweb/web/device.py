@@ -16,8 +16,8 @@ from litestar.response import ServerSentEvent, ServerSentEventMessage
 from .userdata import localtimestring, get_device_event, get_indiclient, getuserauth
 
 
-@get("/choosedevice/{device:str}", exclude_from_auth=True)
-async def choosedevice(device:str, request: Request[str, str, State]) -> Template|Redirect:
+@get("/choosedevice/{device:str}", exclude_from_auth=True, sync_to_thread=False)
+def choosedevice(device:str, request: Request[str, str, State]) -> Template|Redirect:
     """A device has been selected"""
     # have to check device exists
     if not device:
@@ -95,8 +95,8 @@ def messages(device:str, request: Request[str, str, State]) -> ServerSentEvent:
     return ServerSentEvent(ShowMessages(device))
 
 
-@get("/updatemessages/{device:str}", exclude_from_auth=True)
-async def updatemessages(device:str, request: Request[str, str, State]) -> Template|ClientRedirect:
+@get("/updatemessages/{device:str}", exclude_from_auth=True, sync_to_thread=False)
+def updatemessages(device:str, request: Request[str, str, State]) -> Template|ClientRedirect:
     "Updates the messages on the device page, and redirects to / if device deleted"
     if not device:
         return ClientRedirect("/")
@@ -121,8 +121,8 @@ async def updatemessages(device:str, request: Request[str, str, State]) -> Templ
 
 
 
-@get("/changegroup/{device:str}/{group:str}", exclude_from_auth=True)
-async def changegroup(device:str, group:str, request: Request[str, str, State]) -> Template|ClientRedirect:
+@get("/changegroup/{device:str}/{group:str}", exclude_from_auth=True, sync_to_thread=False)
+def changegroup(device:str, group:str, request: Request[str, str, State]) -> Template|ClientRedirect:
     "Set chosen group, populate group tabs and group vectors"
     # check valid group
     cookie = request.cookies.get('token', '')

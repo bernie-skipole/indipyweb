@@ -24,8 +24,8 @@ def logout(request: Request[str, str, State]) -> ClientRedirect|Redirect:
     return Redirect("/login")
 
 
-@get("/")
-async def setup(request: Request[str, str, State]) -> Template:
+@get("/", sync_to_thread=False)
+def setup(request: Request[str, str, State]) -> Template:
     "Get the setup page"
     if request.auth != "admin":
         return logout(request)
@@ -52,8 +52,8 @@ async def setup(request: Request[str, str, State]) -> Template:
     return Template(template_name="setup/setuppage.html", context=context)
 
 
-@get("/backupdb")
-async def backupdb(request: Request[str, str, State]) -> Template|Redirect:
+@get("/backupdb", sync_to_thread=False)
+def backupdb(request: Request[str, str, State]) -> Template|Redirect:
     """This creates a backup file of the user database"""
     if request.auth != "admin":
         return logout(request)

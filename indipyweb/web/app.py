@@ -136,7 +136,7 @@ class LoggedInAuth(AbstractAuthenticationMiddleware):
     """Checks if a logged-in cookie is present, and verifies it
        If ok, returns an AuthenticationResult with the user, and the users
        authorisation level. If not ok raises a NotAuthorizedException"""
-    async def authenticate_request(self, connection: ASGIConnection ) -> AuthenticationResult:
+    async def authenticate_request(self, connection: ASGIConnection) -> AuthenticationResult:
         # retrieve the cookie
         auth_cookie = connection.cookies
         if not auth_cookie:
@@ -171,8 +171,8 @@ def gotonotfound_error_handler(request: Request, exc: Exception) -> ClientRedire
     return Redirect("/notfound")
 
 
-@get("/notfound", exclude_from_auth=True)
-async def notfound(request: Request) -> Template:
+@get("/notfound", exclude_from_auth=True, sync_to_thread=False )
+def notfound(request: Request) -> Template:
     "This is the public root page of your site"
     iclient = userdata.get_indiclient()
     # Check if user is looged in
@@ -190,8 +190,8 @@ async def notfound(request: Request) -> Template:
 # Note, all routes with 'exclude_from_auth=True' do not have cookie checked
 # and are not authenticated
 
-@get("/", exclude_from_auth=True)
-async def publicroot(request: Request) -> Template:
+@get("/", exclude_from_auth=True, sync_to_thread=False )
+def publicroot(request: Request) -> Template:
     "This is the public root page of your site"
     iclient = userdata.get_indiclient()
     # Check if user is looged in
@@ -210,8 +210,8 @@ async def publicroot(request: Request) -> Template:
                                              "blobfolder":blobfolder})
 
 
-@get("/updateinstruments", exclude_from_auth=True)
-async def updateinstruments(request: Request) -> Template:
+@get("/updateinstruments", exclude_from_auth=True, sync_to_thread=False )
+def updateinstruments(request: Request) -> Template:
     "Updates the instruments on the main public page"
     iclient = userdata.get_indiclient()
     instruments = list(name for name,value in iclient.items() if value.enable)
@@ -219,8 +219,8 @@ async def updateinstruments(request: Request) -> Template:
     return HTMXTemplate(template_name="instruments.html", context={"instruments":instruments})
 
 
-@get("/updatemessages", exclude_from_auth=True)
-async def updatemessages() -> Template:
+@get("/updatemessages", exclude_from_auth=True, sync_to_thread=False )
+def updatemessages() -> Template:
     "Updates the messages on the main public page"
     iclient = userdata.get_indiclient()
     if iclient.stop:
@@ -231,8 +231,8 @@ async def updatemessages() -> Template:
     return HTMXTemplate(template_name="messages.html", context={"messages":messagelist})
 
 
-@get("/login", exclude_from_auth=True)
-async def login_page(request: Request[str, str, State]) -> Template:
+@get("/login", exclude_from_auth=True, sync_to_thread=False )
+def login_page(request: Request[str, str, State]) -> Template:
     "Render the login page"
     cookie = request.cookies.get('token')
     # log the user out
@@ -269,8 +269,8 @@ async def login(request: Request) -> Template|ClientRedirect:
     return response
 
 
-@get("/logout")
-async def logout(request: Request[str, str, State]) -> Template:
+@get("/logout", sync_to_thread=False )
+def logout(request: Request[str, str, State]) -> Template:
     "Logs the user out, and render the logout page"
     cookie = request.cookies.get('token')
     # log the user out
@@ -279,8 +279,8 @@ async def logout(request: Request[str, str, State]) -> Template:
     return Template("edit/loggedout.html", context={"hostname":userdata.connectedtext()})
 
 
-@get("/blobs")
-async def blobs(request: Request[str, str, State]) -> Template:
+@get("/blobs", sync_to_thread=False )
+def blobs(request: Request[str, str, State]) -> Template:
     "Shows a page of blob files"
     iclient = userdata.get_indiclient()
     blobfolder = iclient.BLOBfolder
@@ -295,8 +295,8 @@ async def blobs(request: Request[str, str, State]) -> Template:
     return Template("blobs.html", context=context)
 
 
-@get("/getblob/{blobfile:str}", media_type="application/octet")
-async def getblob(blobfile:str, request: Request[str, str, State]) -> File:
+@get("/getblob/{blobfile:str}", media_type="application/octet", sync_to_thread=False )
+def getblob(blobfile:str, request: Request[str, str, State]) -> File:
     "Download a BLOB to the browser client"
     iclient = userdata.get_indiclient()
     blobfolder = iclient.BLOBfolder
@@ -310,8 +310,8 @@ async def getblob(blobfile:str, request: Request[str, str, State]) -> File:
         filename=blobfile
         )
 
-@get("/delblob/{blobfile:str}")
-async def delblob(blobfile:str, request: Request[str, str, State]) -> ClientRefresh:
+@get("/delblob/{blobfile:str}", sync_to_thread=False )
+def delblob(blobfile:str, request: Request[str, str, State]) -> ClientRefresh:
     "Deletes a blob"
     auth = request.auth
     if auth != "admin":
@@ -386,6 +386,7 @@ def ipywebapp():
                                        engine=MakoTemplateEngine,
                                       ),
         on_startup=[do_startup],
-        on_shutdown=[do_shutdown]
+        on_shutdown=[do_shutdown],
+        openapi_config=None
         )
     return app

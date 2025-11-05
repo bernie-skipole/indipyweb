@@ -174,8 +174,8 @@ async def fullname(request: Request[str, str, State]) -> Template:
     return HTMXTemplate(None,
                  template_str="<p id=\"nameconfirm\" class=\"vanish\" style=\"color:green\">Success! Your full name has changed</p>")
 
-@get("/delete")
-async def delete(request: Request[str, str, State]) -> Template|ClientRedirect:
+@get("/delete", sync_to_thread=False)
+def delete(request: Request[str, str, State]) -> Template|ClientRedirect:
     "A user is deleting himself"
     user = request.user
     message = userdata.deluser(user)
@@ -187,8 +187,8 @@ async def delete(request: Request[str, str, State]) -> Template|ClientRedirect:
     return ClientRedirect(f"/edit/deleted/{user}")
 
 
-@get("/deleted/{user:str}", exclude_from_auth=True)
-async def deleted(user:str) -> Template:
+@get("/deleted/{user:str}", exclude_from_auth=True, sync_to_thread=False)
+def deleted(user:str) -> Template:
     "Render the deleted page, showing the users name, with account deleted message"
     return Template(template_name="edit/user/userdeleted.html", context={"user": user,
                                                                          "hostname":userdata.connectedtext()})
@@ -246,8 +246,8 @@ async def newuser(request: Request[str, str, State]) -> Template|ClientRedirect|
 
 
 
-@get("/edituser/{user:str}")
-async def edituser(user:str, request: Request[str, str, State]) -> Template|Redirect:
+@get("/edituser/{user:str}", sync_to_thread=False)
+def edituser(user:str, request: Request[str, str, State]) -> Template|Redirect:
     """A user to edit has been selected from the table"""
     if request.auth != "admin":
         return logout(request)
@@ -263,8 +263,8 @@ async def edituser(user:str, request: Request[str, str, State]) -> Template|Redi
     return HTMXTemplate(template_name="edit/admin/edituser.html", context=context)
 
 
-@get("/tableupdate")
-async def tableupdate(thispage:int, request: Request[str, str, State]) -> Template|ClientRedirect|Redirect:
+@get("/tableupdate", sync_to_thread=False)
+def tableupdate(thispage:int, request: Request[str, str, State]) -> Template|ClientRedirect|Redirect:
     "Update the table of users"
     if request.auth != "admin":
         return logout(request)
@@ -275,8 +275,8 @@ async def tableupdate(thispage:int, request: Request[str, str, State]) -> Templa
         return Redirect("/login")
     return Template(template_name="edit/admin/listusers.html", context=context)
 
-@get("/prevpage")
-async def prevpage(thispage:int, request: Request[str, str, State]) -> Template|ClientRedirect|Redirect:
+@get("/prevpage", sync_to_thread=False)
+def prevpage(thispage:int, request: Request[str, str, State]) -> Template|ClientRedirect|Redirect:
     "Handle the admin user requesting a previouse page of the user table"
     if request.auth != "admin":
         return logout(request)
@@ -288,8 +288,8 @@ async def prevpage(thispage:int, request: Request[str, str, State]) -> Template|
     return Template(template_name="edit/admin/listusers.html", context=context)
 
 
-@get("/nextpage")
-async def nextpage(thispage:int, request: Request[str, str, State]) -> Template|ClientRedirect|Redirect:
+@get("/nextpage", sync_to_thread=False)
+def nextpage(thispage:int, request: Request[str, str, State]) -> Template|ClientRedirect|Redirect:
     "Handle the admin user requesting the next page of the user table"
     if request.auth != "admin":
         return logout(request)
