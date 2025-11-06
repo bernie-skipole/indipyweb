@@ -38,7 +38,6 @@ def choosedevice(device:str, request: Request[str, str, State]) -> Template|Redi
     group = groups[0]
     vectorsingroup = list(vectorobj for vectorobj in deviceobj.values() if vectorobj.group == group and vectorobj.enable)
     sortedvectors = sorted(vectorsingroup, key=lambda vectorobj: vectorobj.label)   # sort by label
-    vectornames = list(vectorobj.name for vectorobj in sortedvectors)
     # get last three device messages
     messages = list(deviceobj.messages)
     if not messages:
@@ -54,8 +53,9 @@ def choosedevice(device:str, request: Request[str, str, State]) -> Template|Redi
                "group":group,
                "groups":groups,
                "loggedin":loggedin,
-               "vectors": vectornames,
-               "messages":messagelist}
+               "vectors": sortedvectors,
+               "messages":messagelist,
+               "blobfolder":str(iclient.BLOBfolder)}
     return Template(template_name="devicepage.html", context=context)
 
 
@@ -158,20 +158,29 @@ def changegroup(device:str, group:str, request: Request[str, str, State]) -> Tem
     deviceobj = iclient.get(device)
     if (deviceobj is None) or not deviceobj.enable:
         return ClientRedirect("/")
+    # Check if user is looged in
+    loggedin = False
+    cookie = request.cookies.get('token', '')
+    if cookie:
+        userauth = getuserauth(cookie)
+        if userauth is not None:
+            loggedin = True
     groups = list(set(vectorobj.group for vectorobj in deviceobj.values() if vectorobj.enable ))
     groups.sort()
     if group not in groups:
         group = groups[0]
     # get vectors in this group
-    vectorsingroup = list(vectorobj for vectorobj in deviceobj.values() if vectorobj.group == group)
+    vectorsingroup = list(vectorobj for vectorobj in deviceobj.values() if vectorobj.group == group and vectorobj.enable)
     sortedvectors = sorted(vectorsingroup, key=lambda vectorobj: vectorobj.label)   # sort by label
-    vectornames = list(vectorobj.name for vectorobj in sortedvectors)
     context = { "device":device,
-                "vectors":vectornames,
+                "vectors":sortedvectors,
                 "groups":groups,
-                "selectedgp":group }
+                "selectedgp":group,
+                "timestamp":"",
+                "loggedin":loggedin,
+                "blobfolder":str(iclient.BLOBfolder),
+                "message_timestamp":"" }
     return HTMXTemplate(template_name="group.html", context=context)
-
 
 
 

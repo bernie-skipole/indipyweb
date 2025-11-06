@@ -3,6 +3,9 @@
 ## getvector.html - Shows a vector
 
 
+<%page args="vectorobj, timestamp, loggedin, blobfolder, message_timestamp"/>
+
+
  <div class="w3-row w3-border-top">
   <div class="w3-container w3-threequarter">
     <h3>${vectorobj.label}</h3>
@@ -17,13 +20,21 @@
       <div id="state_${vectorobj.name}" class="w3-container w3-quarter">
   % endif
 
+  % if timestamp:
     <p>State ${timestamp} : ${vectorobj.state}</p>
+  % else:
+    <p>State : ${vectorobj.state}</p>
+  % endif
   </div>
 </div>
 
   <div class="w3-container">
     % if vectorobj.message:
-       <p>${message_timestamp} : ${vectorobj.message|h}</p>
+       % if message_timestamp:
+          <p>${message_timestamp} : ${vectorobj.message|h}</p>
+       % else:
+          <p>${vectorobj.message|h}</p>
+       % endif
     % else:
        <p>Message: Waiting...</p>
     % endif

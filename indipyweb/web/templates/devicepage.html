@@ -40,16 +40,9 @@
   </div>
 </div>
 
-##<div id="grouptabs" hx-get="/device/changegroup/${device|h}/${group|h}" hx-trigger="load delay:100ms" hx-target="#grouptabs" hx-swap="innerHTML">
-##</div>
-
 <div id="grouptabs">
-  <%include file="group.html" args="device=device, groups=groups, selectedgp=group, vectors=vectors"/>
+  <%include file="group.html" args="device=device, groups=groups, selectedgp=group, vectors=vectors, timestamp='', loggedin=loggedin, blobfolder=blobfolder, message_timestamp=''"/>
 <div>
-
-
-
-
 
 </body>
 </html>
