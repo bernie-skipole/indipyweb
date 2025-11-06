@@ -3,13 +3,16 @@
 ## group.html - Showing group tab buttons with vectors in the group
 
 
+<%page args="device, groups, selectedgp, vectors"/>
+
+
   <div class="w3-panel">
     <div class="w3-bar w3-light-grey" >
       % for group in groups:
         % if selectedgp == group:
-            <a hx-get="/device/changegroup/${device|h}/${group|h}" class="w3-bar-item w3-button w3-mobile w3-green">${group|h}</a>
+            <a hx-get="/device/changegroup/${device|h}/${group|h}" class="w3-bar-item w3-button w3-mobile w3-green" hx-target="#grouptabs">${group|h}</a>
         % else:
-            <a hx-get="/device/changegroup/${device|h}/${group|h}"  class="w3-bar-item w3-button w3-mobile">${group|h}</a>
+            <a hx-get="/device/changegroup/${device|h}/${group|h}"  class="w3-bar-item w3-button w3-mobile"  hx-target="#grouptabs">${group|h}</a>
         % endif
       % endfor
     </div>

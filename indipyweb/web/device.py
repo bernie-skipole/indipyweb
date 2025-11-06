@@ -35,10 +35,27 @@ def choosedevice(device:str, request: Request[str, str, State]) -> Template|Redi
             loggedin = True
     groups = list(set(vectorobj.group for vectorobj in deviceobj.values() if vectorobj.enable))
     groups.sort()
+    group = groups[0]
+    vectorsingroup = list(vectorobj for vectorobj in deviceobj.values() if vectorobj.group == group and vectorobj.enable)
+    sortedvectors = sorted(vectorsingroup, key=lambda vectorobj: vectorobj.label)   # sort by label
+    vectornames = list(vectorobj.name for vectorobj in sortedvectors)
+    # get last three device messages
+    messages = list(deviceobj.messages)
+    if not messages:
+        messagelist = ["Device messages : Waiting.."]
+    else:
+        messagelist = list(localtimestring(t) + "  " + m for t,m in messages)
+        messagelist.reverse()
+        # Show last three messages
+        if len(messagelist) > 3:
+            messagelist = messagelist[-3:]
+
     context = {"device":device,
-               "group":groups[0],
+               "group":group,
+               "groups":groups,
                "loggedin":loggedin,
-               "messages":["Device messages : Waiting.."]}
+               "vectors": vectornames,
+               "messages":messagelist}
     return Template(template_name="devicepage.html", context=context)
 
 
@@ -125,7 +142,6 @@ def updatemessages(device:str, request: Request[str, str, State]) -> Template|Cl
 def changegroup(device:str, group:str, request: Request[str, str, State]) -> Template|ClientRedirect:
     "Set chosen group, populate group tabs and group vectors"
     # check valid group
-    cookie = request.cookies.get('token', '')
     if not group:
         return ClientRedirect("/")
     if not device:
@@ -142,14 +158,14 @@ def changegroup(device:str, group:str, request: Request[str, str, State]) -> Tem
     deviceobj = iclient.get(device)
     if (deviceobj is None) or not deviceobj.enable:
         return ClientRedirect("/")
-    vectorobjects = list(vectorobj for vectorobj in deviceobj.values() if vectorobj.enable)
-    vectorobjects = sorted(vectorobjects, key=lambda vectorobj: vectorobj.label)   # sort by label
-    groups = list(set(vectorobj.group for vectorobj in vectorobjects))
+    groups = list(set(vectorobj.group for vectorobj in deviceobj.values() if vectorobj.enable ))
     groups.sort()
     if group not in groups:
         group = groups[0]
     # get vectors in this group
-    vectornames = list(vectorobj.name for vectorobj in vectorobjects if vectorobj.group == group)
+    vectorsingroup = list(vectorobj for vectorobj in deviceobj.values() if vectorobj.group == group)
+    sortedvectors = sorted(vectorsingroup, key=lambda vectorobj: vectorobj.label)   # sort by label
+    vectornames = list(vectorobj.name for vectorobj in sortedvectors)
     context = { "device":device,
                 "vectors":vectornames,
                 "groups":groups,

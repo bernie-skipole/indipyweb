@@ -16,7 +16,7 @@ if sys.version_info < (3, 10):
 
 
 logger = logging.getLogger("indipyclient")
-logger.setLevel("ERROR")
+logger.setLevel("INFO")
 # The above logger generates logs for the INDI client part of the program
 
 
@@ -61,7 +61,7 @@ async def indipywebrun():
     "Read the program arguments, setup the database and run the webserver"
     app, host, port = readconfig()
     print(f"indipyweb version {version} serving on {host}:{port}")
-    config = uvicorn.Config(app=app, host=host, port=port, log_level="error")
+    config = uvicorn.Config(app=app, host=host, port=port, log_level="info")
     server = uvicorn.Server(config)
     await server.serve()
     # the log_level here sets the logging for the uvicorn web server
