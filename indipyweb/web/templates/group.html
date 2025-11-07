@@ -3,8 +3,7 @@
 ## group.html - Showing group tab buttons with vectors in the group
 
 
-<%page args="device, groups, selectedgp, vectors, timestamp, loggedin, blobfolder, message_timestamp"/>
-
+<%page args="device, groups, selectedgp, vectors"/>
 
   <div class="w3-panel">
     <div class="w3-bar w3-light-grey" >
@@ -26,7 +25,7 @@
        <div hx-ext="sse" sse-connect="/vector/vectorsse/${device|h}/${vectorobj.name|h}">
         <div hx-get="/vector/update/${device|h}/${vectorobj.name|h}" hx-trigger="sse:${vectorobj.name|h}" hx-target=this>
 
-##         <%include file="/vector/getvector.html" args="vectorobj=vectorob, timestamp=timestamp, loggedin=loggedin, blobfolder=blobfolder, message_timestamp=message_timestamp"/>
+        ## /vector/update/... is called as soon as the sse-connect is made, and which then inserts vector/getvector.html here
 
         </div>
        </div>

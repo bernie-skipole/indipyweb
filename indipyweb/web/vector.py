@@ -117,7 +117,7 @@ def update(device:str, vector:str, request: Request[str, str, State]) -> Templat
     return HTMXTemplate(template_name="vector/getvector.html", context={"vectorobj":vectorobj,
                                                                         "timestamp":localtimestring(vectorobj.timestamp),
                                                                         "loggedin":loggedin,
-                                                                        "blobfolder":iclient.BLOBfolder,
+                                                                        "blobfolder":str(iclient.BLOBfolder),
                                                                         "message_timestamp":localtimestring(vectorobj.message_timestamp)})
 
 
