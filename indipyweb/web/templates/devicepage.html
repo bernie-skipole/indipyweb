@@ -33,7 +33,7 @@
 
    <div hx-ext="sse" sse-connect="/device/messages/${device|h}">
     <div hx-get="/device/updatemessages/${device|h}" hx-trigger="sse:devicemessages">
-       <%include file="messages.html" args="messages=messages"/>
+       ## /device/updatemessages/... is called as soon as the sse-connect is made, and which then inserts messages.html here
     </div>
    </div>
 

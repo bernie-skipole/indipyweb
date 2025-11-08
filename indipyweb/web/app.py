@@ -186,7 +186,6 @@ def notfound(request: Request) -> Template:
                                              "loggedin":loggedin})
 
 
-
 # Note, all routes with 'exclude_from_auth=True' do not have cookie checked
 # and are not authenticated
 
@@ -202,10 +201,7 @@ def publicroot(request: Request) -> Template:
         if userauth is not None:
             loggedin = True
     blobfolder = True if iclient.BLOBfolder else False
-
     return Template("landing.html", context={"hostname":userdata.connectedtext(),
-                                             "instruments":None,
-                                             "messages":None,
                                              "loggedin":loggedin,
                                              "blobfolder":blobfolder})
 

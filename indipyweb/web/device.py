@@ -38,23 +38,12 @@ def choosedevice(device:str, request: Request[str, str, State]) -> Template|Redi
     group = groups[0]
     vectorsingroup = list(vectorobj for vectorobj in deviceobj.values() if vectorobj.group == group and vectorobj.enable)
     sortedvectors = sorted(vectorsingroup, key=lambda vectorobj: vectorobj.label)   # sort by label
-    # get last three device messages
-    messages = list(deviceobj.messages)
-    if not messages:
-        messagelist = ["Device messages : Waiting.."]
-    else:
-        messagelist = list(localtimestring(t) + "  " + m for t,m in messages)
-        messagelist.reverse()
-        # Show last three messages
-        if len(messagelist) > 3:
-            messagelist = messagelist[-3:]
 
     context = {"device":device,
                "group":group,
                "groups":groups,
                "loggedin":loggedin,
-               "vectors": sortedvectors,
-               "messages":messagelist}
+               "vectors": sortedvectors}
 
     return Template(template_name="devicepage.html", context=context)
 
