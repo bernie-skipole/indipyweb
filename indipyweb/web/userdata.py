@@ -91,13 +91,15 @@ def get_deviceobj(deviceid):
         return
     if not iclient.connected:
         return
+    if not deviceid:
+        return
     for deviceobj in iclient.values():
         if deviceobj.itemid == deviceid:
             if not deviceobj.enable:
                 return
             return deviceobj
 
-def get_vectorobj(vectorid):
+def get_vectorobj(vectorid, deviceid=None):
     "Returns vector object, or None if not found"
     global _PARAMETERS
     iclient = _PARAMETERS["indiclient"]
@@ -105,14 +107,46 @@ def get_vectorobj(vectorid):
         return
     if not iclient.connected:
         return
-    for deviceobj in iclient.values():
+    if not vectorid:
+        return
+    if deviceid:
+        deviceobj = get_deviceobj(deviceid)
+        if not deviceobj:
+            return
         for vectorobj in deviceobj.values():
             if vectorobj.itemid == vectorid:
                 if vectorobj.enable:
                     return vectorobj
                 return
+    else:
+        for deviceobj in iclient.values():
+            for vectorobj in deviceobj.values():
+                if vectorobj.itemid == vectorid:
+                    if vectorobj.enable:
+                        return vectorobj
+                    return
 
-
+def get_memberobj(memberid, vectorid=None, deviceid=None):
+    "Returns a memberobject"
+    global _PARAMETERS
+    iclient = _PARAMETERS["indiclient"]
+    if iclient.stop:
+        return
+    if not iclient.connected:
+        return
+    if not memberid:
+        return
+    if vectorid:
+        vectorobj = get_vectorobj(vectorid, deviceid=deviceid)
+        for memberobj in vectorobj.members():
+            if memberobj.itemid == memberid:
+                return memberobj
+    else:
+        for deviceobj in iclient.values():
+            for vectorobj in deviceobj.values():
+                for memberobj in vectorobj.members():
+                    if memberobj.itemid == memberid:
+                        return memberobj
 
 def getconfig(parameter):
     return _PARAMETERS.get(parameter)
