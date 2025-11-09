@@ -94,9 +94,9 @@ def update(vectorid:int, request: Request[str, str, State]) -> Template|ClientRe
     if vectorobj.user_string:
         # This is not a full update, just an update of the result and state fields
         return HTMXTemplate(template_name="vector/result.html",
-                            re_target=f"#result_{vectorobj.name}",
+                            re_target=f"#result_{vectorobj.itemid}",
                             context={"state":f"{vectorobj.state}",
-                                     "stateid":f"state_{vectorobj.name}",
+                                     "stateid":f"state_{vectorobj.itemid}",
                                      "timestamp":localtimestring(vectorobj.timestamp),
                                      "result":vectorobj.user_string})
     # have to return a vector html template here
@@ -107,28 +107,14 @@ def update(vectorid:int, request: Request[str, str, State]) -> Template|ClientRe
                                                                         "message_timestamp":localtimestring(vectorobj.message_timestamp)})
 
 
-@post("/submit/{device:str}/{vector:str}")
-async def submit(device:str, vector:str, request: Request[str, str, State]) -> Template|ClientRedirect|ClientRefresh:
+@post("/submit/{vectorid:int}")
+async def submit(vectorid:int, request: Request[str, str, State]) -> Template|ClientRedirect|ClientRefresh:
     # check valid vector
-    if not vector:
-        return ClientRedirect("/")
-    if not device:
-        return ClientRedirect("/")
     iclient = get_indiclient()
-    if iclient.stop:
+    # check valid vector
+    vectorobj = get_vectorobj(vectorid)
+    if vectorobj is None:
         return ClientRedirect("/")
-    if not iclient.connected:
-        return ClientRedirect("/")
-    if device not in iclient:
-        return ClientRedirect("/")
-    deviceobj = iclient[device]
-    if not deviceobj.enable:
-        return ClientRedirect("/")
-    if vector not in deviceobj:
-        return ClientRefresh()
-    vectorobj = deviceobj[vector]
-    if not vectorobj.enable:
-        return ClientRefresh()
 
     if vectorobj.perm == "ro":
         return HTMXTemplate(None, template_str="<p>INVALID: This is a Read Only vector!</p>")
@@ -149,12 +135,12 @@ async def submit(device:str, vector:str, request: Request[str, str, State]) -> T
             # 'OneOfMany', and 'AtMostOne' rules have a max oncount of 1
             if vectorobj.rule == "OneOfMany" and oncount != 1:
                 return HTMXTemplate(template_name="vector/result.html", context={"state":"Alert",
-                                                                                 "stateid":f"state_{vectorobj.name}",
+                                                                                 "stateid":f"state_{vectorobj.itemid}",
                                                                                  "timestamp":localtimestring(),
                                                                                  "result":"OneOfMany rule requires one switch only to be On"})
             if vectorobj.rule == "AtMostOne" and oncount > 1:
                 return HTMXTemplate(template_name="vector/result.html", context={"state":"Alert",
-                                                                                 "stateid":f"state_{vectorobj.name}",
+                                                                                 "stateid":f"state_{vectorobj.itemid}",
                                                                                  "timestamp":localtimestring(),
                                                                                  "result":"AtMostOne rule requires no more than one On switch"})
     else:
@@ -185,15 +171,15 @@ async def submit(device:str, vector:str, request: Request[str, str, State]) -> T
 
     except Exception as e:
         return HTMXTemplate(template_name="vector/result.html", context={"state":"Alert",
-                                                                         "stateid":f"state_{vectorobj.name}",
+                                                                         "stateid":f"state_{vectorobj.itemid}",
                                                                          "timestamp":localtimestring(),
                                                                          "result":"Unable to parse number value"})
 
 
     # and send the vector
-    await iclient.send_newVector(device, vector, members=members)
+    await iclient.send_newVector(vectorobj.devicename, vectorobj.name, members=members)
     return HTMXTemplate(template_name="vector/result.html", context={"state":"Busy",
-                                                                     "stateid":f"state_{vectorobj.name}",
+                                                                     "stateid":f"state_{vectorobj.itemid}",
                                                                      "timestamp":localtimestring(),
                                                                      "result":"Vector changes sent"})
 
@@ -245,7 +231,7 @@ async def blobsend(
     await vectorobj.send_newBLOBVector(members={member:(content, 0, extension)})
 
     return HTMXTemplate(template_name="vector/result.html", context={"state":"Busy",
-                                                                     "stateid":f"state_{vectorobj.name}",
+                                                                     "stateid":f"state_{vectorobj.itemid}",
                                                                      "timestamp":localtimestring(),
                                                                      "result":f"File {filename} sent"})
 

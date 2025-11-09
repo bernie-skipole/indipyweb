@@ -8,13 +8,13 @@
     <h3>${vectorobj.label|h}</h3>
   </div>
   % if vectorobj.state == "Ok":
-      <div id="state_${vectorobj.name|h}" class="w3-container w3-quarter w3-green">
+      <div id="state_${vectorobj.itemid}" class="w3-container w3-quarter w3-green">
   % elif vectorobj.state == "Busy":
-      <div id="state_${vectorobj.name|h}" class="w3-container w3-quarter w3-yellow">
+      <div id="state_${vectorobj.itemid}" class="w3-container w3-quarter w3-yellow">
   % elif vectorobj.state == "Alert":
-      <div id="state_${vectorobj.name|h}" class="w3-container w3-quarter w3-red">
+      <div id="state_${vectorobj.itemid}" class="w3-container w3-quarter w3-red">
   % else:
-      <div id="state_${vectorobj.name|h}" class="w3-container w3-quarter">
+      <div id="state_${vectorobj.itemid}" class="w3-container w3-quarter">
   % endif
 
   % if timestamp:
@@ -38,7 +38,7 @@
   </div>
 
 % if vectorobj.perm != "ro" and loggedin and vectorobj.vectortype != "BLOBVector":
- <form hx-post="/vector/submit/${vectorobj.devicename|h}/${vectorobj.name|h}" hx-target="#result_${vectorobj.name|h}">
+ <form hx-post="/vector/submit/${vectorobj.itemid}" hx-target="#result_${vectorobj.itemid}">
 % endif
 
  % for memberobj in sorted(vectorobj.members().values(), key=lambda memberobj: memberobj.label):
@@ -59,7 +59,7 @@
 % if vectorobj.perm != "ro" and loggedin and vectorobj.vectortype != "BLOBVector":
 
   <div class="w3-row w3-panel">
-    <div id="result_${vectorobj.name|h}" class="w3-container w3-threequarter">
+    <div id="result_${vectorobj.itemid}" class="w3-container w3-threequarter">
        <p></p>
     </div>
     <div class="w3-container w3-quarter">
@@ -72,7 +72,7 @@
 
 % else:
 
- <div id="result_${vectorobj.name|h}" class="w3-panel">
+ <div id="result_${vectorobj.itemid}" class="w3-panel">
    <p></p>
  </div>
 
