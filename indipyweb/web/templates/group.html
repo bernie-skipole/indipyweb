@@ -22,8 +22,8 @@
   % for vectorobj in vectors:
     <div class="w3-panel">
 
-       <div hx-ext="sse" sse-connect="/vector/vectorsse/${device|h}/${vectorobj.name|h}">
-        <div hx-get="/vector/update/${device|h}/${vectorobj.name|h}" hx-trigger="sse:${vectorobj.name|h}" hx-target=this>
+       <div hx-ext="sse" sse-connect="/vector/vectorsse/${vectorobj.itemid}">
+        <div hx-get="/vector/update/${vectorobj.itemid}" hx-trigger="sse:vector_${vectorobj.itemid}" hx-target=this>
 
         ## /vector/update/... is called as soon as the sse-connect is made, and which then inserts vector/getvector.html here
 

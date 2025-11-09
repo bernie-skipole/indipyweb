@@ -108,9 +108,10 @@ def get_vectorobj(vectorid):
     for deviceobj in iclient.values():
         for vectorobj in deviceobj.values():
             if vectorobj.itemid == vectorid:
-                if not vectoroj.enable:
-                    return
-                return vectorobj
+                if vectorobj.enable:
+                    return vectorobj
+                return
+
 
 
 def getconfig(parameter):

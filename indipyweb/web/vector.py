@@ -16,17 +16,18 @@ from litestar.enums import RequestEncodingType
 from litestar.params import Body
 from litestar.response import ServerSentEvent, ServerSentEventMessage
 
-from .userdata import localtimestring, get_vector_event, get_indiclient, getuserauth
+from .userdata import localtimestring, get_vector_event, get_indiclient, getuserauth, get_vectorobj
 
 
 class VectorEvent:
     """Iterate with whenever a vector change happens."""
 
-    def __init__(self, device, vector):
+    def __init__(self, vectorobj):
         self.lasttimestamp = None
-        self.device = device
-        self.vector = vector
-        self.vector_event = get_vector_event(device, vector)
+        self.vectorobj = vectorobj
+        self.device = vectorobj.devicename
+        self.vector = vectorobj.name
+        self.vector_event = get_vector_event(self.device, self.vector)
         self.iclient = get_indiclient()
 
     def __aiter__(self):
@@ -34,28 +35,28 @@ class VectorEvent:
 
     async def __anext__(self):
         "Whenever there is a new vector event, return a ServerSentEventMessage message"
+        eventstring = f"vector_{self.vectorobj.itemid}"
         while True:
             if self.iclient.stop or (not self.iclient.connected):
                 await asyncio.sleep(2)
-                return ServerSentEventMessage(event=self.vector) # forces the client to send update
+                return ServerSentEventMessage(event=eventstring) # forces the client to send update
                                                                  # which requests new vector
             if self.device not in self.iclient:
                 await asyncio.sleep(2)
-                return ServerSentEventMessage(event=self.vector)
+                return ServerSentEventMessage(event=eventstring)
             deviceobject = self.iclient.get(self.device)
             if (deviceobject is None) or not deviceobject.enable:
                 await asyncio.sleep(2)
-                return ServerSentEventMessage(event=self.vector)
-            vectorobject = deviceobject.get(self.vector)
-            if (vectorobject is None) or not vectorobject.enable:
+                return ServerSentEventMessage(event=eventstring)
+            if not self.vectorobj.enable:
                 await asyncio.sleep(2)
-                return ServerSentEventMessage(event=self.vector)
+                return ServerSentEventMessage(event=eventstring)
             # So nothing wrong with the vector, check timestamp
-            lasttimestamp = vectorobject.timestamp
+            lasttimestamp = self.vectorobj.timestamp
             if (self.lasttimestamp is None) or (lasttimestamp != self.lasttimestamp):
                 # the vector has been updated
                 self.lasttimestamp = lasttimestamp
-                return ServerSentEventMessage(event=self.vector)
+                return ServerSentEventMessage(event=eventstring)
             # No change, wait, at most 5 seconds, for a vector event
             try:
                 await asyncio.wait_for(self.vector_event.wait(), timeout=5.0)
@@ -66,36 +67,23 @@ class VectorEvent:
 
 
 # SSE Handler
-@get(path="/vectorsse/{device:str}/{vector:str}", exclude_from_auth=True, sync_to_thread=False)
-def vectorsse(device:str, vector:str, request: Request[str, str, State]) -> ServerSentEvent:
-    return ServerSentEvent(VectorEvent(device, vector))
+@get(path="/vectorsse/{vectorid:int}", exclude_from_auth=True, sync_to_thread=False)
+def vectorsse(vectorid:int, request: Request[str, str, State]) -> ServerSentEvent:
+    vectorobj = get_vectorobj(vectorid)
+    if vectorobj is None:
+        return ClientRedirect("/")
+    return ServerSentEvent(VectorEvent(vectorobj))
 
 
 
-@get("/update/{device:str}/{vector:str}", exclude_from_auth=True, sync_to_thread=False)
-def update(device:str, vector:str, request: Request[str, str, State]) -> Template|ClientRedirect|ClientRefresh:
+@get("/update/{vectorid:int}", exclude_from_auth=True, sync_to_thread=False)
+def update(vectorid:int, request: Request[str, str, State]) -> Template|ClientRedirect|ClientRefresh:
     "Update vector"
-    # check valid vector
-    if not vector:
-        return ClientRedirect("/")
-    if not device:
-        return ClientRedirect("/")
     iclient = get_indiclient()
-    if iclient.stop:
+    # check valid vector
+    vectorobj = get_vectorobj(vectorid)
+    if vectorobj is None:
         return ClientRedirect("/")
-    if not iclient.connected:
-        return ClientRedirect("/")
-    if device not in iclient:
-        return ClientRedirect("/")
-    deviceobj = iclient[device]
-    if not deviceobj.enable:
-        return ClientRedirect("/")
-    if vector not in deviceobj:
-        return ClientRefresh()
-    vectorobj = deviceobj[vector]
-    if not vectorobj.enable:
-        return ClientRefresh()
-
     # Check if user is looged in
     loggedin = False
     cookie = request.cookies.get('token', '')
@@ -103,7 +91,6 @@ def update(device:str, vector:str, request: Request[str, str, State]) -> Templat
         userauth = getuserauth(cookie)
         if userauth is not None:
             loggedin = True
-
     if vectorobj.user_string:
         # This is not a full update, just an update of the result and state fields
         return HTMXTemplate(template_name="vector/result.html",
@@ -112,7 +99,6 @@ def update(device:str, vector:str, request: Request[str, str, State]) -> Templat
                                      "stateid":f"state_{vectorobj.name}",
                                      "timestamp":localtimestring(vectorobj.timestamp),
                                      "result":vectorobj.user_string})
-
     # have to return a vector html template here
     return HTMXTemplate(template_name="vector/getvector.html", context={"vectorobj":vectorobj,
                                                                         "timestamp":localtimestring(vectorobj.timestamp),
