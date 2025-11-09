@@ -83,6 +83,36 @@ def get_indiclient():
     return _PARAMETERS["indiclient"]
 
 
+def get_deviceobj(deviceid):
+    "Returns device object, or None if not found"
+    global _PARAMETERS
+    iclient = _PARAMETERS["indiclient"]
+    if iclient.stop:
+        return
+    if not iclient.connected:
+        return
+    for deviceobj in iclient.values():
+        if deviceobj.itemid == deviceid:
+            if not deviceobj.enable:
+                return
+            return deviceobj
+
+def get_vectorobj(vectorid):
+    "Returns vector object, or None if not found"
+    global _PARAMETERS
+    iclient = _PARAMETERS["indiclient"]
+    if iclient.stop:
+        return
+    if not iclient.connected:
+        return
+    for deviceobj in iclient.values():
+        for vectorobj in deviceobj.values():
+            if vectorobj.itemid == vectorid:
+                if not vectoroj.enable:
+                    return
+                return vectorobj
+
+
 def getconfig(parameter):
     return _PARAMETERS.get(parameter)
 

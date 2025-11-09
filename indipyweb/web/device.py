@@ -13,18 +13,15 @@ from litestar.datastructures import State
 
 from litestar.response import ServerSentEvent, ServerSentEventMessage
 
-from .userdata import localtimestring, get_device_event, get_indiclient, getuserauth
+from .userdata import localtimestring, get_device_event, get_indiclient, getuserauth, get_deviceobj
 
 
-@get("/choosedevice/{device:str}", exclude_from_auth=True, sync_to_thread=False)
-def choosedevice(device:str, request: Request[str, str, State]) -> Template|Redirect:
+@get("/choosedevice/{deviceid:int}", exclude_from_auth=True, sync_to_thread=False)
+def choosedevice(deviceid:int, request: Request[str, str, State]) -> Template|Redirect:
     """A device has been selected"""
     # have to check device exists
-    if not device:
-        return Redirect("/")
-    iclient = get_indiclient()
-    deviceobj = iclient.get(device)
-    if (deviceobj is None) or not deviceobj.enable:
+    deviceobj = get_deviceobj(deviceid)
+    if deviceobj is None:
         return Redirect("/")
     # Check if user is looged in
     loggedin = False
@@ -39,7 +36,8 @@ def choosedevice(device:str, request: Request[str, str, State]) -> Template|Redi
     vectorsingroup = list(vectorobj for vectorobj in deviceobj.values() if vectorobj.group == group and vectorobj.enable)
     sortedvectors = sorted(vectorsingroup, key=lambda vectorobj: vectorobj.label)   # sort by label
 
-    context = {"device":device,
+    context = {"device":deviceobj.devicename,
+               "deviceid":deviceobj.itemid,
                "group":group,
                "groups":groups,
                "loggedin":loggedin,
@@ -51,10 +49,10 @@ def choosedevice(device:str, request: Request[str, str, State]) -> Template|Redi
 class ShowMessages:
     """Iterate with messages whenever a device change happens."""
 
-    def __init__(self, device):
+    def __init__(self, deviceobj):
         self.lasttimestamp = None
-        self.device = device
-        self.device_event = get_device_event(device)
+        self.deviceobj = deviceobj
+        self.device_event = get_device_event(deviceobj.devicename)
         self.iclient = get_indiclient()
 
     def __aiter__(self):
@@ -67,22 +65,19 @@ class ShowMessages:
                 await asyncio.sleep(2)
                 return ServerSentEventMessage(event="devicemessages") # forces the client to send updatemessages
                                                                       # which checks status of the device
-            if self.device not in self.iclient:
+            if not self.deviceobj.enable:
                 await asyncio.sleep(2)
                 return ServerSentEventMessage(event="devicemessages")
-            deviceobject = self.iclient[self.device]
-            if not deviceobject.enable:
-                await asyncio.sleep(2)
-                return ServerSentEventMessage(event="devicemessages")
+
             # So nothing wrong with the device, check for new message
-            if deviceobject.messages:
-                lasttimestamp = deviceobject.messages[0][0]
+            if self.deviceobj.messages:
+                lasttimestamp = self.deviceobj.messages[0][0]
                 if (self.lasttimestamp is None) or (lasttimestamp != self.lasttimestamp):
                     # a new message is received
                     self.lasttimestamp = lasttimestamp
                     return ServerSentEventMessage(event="devicemessages")
             elif self.lasttimestamp is not None:
-                # There are no deviceobject.messages, but self.lasttimestamp
+                # There are no deviceobj.messages, but self.lasttimestamp
                 # has a value, so there has been a change
                 self.lasttimestamp = None
                 return ServerSentEventMessage(event="devicemessages")
@@ -96,26 +91,21 @@ class ShowMessages:
 
 
 # SSE Handler
-@get(path="/messages/{device:str}", exclude_from_auth=True, sync_to_thread=False)
-def messages(device:str, request: Request[str, str, State]) -> ServerSentEvent:
-    return ServerSentEvent(ShowMessages(device))
+@get(path="/messages/{deviceid:int}", exclude_from_auth=True, sync_to_thread=False)
+def messages(deviceid:int, request: Request[str, str, State]) -> ServerSentEvent|ClientRedirect:
+    deviceobj = get_deviceobj(deviceid)
+    if deviceobj is None:
+        return ClientRedirect("/")
+    return ServerSentEvent(ShowMessages(deviceobj))
 
 
-@get("/updatemessages/{device:str}", exclude_from_auth=True, sync_to_thread=False)
-def updatemessages(device:str, request: Request[str, str, State]) -> Template|ClientRedirect:
+@get("/updatemessages/{deviceid:int}", exclude_from_auth=True, sync_to_thread=False)
+def updatemessages(deviceid:int, request: Request[str, str, State]) -> Template|ClientRedirect:
     "Updates the messages on the device page, and redirects to / if device deleted"
-    if not device:
+    deviceobj = get_deviceobj(deviceid)
+    if deviceobj is None:
         return ClientRedirect("/")
-    iclient = get_indiclient()
-    if iclient.stop:
-        return ClientRedirect("/")
-    if not iclient.connected:
-        return ClientRedirect("/")
-    if device not in iclient:
-        return ClientRedirect("/")
-    if not iclient[device].enable:
-        return ClientRedirect("/")
-    messages = list(iclient[device].messages)
+    messages = list(deviceobj.messages)
     if not messages:
         return HTMXTemplate(template_name="messages.html", context={"messages":["Device messages : Waiting.."]})
     messagelist = list(localtimestring(t) + "  " + m for t,m in messages)
@@ -127,25 +117,14 @@ def updatemessages(device:str, request: Request[str, str, State]) -> Template|Cl
 
 
 
-@get("/changegroup/{device:str}/{group:str}", exclude_from_auth=True, sync_to_thread=False)
-def changegroup(device:str, group:str, request: Request[str, str, State]) -> Template|ClientRedirect:
+@get("/changegroup/{deviceid:int}/{group:str}", exclude_from_auth=True, sync_to_thread=False)
+def changegroup(deviceid:int, group:str, request: Request[str, str, State]) -> Template|ClientRedirect:
     "Set chosen group, populate group tabs and group vectors"
     # check valid group
     if not group:
         return ClientRedirect("/")
-    if not device:
-        return ClientRedirect("/")
-    iclient = get_indiclient()
-    if iclient.stop:
-        return ClientRedirect("/")
-    if not iclient.connected:
-        return ClientRedirect("/")
-    if device not in iclient:
-        return ClientRedirect("/")
-    if not iclient[device].enable:
-        return ClientRedirect("/")
-    deviceobj = iclient.get(device)
-    if (deviceobj is None) or not deviceobj.enable:
+    deviceobj = get_deviceobj(deviceid)
+    if deviceobj is None:
         return ClientRedirect("/")
     groups = list(set(vectorobj.group for vectorobj in deviceobj.values() if vectorobj.enable ))
     groups.sort()
@@ -153,9 +132,10 @@ def changegroup(device:str, group:str, request: Request[str, str, State]) -> Tem
         group = groups[0]
     # get vectors in this group
     vectorsingroup = list(vectorobj for vectorobj in deviceobj.values() if vectorobj.group == group and vectorobj.enable)
-    sortedvectors = sorted(vectorsingroup, key=lambda vectorobj: vectorobj.label)   # sort by label
-    context = { "device":device,
-                "vectors":sortedvectors,
+    vectorsingroup.sort(key=lambda x: x.label)   # sort by label
+    context = { "deviceid":deviceid,
+                "device": deviceobj.devicename,
+                "vectors":vectorsingroup,
                 "groups":groups,
                 "selectedgp":group }
 

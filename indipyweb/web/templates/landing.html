@@ -53,7 +53,7 @@
     <div class="w3-container w3-border" style="margin-top:5vh">
 
        <div hx-ext="sse" sse-connect="/messages">
-        <div hx-get="/updatemessages" hx-trigger="sse:newmessages" hx-target=this>
+        <div hx-get="/updatemessages" hx-trigger="sse:newmessages">
          ## /updatemessages is called as soon as the sse-connect is made, and which then inserts messages.html here
         </div>
        </div>

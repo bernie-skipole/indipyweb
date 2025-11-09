@@ -26,14 +26,19 @@
     <h3>Device - ${device|h}</h3>
   </header>
 
-## Show the device panel
+## Show the device messages panel
 
 <div class="w3-panel">
   <div class="w3-container w3-border">
 
-   <div hx-ext="sse" sse-connect="/device/messages/${device|h}">
-    <div hx-get="/device/updatemessages/${device|h}" hx-trigger="sse:devicemessages">
+   <div hx-ext="sse" sse-connect="/device/messages/${deviceid}">
+    <div hx-get="/device/updatemessages/${deviceid}" hx-trigger="sse:devicemessages">
+
        ## /device/updatemessages/... is called as soon as the sse-connect is made, and which then inserts messages.html here
+        <div class="w3-margin">
+            <p>Device message: Waiting..</p>
+        </div>
+
     </div>
    </div>
 
@@ -41,7 +46,7 @@
 </div>
 
 <div id="grouptabs">
-  <%include file="group.html" args="device=device, groups=groups, selectedgp=group, vectors=vectors"/>
+  <%include file="group.html" args="deviceid=deviceid, device=device, groups=groups, selectedgp=group, vectors=vectors"/>
 <div>
 
 

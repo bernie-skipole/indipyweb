@@ -210,8 +210,8 @@ def publicroot(request: Request) -> Template:
 def updateinstruments(request: Request) -> Template:
     "Updates the instruments on the main public page"
     iclient = userdata.get_indiclient()
-    instruments = list(name for name,value in iclient.items() if value.enable)
-    instruments.sort()
+    instruments = list(deviceobj for deviceobj in iclient.values() if deviceobj.enable)
+    instruments.sort(key=lambda x: x.devicename)
     return HTMXTemplate(template_name="instruments.html", context={"instruments":instruments})
 
 
