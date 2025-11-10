@@ -138,13 +138,13 @@ def get_memberobj(memberid, vectorid=None, deviceid=None):
         return
     if vectorid:
         vectorobj = get_vectorobj(vectorid, deviceid=deviceid)
-        for memberobj in vectorobj.members():
+        for memberobj in vectorobj.members().values():
             if memberobj.itemid == memberid:
                 return memberobj
     else:
         for deviceobj in iclient.values():
             for vectorobj in deviceobj.values():
-                for memberobj in vectorobj.members():
+                for memberobj in vectorobj.members().values():
                     if memberobj.itemid == memberid:
                         return memberobj
 

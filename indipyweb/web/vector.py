@@ -191,40 +191,30 @@ async def submit(vectorid:int, request: Request[str, str, State]) -> Template|Cl
 
 
 
-@post(path="/blobsend/{device:str}/{vector:str}/{member:str}", media_type=MediaType.TEXT)
+@post(path="/blobsend/{vectorid:int}/{memberid:int}", media_type=MediaType.TEXT)
 async def blobsend(
-    device:str, vector:str, member:str,
+    vectorid:int, memberid:int,
     request: Request[str, str, State],
     data: Annotated[UploadFile, Body(media_type=RequestEncodingType.MULTI_PART)]) -> Template|ClientRedirect|ClientRefresh:
 
     # check valid vector
-    if not vector:
-        return ClientRedirect("/")
-    if not device:
-        return ClientRedirect("/")
     iclient = get_indiclient()
-    if iclient.stop:
+    # check valid vector
+    vectorobj = get_vectorobj(vectorid)
+    if vectorobj is None:
         return ClientRedirect("/")
-    if not iclient.connected:
-        return ClientRedirect("/")
-    if device not in iclient:
-        return ClientRedirect("/")
-    deviceobj = iclient[device]
-    if not deviceobj.enable:
-        return ClientRedirect("/")
-    if vector not in deviceobj:
-        return ClientRefresh()
-    vectorobj = deviceobj[vector]
-    if not vectorobj.enable:
-        return ClientRefresh()
-    if not member:
-        return ClientRefresh()
-    if member not in vectorobj:
-        return ClientRefresh()
-    memberobj = vectorobj.member(member)
 
     if vectorobj.perm == "ro":
         return HTMXTemplate(None, template_str="<p>INVALID: This is a Read Only vector!</p>")
+
+    memberobj = None
+
+    for mbr in vectorobj.members().values():
+        if mbr.itemid == memberid:
+            memberobj = mbr
+            break
+    if memberobj is None:
+        return ClientRedirect("/")
 
     content = await data.read()
     filename = data.filename
@@ -234,7 +224,7 @@ async def blobsend(
     name, extension = os.path.splitext(filename)
 
     # memberdict of {membername:(value, blobsize, blobformat)}
-    await vectorobj.send_newBLOBVector(members={member:(content, 0, extension)})
+    await vectorobj.send_newBLOBVector(members={memberobj.name:(content, 0, extension)})
 
     return HTMXTemplate(template_name="vector/result.html", context={"state":"Busy",
                                                                      "stateid":f"state_{vectorobj.itemid}",
