@@ -37,8 +37,6 @@ MESSAGE_EVENT = asyncio.Event()
 
 DEVICE_EVENTS = {}
 
-VECTOR_EVENTS = {}
-
 
 # This event is set whenever the table of users needs updating
 TABLE_EVENT = asyncio.Event()
@@ -126,27 +124,7 @@ def get_vectorobj(vectorid, deviceid=None):
                         return vectorobj
                     return
 
-def get_memberobj(memberid, vectorid=None, deviceid=None):
-    "Returns a memberobject"
-    global _PARAMETERS
-    iclient = _PARAMETERS["indiclient"]
-    if iclient.stop:
-        return
-    if not iclient.connected:
-        return
-    if not memberid:
-        return
-    if vectorid:
-        vectorobj = get_vectorobj(vectorid, deviceid=deviceid)
-        for memberobj in vectorobj.members().values():
-            if memberobj.itemid == memberid:
-                return memberobj
-    else:
-        for deviceobj in iclient.values():
-            for vectorobj in deviceobj.values():
-                for memberobj in vectorobj.members().values():
-                    if memberobj.itemid == memberid:
-                        return memberobj
+
 
 def getconfig(parameter):
     return _PARAMETERS.get(parameter)
@@ -182,18 +160,12 @@ def localtimestring(t=None):
     return f"{localtime.strftime('%H:%M:%S')}.{ms:0>2d}"
 
 
-def get_device_event(device):
+def get_device_event(devicename):
     global DEVICE_EVENTS
-    if device not in DEVICE_EVENTS:
-        DEVICE_EVENTS[device] = asyncio.Event()
-    return DEVICE_EVENTS[device]
+    if devicename not in DEVICE_EVENTS:
+        DEVICE_EVENTS[devicename] = asyncio.Event()
+    return DEVICE_EVENTS[devicename]
 
-
-def get_vector_event(device, vector):
-    global VECTOR_EVENTS
-    if (device,vector) not in VECTOR_EVENTS:
-        VECTOR_EVENTS[device,vector] = asyncio.Event()
-    return VECTOR_EVENTS[device,vector]
 
 
 def get_stored_item(item):

@@ -7,7 +7,7 @@ import asyncio
 
 import indipyclient as ipc
 
-from .web.userdata import DEFINE_EVENT, MESSAGE_EVENT, get_indiclient, getconfig, setconfig, get_device_event, get_vector_event
+from .web.userdata import DEFINE_EVENT, MESSAGE_EVENT, get_indiclient, getconfig, setconfig, get_device_event
 
 version = "0.0.3"
 
@@ -41,6 +41,11 @@ class IPyWebClient(ipc.IPyClient):
 
     async def rxevent(self, event):
 
+        if event.devicename:
+            dme = get_device_event(event.devicename)
+        else:
+            dme= None
+
         if event.eventtype in ("Define", "Delete", "ConnectionMade", "ConnectionLost"):
             DEFINE_EVENT.set()
             DEFINE_EVENT.clear()
@@ -48,7 +53,6 @@ class IPyWebClient(ipc.IPyClient):
             MESSAGE_EVENT.set()
             MESSAGE_EVENT.clear()
             if event.devicename:
-                dme = get_device_event(event.devicename)
                 dme.set()
                 dme.clear()
 
@@ -56,18 +60,15 @@ class IPyWebClient(ipc.IPyClient):
             if event.devicename:
                 # set a message event, so if the device is deleted
                 # when client sends an updatemessages it forces a redirect
-                dme = get_device_event(event.devicename)
                 dme.set()
                 dme.clear()
 
         if event.vector:
-           if event.eventtype == "TimeOut":
-               event.vector.user_string = "Response has timed out"
-               event.vector.state = 'Alert'
-               event.vector.timestamp = event.timestamp
-           else:
-               event.vector.user_string = ""
-           # set vector event when a vector is updated
-           ve = get_vector_event(event.devicename, event.vectorname)
-           ve.set()
-           ve.clear()
+            if event.eventtype == "TimeOut":
+                event.vector.user_string = "Response has timed out"
+                event.vector.state = 'Alert'
+                event.vector.timestamp = event.timestamp
+            else:
+                event.vector.user_string = ""
+            dme.set()
+            dme.clear()

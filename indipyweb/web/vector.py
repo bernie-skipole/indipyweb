@@ -16,63 +16,8 @@ from litestar.enums import RequestEncodingType
 from litestar.params import Body
 from litestar.response import ServerSentEvent, ServerSentEventMessage
 
-from .userdata import localtimestring, get_vector_event, get_indiclient, getuserauth, get_vectorobj
+from .userdata import localtimestring, get_indiclient, getuserauth, get_vectorobj
 
-
-class VectorEvent:
-    """Iterate with whenever a vector change happens."""
-
-    def __init__(self, vectorobj):
-        self.lasttimestamp = None
-        self.vectorobj = vectorobj
-        self.device = vectorobj.devicename
-        self.vector = vectorobj.name
-        self.vector_event = get_vector_event(self.device, self.vector)
-        self.iclient = get_indiclient()
-
-    def __aiter__(self):
-        return self
-
-    async def __anext__(self):
-        "Whenever there is a new vector event, return a ServerSentEventMessage message"
-        eventstring = f"vector_{self.vectorobj.itemid}"
-        while True:
-            if self.iclient.stop or (not self.iclient.connected):
-                await asyncio.sleep(2)
-                return ServerSentEventMessage(event=eventstring) # forces the client to send update
-                                                                 # which requests new vector
-            if self.device not in self.iclient:
-                await asyncio.sleep(2)
-                return ServerSentEventMessage(event=eventstring)
-            deviceobject = self.iclient.get(self.device)
-            if (deviceobject is None) or not deviceobject.enable:
-                await asyncio.sleep(2)
-                return ServerSentEventMessage(event=eventstring)
-            if not self.vectorobj.enable:
-                await asyncio.sleep(2)
-                return ServerSentEventMessage(event=eventstring)
-            # So nothing wrong with the vector, check timestamp
-            lasttimestamp = self.vectorobj.timestamp
-            if (self.lasttimestamp is None) or (lasttimestamp != self.lasttimestamp):
-                # the vector has been updated
-                self.lasttimestamp = lasttimestamp
-                return ServerSentEventMessage(event=eventstring)
-            # No change, wait, at most 5 seconds, for a vector event
-            try:
-                await asyncio.wait_for(self.vector_event.wait(), timeout=5.0)
-            except TimeoutError:
-                pass
-            # either a vector event has occurred, or 5 seconds since the last has passed
-            # so continue the while loop to check for any new events
-
-
-# SSE Handler
-@get(path="/vectorsse/{vectorid:int}", exclude_from_auth=True, sync_to_thread=False)
-def vectorsse(vectorid:int, request: Request[str, str, State]) -> ServerSentEvent:
-    vectorobj = get_vectorobj(vectorid)
-    if vectorobj is None:
-        return ClientRedirect("/")
-    return ServerSentEvent(VectorEvent(vectorobj))
 
 
 
@@ -234,4 +179,4 @@ async def blobsend(
 
 
 
-vector_router = Router(path="/vector", route_handlers=[update, vectorsse, submit, blobsend])
+vector_router = Router(path="/vector", route_handlers=[update, submit, blobsend])
