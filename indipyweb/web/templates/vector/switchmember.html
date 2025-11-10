@@ -60,7 +60,7 @@
 
    <div class="w3-container w3-third">
      <label class="switch">
-       <input id="switch_${vectorobj.name|h}_${memberobj.name|h}" type="checkbox" name="${memberobj.name|h}" value="On" hx-preserve
+       <input id="switch_${memberobj.itemid}" type="checkbox" name="member_${memberobj.itemid}" value="On" hx-preserve
 
 % if memberobj.membervalue == "On":
   checked
@@ -69,9 +69,9 @@
 % if vectorobj.rule != "AnyOfMany":
 
 onclick="switchFunction([
-% for membername in vectorobj:
-   % if membername != memberobj.name:
-'switch_${vectorobj.name|h}_${membername|h}',
+% for mbr in vectorobj.members().values():
+   % if mbr.name != memberobj.name:
+'switch_${mbr.itemid}',
    % endif
 %endfor
 ])"

@@ -116,6 +116,7 @@ async def submit(vectorid:int, request: Request[str, str, State]) -> Template|Cl
     if vectorobj is None:
         return ClientRedirect("/")
 
+
     if vectorobj.perm == "ro":
         return HTMXTemplate(None, template_str="<p>INVALID: This is a Read Only vector!</p>")
 
@@ -125,12 +126,13 @@ async def submit(vectorid:int, request: Request[str, str, State]) -> Template|Cl
     if vectorobj.vectortype  == "SwitchVector":
         members = {}
         oncount = 0
-        for name in vectorobj:
-            if name in form_data:
-                members[name] = "On"
+        for mbr in vectorobj.members().values():
+            fm = f"member_{mbr.itemid}"
+            if fm in form_data:
+                members[mbr.name] = "On"
                 oncount += 1
             else:
-                members[name] = "Off"
+                members[mbr.name] = "Off"
         if vectorobj.rule != 'AnyOfMany':
             # 'OneOfMany', and 'AtMostOne' rules have a max oncount of 1
             if vectorobj.rule == "OneOfMany" and oncount != 1:
@@ -145,7 +147,11 @@ async def submit(vectorid:int, request: Request[str, str, State]) -> Template|Cl
                                                                                  "result":"AtMostOne rule requires no more than one On switch"})
     else:
         # text and number members
-        members = {name:value for name,value in form_data.items() if value and (name in vectorobj)}
+        members = {}
+        for mbr in vectorobj.members().values():
+            fm = f"member_{mbr.itemid}"
+            if fm in form_data:
+                members[mbr.name] = form_data[fm]
         if not members:
             return HTMXTemplate(None, template_str="<p>Nothing to send!</p>")
 

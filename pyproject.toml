@@ -12,7 +12,7 @@ description="Web server to communicate to an INDI service."
 readme = "README.md"
 requires-python = ">=3.10"
 keywords=['indi', 'client', 'astronomy', 'instrument']
-dependencies = ["indipyclient>=0.8.6", "litestar[standard]>=2.18.0", "litestar[mako]>=2.18.0"]
+dependencies = ["indipyclient>=0.9.1", "litestar[standard]>=2.18.0", "litestar[mako]>=2.18.0"]
 
 [project.urls]
 Source = "https://github.com/bernie-skipole/indipyweb"
