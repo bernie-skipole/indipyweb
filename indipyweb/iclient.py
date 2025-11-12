@@ -44,6 +44,21 @@ class IPyWebClient(ipc.IPyClient):
         if event.eventtype == "getProperties":
             return
 
+        if event.eventtype in ("Define", "Delete", "ConnectionMade", "ConnectionLost"):
+            DEFINE_EVENT.set()
+            DEFINE_EVENT.clear()
+            if event.devicename:
+                dme = get_device_event(event.devicename)
+                dme.set()
+                dme.clear()
+            return
+
+        if event.devicename and not event.vectorname:
+            # Probably a device message
+            dme = get_device_event(event.devicename)
+            dme.set()
+            dme.clear()
+
         if event.vectorname:
             dve = get_vector_event(event.devicename)
             if event.eventtype == "TimeOut":
@@ -54,21 +69,3 @@ class IPyWebClient(ipc.IPyClient):
                 event.vector.user_string = ""
             dve.set()
             dve.clear()
-
-        if event.eventtype in ("Define", "Delete", "ConnectionMade", "ConnectionLost"):
-            DEFINE_EVENT.set()
-            DEFINE_EVENT.clear()
-        elif event.eventtype == "Message":
-            MESSAGE_EVENT.set()
-            MESSAGE_EVENT.clear()
-            if event.devicename:
-                dme = get_device_event(event.devicename)
-                dme.set()
-                dme.clear()
-
-        if event.eventtype == "Delete"and event.devicename and not event.vectorname:
-            # set a message event, so if the device is deleted
-            # when client sends an updatemessages it forces a redirect
-            dme = get_device_event(event.devicename)
-            dme.set()
-            dme.clear()

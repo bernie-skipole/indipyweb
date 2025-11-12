@@ -23,17 +23,19 @@ class DeviceEvent:
      event devicemessages whenever a device message changes
      event vector_${vectorobj.itemid} whenever a vector changes"""
 
-    def __init__(self, deviceobj):
+    def __init__(self, deviceobj, group):
         self.lasttimestamp = None
         self.deviceobj = deviceobj
         self.device_event = get_device_event(deviceobj.devicename)
         self.iclient = get_indiclient()
+        self.group = group
+        self.currentvectorids = set(vectorobj.itemid for vectorobj in self.deviceobj.values() if vectorobj.enable and vectorobj.group == group)
 
     def __aiter__(self):
         return self
 
     async def __anext__(self):
-        "Whenever there is a new message, return a ServerSentEventMessage message"
+        "Whenever there is a new message or currentvector change, return a ServerSentEventMessage message"
 
         while True:
             if self.iclient.stop:
@@ -46,6 +48,11 @@ class DeviceEvent:
                 await asyncio.sleep(2)
                 return ServerSentEventMessage(event="devicemessages")
 
+            # check for new/deleted vector in the group
+            newvectorids = set(vectorobj.itemid for vectorobj in self.deviceobj.values() if vectorobj.enable and vectorobj.group == self.group)
+            if self.currentvectorids != newvectorids:
+                self.currentvectorids = newvectorids
+                return ServerSentEventMessage(event="newvectors")
             # check for message change
             if self.deviceobj.messages:
                 lasttimestamp = self.deviceobj.messages[0][0]
@@ -113,17 +120,19 @@ class VectorEvent:
 
 
 # SSE Handler
-@get(path="/devicechange/{deviceid:int}", exclude_from_auth=True, sync_to_thread=False)
-def devicechange(deviceid:int, request: Request[str, str, State]) -> ServerSentEvent|ClientRedirect:
+@get(path="/devicechange/{deviceid:int}/{group:str}", exclude_from_auth=True, sync_to_thread=False)
+def devicechange(deviceid:int, group:str, request: Request[str, str, State]) -> ServerSentEvent|ClientRedirect:
+    "This monitors whenever a device message changes, or a new vector is created or deleted in the displayed group"
     deviceobj = get_deviceobj(deviceid)
     if deviceobj is None:
         return ClientRedirect("/")
-    return ServerSentEvent(DeviceEvent(deviceobj))
+    return ServerSentEvent(DeviceEvent(deviceobj, group))
 
 
 # SSE Handler
 @get(path="/vectorchange/{deviceid:int}/{group:str}", exclude_from_auth=True, sync_to_thread=False)
 def vectorchange(deviceid:int, group:str, request: Request[str, str, State]) -> ServerSentEvent|ClientRedirect:
+    "This monitors whenever a vector in the group changes value"
     deviceobj = get_deviceobj(deviceid)
     if deviceobj is None:
         return ClientRedirect("/")
