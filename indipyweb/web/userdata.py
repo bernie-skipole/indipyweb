@@ -37,6 +37,7 @@ MESSAGE_EVENT = asyncio.Event()
 
 DEVICE_EVENTS = {}
 
+VECTOR_EVENTS = {}
 
 # This event is set whenever the table of users needs updating
 TABLE_EVENT = asyncio.Event()
@@ -167,6 +168,12 @@ def get_device_event(devicename):
     return DEVICE_EVENTS[devicename]
 
 
+def get_vector_event(devicename):
+    "Returns an asyncio.Event() for the given device which will be triggered when a vector of that device changes"
+    global VECTOR_EVENTS
+    if devicename not in VECTOR_EVENTS:
+        VECTOR_EVENTS[devicename] = asyncio.Event()
+    return VECTOR_EVENTS[devicename]
 
 def get_stored_item(item):
     "Gets stored item from the database"

@@ -5,6 +5,10 @@
 
 <%page args="deviceid, device, groups, selectedgp, vectors, loggedin, blobfolder"/>
 
+
+## create an SSE connection which send vector change event whenever there is a vector change
+<div hx-ext="sse" sse-connect="/device/vectorchange/${deviceid}/${selectedgp|h}">
+
   <div class="w3-panel">
     <div class="w3-bar w3-light-grey" >
       % for group in groups:
@@ -26,3 +30,5 @@
         </div>
     </div>
   % endfor
+
+</div>
