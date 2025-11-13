@@ -7,7 +7,7 @@
 
 
 
- <div class="w3-row w3-border-top">
+<div id="stateandtime_${vectorobj.itemid}"  class="w3-row w3-border-top">
   <div class="w3-container w3-threequarter">
     <h3>${vectorobj.label|h}</h3>
   </div>
@@ -32,12 +32,12 @@
   <div class="w3-container">
     % if vectorobj.message:
        % if message_timestamp:
-          <p>${message_timestamp|h} : ${vectorobj.message|h}</p>
+          <p id="message_${vectorobj.itemid}">${message_timestamp|h} : ${vectorobj.message|h}</p>
        % else:
-          <p>${vectorobj.message|h}</p>
+          <p id="message_${vectorobj.itemid}">${vectorobj.message|h}</p>
        % endif
     % else:
-       <p>Message: Waiting...</p>
+       <p id="message_${vectorobj.itemid}">Message: Waiting...</p>
     % endif
   </div>
 

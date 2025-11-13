@@ -44,6 +44,14 @@ def update(vectorid:int, request: Request[str, str, State]) -> Template|ClientRe
                                      "stateid":f"state_{vectorobj.itemid}",
                                      "timestamp":localtimestring(vectorobj.timestamp),
                                      "result":vectorobj.user_string})
+    if vectorobj.vectortype == "NumberVector":
+        # update members only, not entire vector as input fields do not update well
+        return HTMXTemplate(template_name="vector/numbervalues.html",
+                            re_target=f"#stateandtime_{vectorobj.itemid}",
+                            context={"vectorobj":vectorobj,
+                                     "timestamp":localtimestring(vectorobj.timestamp),
+                                     "message_timestamp":localtimestring(vectorobj.message_timestamp)})
+
     # have to return a vector html template here
     return HTMXTemplate(template_name="vector/getvector.html", context={"vectorobj":vectorobj,
                                                                         "timestamp":localtimestring(vectorobj.timestamp),

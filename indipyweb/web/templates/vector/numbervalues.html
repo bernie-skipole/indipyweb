@@ -1,0 +1,47 @@
+
+## numbervalues.html
+
+<div id="stateandtime_${vectorobj.itemid}" class="w3-row w3-border-top">
+  <div class="w3-container w3-threequarter">
+    <h3>${vectorobj.label|h}</h3>
+  </div>
+  % if vectorobj.state == "Ok":
+      <div id="state_${vectorobj.itemid}" class="w3-container w3-quarter w3-green">
+  % elif vectorobj.state == "Busy":
+      <div id="state_${vectorobj.itemid}" class="w3-container w3-quarter w3-yellow">
+  % elif vectorobj.state == "Alert":
+      <div id="state_${vectorobj.itemid}" class="w3-container w3-quarter w3-red">
+  % else:
+      <div id="state_${vectorobj.itemid}" class="w3-container w3-quarter">
+  % endif
+
+  % if timestamp:
+    <p>State ${timestamp|h} : ${vectorobj.state|h}</p>
+  % else:
+    <p>State : ${vectorobj.state|h}</p>
+  % endif
+  </div>
+</div>
+
+
+
+% if vectorobj.message:
+   % if message_timestamp:
+      <p id="message_${vectorobj.itemid}" hx-swap-oob="true">${message_timestamp|h} : ${vectorobj.message|h}</p>
+   % else:
+      <p id="message_${vectorobj.itemid}" hx-swap-oob="true">${vectorobj.message|h}</p>
+   % endif
+% else:
+   <p id="message_${vectorobj.itemid}" hx-swap-oob="true">Message: Waiting...</p>
+% endif
+
+
+% for memberobj in vectorobj.members().values():
+
+  % if not memberobj.membervalue:
+     <p id="member_${memberobj.itemid}" hx-swap-oob="true">&nbsp;</p>
+  % else:
+     <p id="member_${memberobj.itemid}" hx-swap-oob="true">${memberobj.getformattedvalue()|h}</p>
+  % endif
+
+% endfor
