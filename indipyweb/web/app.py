@@ -64,18 +64,19 @@ class ShowInstruments:
                 return ServerSentEventMessage(event="newinstruments")
             # get a set of instrument names for enabled devices
             newinstruments = set(name for name,value in self.iclient.items() if value.enable)
-            if newinstruments == self.instruments:
-                # No change, wait, at most 5 seconds, for a DEFINE_EVENT
-                try:
-                    await asyncio.wait_for(userdata.DEFINE_EVENT.wait(), timeout=5.0)
-                except TimeoutError:
-                    pass
-                # either a DEFINE_EVENT has occurred, or 5 seconds since the last has passed
-                # so continue the while loop to check for any new devices
-                continue
-            # There has been a change, send a newinstruments to the users browser
-            self.instruments = newinstruments
-            return ServerSentEventMessage(event="newinstruments")
+            if newinstruments != self.instruments:
+                # There has been a change, send a newinstruments to the users browser
+                self.instruments = newinstruments
+                return ServerSentEventMessage(event="newinstruments")
+            # No change, wait, at most 5 seconds, for a DEFINE_EVENT
+            try:
+                await asyncio.wait_for(userdata.DEFINE_EVENT.wait(), timeout=5.0)
+            except TimeoutError:
+                pass
+            # either a DEFINE_EVENT has occurred, or 5 seconds since the last has passed
+            # so continue the while loop to check for any new devices
+            continue
+
 
 
 # SSE Handler

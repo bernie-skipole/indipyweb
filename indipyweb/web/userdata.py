@@ -37,6 +37,8 @@ MESSAGE_EVENT = asyncio.Event()
 
 DEVICE_EVENTS = {}
 
+GROUP_EVENTS = {}
+
 VECTOR_EVENTS = {}
 
 # This event is set whenever the table of users needs updating
@@ -94,8 +96,6 @@ def get_deviceobj(deviceid):
         return
     for deviceobj in iclient.values():
         if deviceobj.itemid == deviceid:
-            if not deviceobj.enable:
-                return
             return deviceobj
 
 def get_vectorobj(vectorid, deviceid=None):
@@ -114,17 +114,12 @@ def get_vectorobj(vectorid, deviceid=None):
             return
         for vectorobj in deviceobj.values():
             if vectorobj.itemid == vectorid:
-                if vectorobj.enable:
-                    return vectorobj
-                return
+                return vectorobj
     else:
         for deviceobj in iclient.values():
             for vectorobj in deviceobj.values():
                 if vectorobj.itemid == vectorid:
-                    if vectorobj.enable:
-                        return vectorobj
-                    return
-
+                    return vectorobj
 
 
 def getconfig(parameter):
@@ -166,6 +161,12 @@ def get_device_event(devicename):
     if devicename not in DEVICE_EVENTS:
         DEVICE_EVENTS[devicename] = asyncio.Event()
     return DEVICE_EVENTS[devicename]
+
+def get_group_event(devicename):
+    global GROUP_EVENTS
+    if devicename not in GROUP_EVENTS:
+        GROUP_EVENTS[devicename] = asyncio.Event()
+    return GROUP_EVENTS[devicename]
 
 
 def get_vector_event(devicename):

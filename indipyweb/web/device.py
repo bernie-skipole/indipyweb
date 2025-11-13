@@ -15,21 +15,18 @@ from litestar.datastructures import State
 
 from litestar.response import ServerSentEvent, ServerSentEventMessage
 
-from .userdata import localtimestring, get_device_event, get_vector_event, get_indiclient, getuserauth, get_deviceobj
+from .userdata import localtimestring, get_device_event, get_vector_event, get_group_event, get_indiclient, getuserauth, get_deviceobj
 
 class DeviceEvent:
     """Iterate with messages whenever a device change happens.
 
-     event devicemessages whenever a device message changes
-     event vector_${vectorobj.itemid} whenever a vector changes"""
+     event devicemessages whenever a device message changes"""
 
-    def __init__(self, deviceobj, group):
+    def __init__(self, deviceobj):
         self.lasttimestamp = None
         self.deviceobj = deviceobj
         self.device_event = get_device_event(deviceobj.devicename)
         self.iclient = get_indiclient()
-        self.group = group
-        self.currentvectorids = set(vectorobj.itemid for vectorobj in self.deviceobj.values() if vectorobj.enable and vectorobj.group == group)
 
     def __aiter__(self):
         return self
@@ -48,11 +45,6 @@ class DeviceEvent:
                 await asyncio.sleep(2)
                 return ServerSentEventMessage(event="devicemessages")
 
-            # check for new/deleted vector in the group
-            newvectorids = set(vectorobj.itemid for vectorobj in self.deviceobj.values() if vectorobj.enable and vectorobj.group == self.group)
-            if self.currentvectorids != newvectorids:
-                self.currentvectorids = newvectorids
-                return ServerSentEventMessage(event="newvectors")
             # check for message change
             if self.deviceobj.messages:
                 lasttimestamp = self.deviceobj.messages[0][0]
@@ -73,6 +65,41 @@ class DeviceEvent:
                 pass
             # either a device message event has occurred, or 5 seconds since the last has passed
             # so continue the while loop to check for any new messages
+
+
+class GroupEvent:
+    """Iterate with messages whenever a vector in group appears or dissapears"""
+
+    def __init__(self, deviceobj, group):
+        self.deviceobj = deviceobj
+        self.group_event = get_group_event(deviceobj.devicename)
+        self.iclient = get_indiclient()
+        self.group = group
+        self.currentvectorids = set(vectorobj.itemid for vectorobj in self.deviceobj.values() if vectorobj.enable and vectorobj.group == group)
+
+    def __aiter__(self):
+        return self
+
+    async def __anext__(self):
+        "Whenever there is a currentvector enable change, return a ServerSentEventMessage message"
+
+        while True:
+            if self.iclient.stop:
+                raise StopAsyncIteration
+
+            # check for new/deleted vector in the group
+            newvectorids = set(vectorobj.itemid for vectorobj in self.deviceobj.values() if vectorobj.enable and vectorobj.group == self.group)
+            if self.currentvectorids != newvectorids:
+                self.currentvectorids = newvectorids
+                return ServerSentEventMessage(event="newvectors")
+
+            # No change, wait, at most 5 seconds, for a new event
+            try:
+                await asyncio.wait_for(self.group_event.wait(), timeout=5)
+            except TimeoutError:
+                pass
+            # 5 seconds passed so continue the while loop to check for anything new
+
 
 
 class VectorEvent:
@@ -120,13 +147,24 @@ class VectorEvent:
 
 
 # SSE Handler
-@get(path="/devicechange/{deviceid:int}/{group:str}", exclude_from_auth=True, sync_to_thread=False)
-def devicechange(deviceid:int, group:str, request: Request[str, str, State]) -> ServerSentEvent|ClientRedirect:
-    "This monitors whenever a device message changes, or a new vector is created or deleted in the displayed group"
+@get(path="/devicechange/{deviceid:int}", exclude_from_auth=True, sync_to_thread=False)
+def devicechange(deviceid:int, request: Request[str, str, State]) -> ServerSentEvent|ClientRedirect:
+    "This monitors whenever a device message changes"
     deviceobj = get_deviceobj(deviceid)
     if deviceobj is None:
         return ClientRedirect("/")
-    return ServerSentEvent(DeviceEvent(deviceobj, group))
+    return ServerSentEvent(DeviceEvent(deviceobj))
+
+
+# SSE Handler
+@get(path="/groupchange/{deviceid:int}/{group:str}", exclude_from_auth=True, sync_to_thread=False)
+def groupchange(deviceid:int, group:str, request: Request[str, str, State]) -> ServerSentEvent|ClientRedirect:
+    "This monitors whenever a vector in the group changes enable value"
+    deviceobj = get_deviceobj(deviceid)
+    if deviceobj is None:
+        return ClientRedirect("/")
+    return ServerSentEvent(GroupEvent(deviceobj, group))
+
 
 
 # SSE Handler
@@ -148,6 +186,8 @@ def choosedevice(deviceid:int, request: Request[str, str, State]) -> Template|Re
     deviceobj = get_deviceobj(deviceid)
     if deviceobj is None:
         return Redirect("/")
+    if not deviceobj.enable:
+        return Redirect("/")
     # Check if user is logged in
     loggedin = False
     cookie = request.cookies.get('token', '')
@@ -162,8 +202,7 @@ def choosedevice(deviceid:int, request: Request[str, str, State]) -> Template|Re
     group = groups[0]
     vectorsingroup = list(vectorobj for vectorobj in deviceobj.values() if vectorobj.group == group and vectorobj.enable)
     vectorsingroup.sort(key=lambda x: x.label)   # sort by label
-    context = {"device":deviceobj.devicename,
-               "deviceid":deviceobj.itemid,
+    context = {"deviceobj":deviceobj,
                "group":group,
                "groups":groups,
                "loggedin":loggedin,
@@ -179,6 +218,8 @@ def updatemessages(deviceid:int, request: Request[str, str, State]) -> Template|
     deviceobj = get_deviceobj(deviceid)
     if deviceobj is None:
         return ClientRedirect("/")
+    if not deviceobj.enable:
+        return Redirect("/")
     messages = list(deviceobj.messages)
     if not messages:
         return HTMXTemplate(template_name="messages.html", context={"messages":["Device messages : Waiting.."]})
@@ -191,12 +232,9 @@ def updatemessages(deviceid:int, request: Request[str, str, State]) -> Template|
 
 
 
-@get("/changegroup/{deviceid:int}/{group:str}", exclude_from_auth=True, sync_to_thread=False)
-def changegroup(deviceid:int, group:str, request: Request[str, str, State]) -> Template|ClientRedirect:
+@get("/getgroup/{deviceid:int}/{group:str}", exclude_from_auth=True, sync_to_thread=False)
+def getgroup(deviceid:int, group:str, request: Request[str, str, State]) -> Template|ClientRedirect:
     "Set chosen group, populate group tabs and group vectors"
-    # check valid group
-    if not group:
-        return ClientRedirect("/")
     deviceobj = get_deviceobj(deviceid)
     if deviceobj is None:
         return ClientRedirect("/")
@@ -216,21 +254,20 @@ def changegroup(deviceid:int, group:str, request: Request[str, str, State]) -> T
     # get vectors in this group
     vectorsingroup = list(vectorobj for vectorobj in deviceobj.values() if vectorobj.group == group and vectorobj.enable)
     vectorsingroup.sort(key=lambda x: x.label)   # sort by label
-    context = { "deviceid":deviceid,
-                "device": deviceobj.devicename,
+    context = { "deviceobj": deviceobj,
                 "vectors":vectorsingroup,
                 "groups":groups,
                 "selectedgp":group,
                 "loggedin":loggedin,
                 "blobfolder":blobfolder}
-
     return HTMXTemplate(template_name="group.html", context=context)
 
 
 
 device_router = Router(path="/device", route_handlers=[choosedevice,
                                                        devicechange,
+                                                       groupchange,
                                                        vectorchange,
                                                        updatemessages,
-                                                       changegroup
+                                                       getgroup
                                                        ])

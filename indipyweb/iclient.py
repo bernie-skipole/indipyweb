@@ -7,7 +7,7 @@ import asyncio
 
 import indipyclient as ipc
 
-from .web.userdata import DEFINE_EVENT, MESSAGE_EVENT, get_indiclient, getconfig, setconfig, get_device_event, get_vector_event
+from .web.userdata import DEFINE_EVENT, MESSAGE_EVENT, get_indiclient, getconfig, setconfig, get_device_event, get_vector_event, get_group_event
 
 version = "0.0.4"
 
@@ -41,10 +41,12 @@ class IPyWebClient(ipc.IPyClient):
 
     async def rxevent(self, event):
 
+        gfe = get_group_event(event.devicename)
+
         if event.eventtype == "getProperties":
             return
 
-        if event.eventtype in ("Define", "Delete", "ConnectionMade", "ConnectionLost"):
+        if event.eventtype in ("ConnectionMade", "ConnectionLost"):
             DEFINE_EVENT.set()
             DEFINE_EVENT.clear()
             if event.devicename:
@@ -53,19 +55,30 @@ class IPyWebClient(ipc.IPyClient):
                 dme.clear()
             return
 
-        if event.devicename and not event.vectorname:
-            # Probably a device message
-            dme = get_device_event(event.devicename)
-            dme.set()
-            dme.clear()
+        if event.eventtype in ("Define", "Delete"):
+            # for the landing page
+            DEFINE_EVENT.set()
+            DEFINE_EVENT.clear()
+            # for the page showing a device
+            if event.devicename:
+                gfe = get_group_event(event.devicename)
+                gfe.set()
+                gfe.clear()
+            return
 
-        if event.vectorname:
-            dve = get_vector_event(event.devicename)
-            if event.eventtype == "TimeOut":
-                event.vector.user_string = "Response has timed out"
-                event.vector.state = 'Alert'
-                event.vector.timestamp = event.timestamp
+        if event.devicename:
+            if event.vectorname:
+                if event.eventtype == "TimeOut":
+                    event.vector.user_string = "Response has timed out"
+                    event.vector.state = 'Alert'
+                    event.vector.timestamp = event.timestamp
+                else:
+                    event.vector.user_string = ""
+                dve = get_vector_event(event.devicename)
+                dve.set()
+                dve.clear()
             else:
-                event.vector.user_string = ""
-            dve.set()
-            dve.clear()
+                # no vector name, probably a device message
+                dme = get_device_event(event.devicename)
+                dme.set()
+                dme.clear()
