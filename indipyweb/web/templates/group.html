@@ -30,7 +30,7 @@
 
       % for vectorobj in vectors:
         <div class="w3-panel">
-            <div hx-get="/vector/update/${vectorobj.itemid}" hx-trigger="sse:vector_${vectorobj.itemid}" hx-target=this>
+            <div id="vector_${vectorobj.itemid}" hx-get="/vector/update/${vectorobj.itemid}" hx-trigger="sse:vector_${vectorobj.itemid}" hx-target=this>
               <%include file="vector/getvector.html" args="vectorobj=vectorobj, timestamp='', loggedin=loggedin, blobfolder=blobfolder, message_timestamp=''"/>
             </div>
         </div>

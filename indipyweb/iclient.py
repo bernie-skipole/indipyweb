@@ -41,8 +41,6 @@ class IPyWebClient(ipc.IPyClient):
 
     async def rxevent(self, event):
 
-        gfe = get_group_event(event.devicename)
-
         if event.eventtype == "getProperties":
             return
 
@@ -61,9 +59,9 @@ class IPyWebClient(ipc.IPyClient):
             DEFINE_EVENT.clear()
             # for the page showing a device
             if event.devicename:
-                gfe = get_group_event(event.devicename)
-                gfe.set()
-                gfe.clear()
+                gge = get_group_event(event.devicename)
+                gge.set()
+                gge.clear()
             return
 
         if event.devicename:

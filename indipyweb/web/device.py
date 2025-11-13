@@ -20,7 +20,7 @@ from .userdata import localtimestring, get_device_event, get_vector_event, get_g
 class DeviceEvent:
     """Iterate with messages whenever a device change happens.
 
-     event devicemessages whenever a device message changes"""
+     event 'devicemessages' whenever a device message changes"""
 
     def __init__(self, deviceobj):
         self.lasttimestamp = None
@@ -32,7 +32,7 @@ class DeviceEvent:
         return self
 
     async def __anext__(self):
-        "Whenever there is a new message or currentvector change, return a ServerSentEventMessage message"
+        "Whenever there is a new message or currentvector change, return a ServerSentEventMessage"
 
         while True:
             if self.iclient.stop:
@@ -68,7 +68,7 @@ class DeviceEvent:
 
 
 class GroupEvent:
-    """Iterate with messages whenever a vector in group appears or dissapears"""
+    """Iterate with 'newvectors' messages whenever a vector in group appears or dissapears"""
 
     def __init__(self, deviceobj, group):
         self.deviceobj = deviceobj
@@ -81,7 +81,7 @@ class GroupEvent:
         return self
 
     async def __anext__(self):
-        "Whenever there is a currentvector enable change, return a ServerSentEventMessage message"
+        "Whenever there is a currentvector enable change, return a ServerSentEventMessage"
 
         while True:
             if self.iclient.stop:
@@ -103,9 +103,12 @@ class GroupEvent:
 
 
 class VectorEvent:
-    """Iterate whenever a device vector change happens.
+    """Iterate whenever a vector value change happens, with the vector being
+       a vector of the given device and group.  This also ensures vectors are
+       tested in a round robin way to ensure one rapidly changing vector does
+       not mask others
 
-     event vector_${vectorobj.itemid}"""
+     Sends event 'vector_vectorid' """
 
     def __init__(self, deviceobj, group):
 
@@ -145,7 +148,6 @@ class VectorEvent:
             # so continue the while loop to check again
 
 
-
 # SSE Handler
 @get(path="/devicechange/{deviceid:int}", exclude_from_auth=True, sync_to_thread=False)
 def devicechange(deviceid:int, request: Request[str, str, State]) -> ServerSentEvent|ClientRedirect:
@@ -166,7 +168,6 @@ def groupchange(deviceid:int, group:str, request: Request[str, str, State]) -> S
     return ServerSentEvent(GroupEvent(deviceobj, group))
 
 
-
 # SSE Handler
 @get(path="/vectorchange/{deviceid:int}/{group:str}", exclude_from_auth=True, sync_to_thread=False)
 def vectorchange(deviceid:int, group:str, request: Request[str, str, State]) -> ServerSentEvent|ClientRedirect:
@@ -175,7 +176,6 @@ def vectorchange(deviceid:int, group:str, request: Request[str, str, State]) -> 
     if deviceobj is None:
         return ClientRedirect("/")
     return ServerSentEvent(VectorEvent(deviceobj, group))
-
 
 
 @get("/choosedevice/{deviceid:int}", exclude_from_auth=True, sync_to_thread=False)
