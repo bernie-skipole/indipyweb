@@ -39,16 +39,26 @@ def update(vectorid:int, request: Request[str, str, State]) -> Template|ClientRe
     if vectorobj.user_string:
         # This is not a full update, just an update of the result and state fields
         return HTMXTemplate(template_name="vector/result.html",
-                            re_target=f"#result_{vectorobj.itemid}",
-                            context={"state":f"{vectorobj.state}",
-                                     "stateid":f"state_{vectorobj.itemid}",
+                            re_target=f"#stateandtime_{vectorobj.itemid}",
+                            context={"vectorobj":vectorobj,
+                                     "state":vectorobj.state,
                                      "timestamp":localtimestring(vectorobj.timestamp),
+                                     "message_timestamp":localtimestring(vectorobj.message_timestamp),
                                      "result":vectorobj.user_string})
+    if vectorobj.vectortype == "TextVector":
+        # update members only, not entire vector as input fields do not update well
+        return HTMXTemplate(template_name="vector/textvalues.html",
+                            re_target=f"#stateandtime_{vectorobj.itemid}",
+                            context={"vectorobj":vectorobj,
+                                     "state":vectorobj.state,
+                                     "timestamp":localtimestring(vectorobj.timestamp),
+                                     "message_timestamp":localtimestring(vectorobj.message_timestamp)})
     if vectorobj.vectortype == "NumberVector":
         # update members only, not entire vector as input fields do not update well
         return HTMXTemplate(template_name="vector/numbervalues.html",
                             re_target=f"#stateandtime_{vectorobj.itemid}",
                             context={"vectorobj":vectorobj,
+                                     "state":vectorobj.state,
                                      "timestamp":localtimestring(vectorobj.timestamp),
                                      "message_timestamp":localtimestring(vectorobj.message_timestamp)})
 
@@ -89,15 +99,19 @@ async def submit(vectorid:int, request: Request[str, str, State]) -> Template|Cl
         if vectorobj.rule != 'AnyOfMany':
             # 'OneOfMany', and 'AtMostOne' rules have a max oncount of 1
             if vectorobj.rule == "OneOfMany" and oncount != 1:
-                return HTMXTemplate(template_name="vector/result.html", context={"state":"Alert",
-                                                                                 "stateid":f"state_{vectorobj.itemid}",
-                                                                                 "timestamp":localtimestring(),
-                                                                                 "result":"OneOfMany rule requires one switch only to be On"})
+                return HTMXTemplate(template_name="vector/result.html",
+                                    re_target=f"#stateandtime_{vectorobj.itemid}",
+                                    context={"state":"Alert",
+                                             "timestamp":localtimestring(),
+                                             "message_timestamp":localtimestring(vectorobj.message_timestamp),
+                                             "result":"OneOfMany rule requires one switch only to be On"})
             if vectorobj.rule == "AtMostOne" and oncount > 1:
-                return HTMXTemplate(template_name="vector/result.html", context={"state":"Alert",
-                                                                                 "stateid":f"state_{vectorobj.itemid}",
-                                                                                 "timestamp":localtimestring(),
-                                                                                 "result":"AtMostOne rule requires no more than one On switch"})
+                return HTMXTemplate(template_name="vector/result.html",
+                                    re_target=f"#stateandtime_{vectorobj.itemid}",
+                                    context={"state":"Alert",
+                                             "timestamp":localtimestring(),
+                                             "message_timestamp":localtimestring(vectorobj.message_timestamp),
+                                             "result":"AtMostOne rule requires no more than one On switch"})
     else:
         # text and number members
         members = {}
@@ -129,18 +143,22 @@ async def submit(vectorid:int, request: Request[str, str, State]) -> Template|Cl
                 members[name] = floatval
 
     except Exception as e:
-        return HTMXTemplate(template_name="vector/result.html", context={"state":"Alert",
-                                                                         "stateid":f"state_{vectorobj.itemid}",
-                                                                         "timestamp":localtimestring(),
-                                                                         "result":"Unable to parse number value"})
+        return HTMXTemplate(template_name="vector/result.html",
+                            re_target=f"#stateandtime_{vectorobj.itemid}",
+                            context={"state":"Alert",
+                                     "timestamp":localtimestring(),
+                                     "message_timestamp":localtimestring(vectorobj.message_timestamp),
+                                     "result":"Unable to parse number value"})
 
 
     # and send the vector
     await iclient.send_newVector(vectorobj.devicename, vectorobj.name, members=members)
-    return HTMXTemplate(template_name="vector/result.html", context={"state":"Busy",
-                                                                     "stateid":f"state_{vectorobj.itemid}",
-                                                                     "timestamp":localtimestring(),
-                                                                     "result":"Vector changes sent"})
+    return HTMXTemplate(template_name="vector/result.html",
+                        re_target=f"#stateandtime_{vectorobj.itemid}",
+                        context={"state":"Busy",
+                                 "timestamp":localtimestring(),
+                                 "message_timestamp":localtimestring(vectorobj.message_timestamp),
+                                 "result":"Vector changes sent"})
 
 
 
@@ -179,10 +197,12 @@ async def blobsend(
     # memberdict of {membername:(value, blobsize, blobformat)}
     await vectorobj.send_newBLOBVector(members={memberobj.name:(content, 0, extension)})
 
-    return HTMXTemplate(template_name="vector/result.html", context={"state":"Busy",
-                                                                     "stateid":f"state_{vectorobj.itemid}",
-                                                                     "timestamp":localtimestring(),
-                                                                     "result":f"File {filename} sent"})
+    return HTMXTemplate(template_name="vector/result.html",
+                        re_target=f"#stateandtime_{vectorobj.itemid}",
+                        context={"state":"Busy",
+                                 "timestamp":localtimestring(),
+                                 "message_timestamp":localtimestring(vectorobj.message_timestamp),
+                                 "result":f"File {filename} sent"})
 
 
 

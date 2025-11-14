@@ -1,29 +1,7 @@
 
 ## numbervalues.html
 
-<div id="stateandtime_${vectorobj.itemid}" class="w3-row w3-border-top">
-  <div class="w3-container w3-threequarter">
-    <h3>${vectorobj.label|h}</h3>
-  </div>
-  % if vectorobj.state == "Ok":
-      <div id="state_${vectorobj.itemid}" class="w3-container w3-quarter w3-green">
-  % elif vectorobj.state == "Busy":
-      <div id="state_${vectorobj.itemid}" class="w3-container w3-quarter w3-yellow">
-  % elif vectorobj.state == "Alert":
-      <div id="state_${vectorobj.itemid}" class="w3-container w3-quarter w3-red">
-  % else:
-      <div id="state_${vectorobj.itemid}" class="w3-container w3-quarter">
-  % endif
-
-  % if timestamp:
-    <p>State ${timestamp|h} : ${vectorobj.state|h}</p>
-  % else:
-    <p>State : ${vectorobj.state|h}</p>
-  % endif
-  </div>
-</div>
-
-
+<%include file="state.html" args="vectorobj=vectorobj, timestamp=timestamp, state=state"/>
 
 % if vectorobj.message:
    % if message_timestamp:

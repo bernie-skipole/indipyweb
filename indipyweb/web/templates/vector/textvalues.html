@@ -1,4 +1,5 @@
 
+## textvalues.html
 
 <%include file="state.html" args="vectorobj=vectorobj, timestamp=timestamp, state=state"/>
 
@@ -13,4 +14,12 @@
 % endif
 
 
-<p id="result_${vectorobj.itemid}" hx-swap-oob="true">${result|h}</p>
+% for memberobj in vectorobj.members().values():
+
+  % if not memberobj.membervalue:
+     <p id="member_${memberobj.itemid}" hx-swap-oob="true">&nbsp;</p>
+  % else:
+     <p id="member_${memberobj.itemid}" hx-swap-oob="true">${memberobj.membervalue|h}</p>
+  % endif
+
+% endfor

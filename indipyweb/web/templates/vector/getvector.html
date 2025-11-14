@@ -6,28 +6,7 @@
 <%page args="vectorobj, timestamp, loggedin, blobfolder, message_timestamp"/>
 
 
-
-<div id="stateandtime_${vectorobj.itemid}"  class="w3-row w3-border-top">
-  <div class="w3-container w3-threequarter">
-    <h3>${vectorobj.label|h}</h3>
-  </div>
-  % if vectorobj.state == "Ok":
-      <div id="state_${vectorobj.itemid}" class="w3-container w3-quarter w3-green">
-  % elif vectorobj.state == "Busy":
-      <div id="state_${vectorobj.itemid}" class="w3-container w3-quarter w3-yellow">
-  % elif vectorobj.state == "Alert":
-      <div id="state_${vectorobj.itemid}" class="w3-container w3-quarter w3-red">
-  % else:
-      <div id="state_${vectorobj.itemid}" class="w3-container w3-quarter">
-  % endif
-
-  % if timestamp:
-    <p>State ${timestamp|h} : ${vectorobj.state|h}</p>
-  % else:
-    <p>State : ${vectorobj.state|h}</p>
-  % endif
-  </div>
-</div>
+<%include file="state.html" args="vectorobj=vectorobj, timestamp=timestamp, state=vectorobj.state"/>
 
   <div class="w3-container">
     % if vectorobj.message:
@@ -63,8 +42,8 @@
 % if vectorobj.perm != "ro" and loggedin and vectorobj.vectortype != "BLOBVector":
 
   <div class="w3-row w3-panel">
-    <div id="result_${vectorobj.itemid}" class="w3-container w3-threequarter">
-       <p></p>
+    <div class="w3-container w3-threequarter">
+       <p id="result_${vectorobj.itemid}"></p>
     </div>
     <div class="w3-container w3-quarter">
        <button  class="w3-button w3-black w3-ripple w3-round" type="submit">
@@ -76,8 +55,8 @@
 
 % else:
 
- <div id="result_${vectorobj.itemid}" class="w3-panel">
-   <p></p>
+ <div class="w3-panel">
+   <p id="result_${vectorobj.itemid}"></p>
  </div>
 
 % endif
