@@ -102,6 +102,7 @@ async def submit(vectorid:int, request: Request[str, str, State]) -> Template|Cl
                 return HTMXTemplate(template_name="vector/result.html",
                                     re_target=f"#stateandtime_{vectorobj.itemid}",
                                     context={"state":"Alert",
+                                             "vectorobj":vectorobj,
                                              "timestamp":localtimestring(),
                                              "message_timestamp":localtimestring(vectorobj.message_timestamp),
                                              "result":"OneOfMany rule requires one switch only to be On"})
@@ -109,6 +110,7 @@ async def submit(vectorid:int, request: Request[str, str, State]) -> Template|Cl
                 return HTMXTemplate(template_name="vector/result.html",
                                     re_target=f"#stateandtime_{vectorobj.itemid}",
                                     context={"state":"Alert",
+                                             "vectorobj":vectorobj,
                                              "timestamp":localtimestring(),
                                              "message_timestamp":localtimestring(vectorobj.message_timestamp),
                                              "result":"AtMostOne rule requires no more than one On switch"})
@@ -118,7 +120,9 @@ async def submit(vectorid:int, request: Request[str, str, State]) -> Template|Cl
         for mbr in vectorobj.members().values():
             fm = f"member_{mbr.itemid}"
             if fm in form_data:
-                members[mbr.name] = form_data[fm]
+                # only valid if submitted form is not empty string
+                if form_data[fm]:
+                    members[mbr.name] = form_data[fm]
         if not members:
             return HTMXTemplate(None, template_str="<p>Nothing to send!</p>")
 
@@ -146,6 +150,7 @@ async def submit(vectorid:int, request: Request[str, str, State]) -> Template|Cl
         return HTMXTemplate(template_name="vector/result.html",
                             re_target=f"#stateandtime_{vectorobj.itemid}",
                             context={"state":"Alert",
+                                     "vectorobj":vectorobj,
                                      "timestamp":localtimestring(),
                                      "message_timestamp":localtimestring(vectorobj.message_timestamp),
                                      "result":"Unable to parse number value"})
@@ -156,6 +161,7 @@ async def submit(vectorid:int, request: Request[str, str, State]) -> Template|Cl
     return HTMXTemplate(template_name="vector/result.html",
                         re_target=f"#stateandtime_{vectorobj.itemid}",
                         context={"state":"Busy",
+                                 "vectorobj":vectorobj,
                                  "timestamp":localtimestring(),
                                  "message_timestamp":localtimestring(vectorobj.message_timestamp),
                                  "result":"Vector changes sent"})
@@ -200,6 +206,7 @@ async def blobsend(
     return HTMXTemplate(template_name="vector/result.html",
                         re_target=f"#stateandtime_{vectorobj.itemid}",
                         context={"state":"Busy",
+                                 "vectorobj":vectorobj,
                                  "timestamp":localtimestring(),
                                  "message_timestamp":localtimestring(vectorobj.message_timestamp),
                                  "result":f"File {filename} sent"})
