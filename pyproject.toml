@@ -7,7 +7,7 @@ name = "indipyweb"
 authors = [{name = "Bernard Czenkusz", email = "bernie@skipole.co.uk"}]
 license = {file = "LICENSE"}
 classifiers = ["License :: OSI Approved :: MIT License","Topic :: Scientific/Engineering :: Astronomy", "Topic :: Scientific/Engineering :: Interface Engine/Protocol Translator"]
-version = "0.0.4"
+version = "0.0.5"
 description="Web server to communicate to an INDI service."
 readme = "README.md"
 requires-python = ">=3.10"
