@@ -3,18 +3,18 @@
 
 <%page args="vectorobj, timestamp, state"/>
 
-<div id="stateandtime_${vectorobj.itemid}" class="w3-row w3-border-top">
+<div id="stateandtime_${vectorobj.itemid|h}" class="w3-row w3-border-top">
   <div class="w3-container w3-threequarter">
     <h3>${vectorobj.label|h}</h3>
   </div>
   % if state == "Ok":
-      <div id="state_${vectorobj.itemid}" class="w3-container w3-quarter w3-green">
+      <div id="state_${vectorobj.itemid|h}" class="w3-container w3-quarter w3-green">
   % elif state == "Busy":
-      <div id="state_${vectorobj.itemid}" class="w3-container w3-quarter w3-yellow">
+      <div id="state_${vectorobj.itemid|h}" class="w3-container w3-quarter w3-yellow">
   % elif state == "Alert":
-      <div id="state_${vectorobj.itemid}" class="w3-container w3-quarter w3-red">
+      <div id="state_${vectorobj.itemid|h}" class="w3-container w3-quarter w3-red">
   % else:
-      <div id="state_${vectorobj.itemid}" class="w3-container w3-quarter">
+      <div id="state_${vectorobj.itemid|h}" class="w3-container w3-quarter">
   % endif
 
   % if timestamp:

@@ -27,13 +27,13 @@
   </header>
 
 ## create an SSE connection which send messages whenever there is a device message change
-<div hx-ext="sse" sse-connect="/device/devicechange/${deviceobj.itemid}">
+<div hx-ext="sse" sse-connect="/device/devicechange/${deviceobj.itemid|h}">
 
     ## Show the device messages panel
 
     <div class="w3-panel">
       <div class="w3-container w3-border">
-        <div hx-get="/device/updatemessages/${deviceobj.itemid}" hx-trigger="sse:devicemessages">
+        <div hx-get="/device/updatemessages/${deviceobj.itemid|h}" hx-trigger="sse:devicemessages">
            ## /device/updatemessages/... is called as devicemessages events are received, which then inserts messages.html here
            <div class="w3-margin">
               % if messages:

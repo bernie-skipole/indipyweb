@@ -12,13 +12,13 @@
 
       <div class="w3-container w3-threequarter w3-flat-asbestos">
           % if not memberobj.membervalue:
-             <p id="member_${memberobj.itemid}">&nbsp;</p>
+             <p id="member_${memberobj.itemid|h}">&nbsp;</p>
           % else:
-             <p id="member_${memberobj.itemid}">${memberobj.getformattedvalue()|h}</p>
+             <p id="member_${memberobj.itemid|h}">${memberobj.getformattedvalue()|h}</p>
           % endif
           % if vectorobj.perm != "ro" and loggedin:
             <div class="w3-container w3-margin">
-              <input id="input_${memberobj.itemid}" class="w3-input" type="text" name="member_${memberobj.itemid}" placeholder="Input new value" hx-preserve />
+              <input id="input_${memberobj.itemid|h}" class="w3-input" type="text" name="member_${memberobj.itemid|h}" placeholder="Input new value" hx-preserve />
             </div>
           % endif
       </div>

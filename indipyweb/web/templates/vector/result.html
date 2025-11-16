@@ -4,13 +4,13 @@
 
 % if vectorobj.message:
    % if message_timestamp:
-      <p id="message_${vectorobj.itemid}" hx-swap-oob="true">${message_timestamp|h} : ${vectorobj.message|h}</p>
+      <p id="message_${vectorobj.itemid|h}" hx-swap-oob="true">${message_timestamp|h} : ${vectorobj.message|h}</p>
    % else:
-      <p id="message_${vectorobj.itemid}" hx-swap-oob="true">${vectorobj.message|h}</p>
+      <p id="message_${vectorobj.itemid|h}" hx-swap-oob="true">${vectorobj.message|h}</p>
    % endif
 % else:
-   <p id="message_${vectorobj.itemid}" hx-swap-oob="true">Message: Waiting...</p>
+   <p id="message_${vectorobj.itemid|h}" hx-swap-oob="true">Message: Waiting...</p>
 % endif
 
 
-<p id="result_${vectorobj.itemid}" hx-swap-oob="true">${result|h}</p>
+<p id="result_${vectorobj.itemid|h}" hx-swap-oob="true">${result|h}</p>

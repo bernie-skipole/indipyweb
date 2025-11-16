@@ -42,11 +42,19 @@ The package help is:
     Web server to communicate to an INDI service.
 
     options:
-      -h, --help   show this help message and exit
-      --port PORT  Listening port of the web server.
-      --host HOST  Hostname/IP of the web server.
-      --db DB      Folder where the database will be set.
-      --version    show program's version number and exit
+      -h, --help                   show this help message and exit
+      --port PORT                  Listening port of the web server.
+      --host HOST                  Hostname/IP of the web server.
+      --dbfolder DBFOLDER          Folder where the database will be set.
+      --securecookie SECURECOOKIE  Set True to enforce https only for cookies.
+      --version                    show program's version number and exit
+
+    The host and port set here have priority over values set in the database.
+    If not given, and not set in the database, 'localhost:8000' is used.
+    If it does not already exist, a database file will be created in the
+    given db folder, if not set the current working directory will be used.
+    The securecookie is 'False' by default, set it to the string 'True'
+    to ensure remote login can only happen over https.
 
 You should start by connecting with a browser, on localhost:8000 unless you have changed the port with the above command line options.
 
@@ -58,6 +66,14 @@ A typical session would look like:
 
 ![Browser screenshot](https://raw.githubusercontent.com/bernie-skipole/indipyweb/main/indipyweb.png)
 
+
+## Security
+
+The database file holds hashes of user passwords, if obtained by an attacker, the original passwords would be difficult to obtain, however a brute force dictionary attack is possible, so complex passwords, not used elsewhere, should be encouraged. The site requires passwords with at least 8 characters and one special character. Usernames and long names are held in the database in clear text.
+
+It is envisioned this server will be used on local LAN's rather than on the internet. If it is used on a more open system, then it should be served behind a reverse proxy which provides certificates/https. Setting the command line argument 'securecookie' to 'True' enforces cookies will only be sent by browsers over https, unless the connection is to 'localhost'. This is set to False as default so initial development and home usage without a reverse proxy is easy.
+
+This package is free and open source, developed by a single user, with many third party dependencies, security is therefore not tested at a professional level and this should not be used for any critical systems.
 
 This web service should work with any INDI service, however associated packages by the same author are:
 

@@ -60,7 +60,7 @@
 
    <div class="w3-container w3-third">
      <label class="switch">
-       <input id="switch_${memberobj.itemid}" type="checkbox" name="member_${memberobj.itemid}" value="On" hx-preserve
+       <input id="switch_${memberobj.itemid|h}" type="checkbox" name="member_${memberobj.itemid|h}" value="On" hx-preserve
 
 % if memberobj.membervalue == "On":
   checked
@@ -71,7 +71,7 @@
 onclick="switchFunction([
 % for mbr in vectorobj.members().values():
    % if mbr.name != memberobj.name:
-'switch_${mbr.itemid}',
+'switch_${mbr.itemid|h}',
    % endif
 %endfor
 ])"

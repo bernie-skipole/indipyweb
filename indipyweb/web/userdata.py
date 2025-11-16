@@ -28,7 +28,8 @@ _PARAMETERS = {
                 "indiclient":None,
                 "dbfolder":None,
                 "dbase":None,
-                "runclient":None
+                "runclient":None,
+                "securecookie":False
               }
 
 DEFINE_EVENT = asyncio.Event()

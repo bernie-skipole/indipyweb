@@ -7,17 +7,17 @@
 
 
 ## create an SSE connection which send newvectors event if any of the vectors in the group are enabled or disabled
-<div hx-ext="sse" sse-connect="/device/groupchange/${deviceobj.itemid}/${selectedgp|h}">
+<div hx-ext="sse" sse-connect="/device/groupchange/${deviceobj.itemid|h}/${selectedgp|h}">
   ## and if newvectors event received request a change of this same selected group
- <div hx-get="/device/getgroup/${deviceobj.itemid}/${selectedgp|h}" hx-trigger="sse:newvectors" hx-target="#grouptabs">
+ <div hx-get="/device/getgroup/${deviceobj.itemid|h}/${selectedgp|h}" hx-trigger="sse:newvectors" hx-target="#grouptabs">
 
   <div class="w3-panel">
     <div class="w3-bar w3-light-grey" >
       % for group in groups:
         % if selectedgp == group:
-            <a hx-get="/device/getgroup/${deviceobj.itemid}/${group|h}" class="w3-bar-item w3-button w3-mobile w3-green" hx-target="#grouptabs">${group|h}</a>
+            <a hx-get="/device/getgroup/${deviceobj.itemid|h}/${group|h}" class="w3-bar-item w3-button w3-mobile w3-green" hx-target="#grouptabs">${group|h}</a>
         % else:
-            <a hx-get="/device/getgroup/${deviceobj.itemid}/${group|h}"  class="w3-bar-item w3-button w3-mobile"  hx-target="#grouptabs">${group|h}</a>
+            <a hx-get="/device/getgroup/${deviceobj.itemid|h}/${group|h}"  class="w3-bar-item w3-button w3-mobile"  hx-target="#grouptabs">${group|h}</a>
         % endif
       % endfor
     </div>
@@ -26,11 +26,11 @@
     ## For the displayed group, show the vectors in the group
 
     ## create an SSE connection which send vector change event whenever there is a vector value change
-    <div hx-ext="sse" sse-connect="/device/vectorchange/${deviceobj.itemid}/${selectedgp|h}">
+    <div hx-ext="sse" sse-connect="/device/vectorchange/${deviceobj.itemid|h}/${selectedgp|h}">
 
       % for vectorobj in vectors:
         <div class="w3-panel">
-            <div id="vector_${vectorobj.itemid}" hx-get="/vector/update/${vectorobj.itemid}" hx-trigger="sse:vector_${vectorobj.itemid}" hx-target=this>
+            <div id="vector_${vectorobj.itemid|h}" hx-get="/vector/update/${vectorobj.itemid|h}" hx-trigger="sse:vector_${vectorobj.itemid|h}" hx-target=this>
               <%include file="vector/getvector.html" args="vectorobj=vectorobj, timestamp='', loggedin=loggedin, blobfolder=blobfolder, message_timestamp=''"/>
             </div>
         </div>

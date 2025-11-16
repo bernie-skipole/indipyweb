@@ -4,11 +4,11 @@
     % if instruments:
         <p>Choose a device:</p>
 
-        % for deviceobj in instruments:
-          <div>
-             <a href="/device/choosedevice/${deviceobj.itemid}" class="w3-button w3-black w3-ripple w3-round w3-margin" style="width:100%">${deviceobj.devicename|h}</a>
-          </div>
-        % endfor
+      % for deviceobj in instruments:
+        <div>
+          <a href="/device/choosedevice/${deviceobj.itemid|h}" class="w3-button w3-black w3-ripple w3-round w3-margin" style="width:100%">${deviceobj.devicename|h}</a>
+        </div>
+      % endfor
 
     % else:
         <p>No device available</p>

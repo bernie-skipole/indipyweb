@@ -24,17 +24,27 @@ logger.setLevel("ERROR")
 def readconfig():
 
     parser = argparse.ArgumentParser(usage="indipyweb [options]",
-                                     description="Web server to communicate to an INDI service.")
+                                     formatter_class=argparse.RawDescriptionHelpFormatter,
+                                     description="Web server to communicate to an INDI service.",
+                                     epilog="""The host and port set here have priority over values set in the database.
+If not given, and not set in the database, 'localhost:8000' is used.
+If it does not already exist, a database file will be created in the
+given db folder, if not set the current working directory will be used.
+The securecookie is 'False' by default, set it to the string 'True'
+to ensure remote login can only happen over https.
+""")
+
     parser.add_argument("--port", type=int, help="Listening port of the web server.")
     parser.add_argument("--host", help="Hostname/IP of the web server.")
-    parser.add_argument("--db", help="Folder where the database will be set.")
+    parser.add_argument("--dbfolder", help="Folder where the database will be set.")
+    parser.add_argument("--securecookie", default="False", help="Set True to enforce https only for cookies.")
     parser.add_argument("--version", action="version", version=version)
     args = parser.parse_args()
 
 
-    if args.db:
+    if args.dbfolder:
         try:
-            dbfolder = pathlib.Path(args.db).expanduser().resolve()
+            dbfolder = pathlib.Path(args.dbfolder).expanduser().resolve()
         except Exception:
             print("Error: If given, the database folder should be an existing directory")
             sys.exit(1)
@@ -44,6 +54,9 @@ def readconfig():
                 sys.exit(1)
     else:
         dbfolder = pathlib.Path.cwd()
+
+    if args.securecookie == "True":
+        setconfig('securecookie', True)
 
     setupdbase(args.host, args.port, dbfolder)
 
