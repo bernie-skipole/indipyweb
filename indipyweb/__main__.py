@@ -26,12 +26,19 @@ def readconfig():
     parser = argparse.ArgumentParser(usage="indipyweb [options]",
                                      formatter_class=argparse.RawDescriptionHelpFormatter,
                                      description="Web server to communicate to an INDI service.",
-                                     epilog="""The host and port set here have priority over values set in the database.
+                                     epilog="""
+The host and port set here have priority over values set in the database.
 If not given, and not set in the database, 'localhost:8000' is used.
+The database file holds user and INDI port configuration, and can be
+populated via browser using the 'edit' button.
 If it does not already exist, a database file will be created in the
-given db folder, if not set the current working directory will be used.
-The securecookie is 'False' by default, set it to the string 'True'
-to ensure remote login can only happen over https.
+given db folder, or if not set, the current working directory will be used.
+A newly generated database file will contain a single default username
+and password 'admin' and 'password!'. These should be changed as soon as
+possible and the INDI host/port set (default localhost:7624).
+The securecookie argument is 'False' by default, if using a reverse
+proxy providing https connectivity, set securecookie to the string 'True'
+to ensure loggedin cookies can only pass over https.
 """)
 
     parser.add_argument("--port", type=int, help="Listening port of the web server.")
