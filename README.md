@@ -11,7 +11,7 @@ See https://en.wikipedia.org/wiki/Instrument_Neutral_Distributed_Interface
 
 The INDI protocol defines the format of the data sent, such as light, number, text, switch or BLOB (Binary Large Object). The client is general purpose, taking the format of switches, numbers etc., from the protocol.
 
-indipyweb can be installed from Pypi with:
+indipyweb is typically installed into a virtual environment with:
 
 pip install indipyweb
 
