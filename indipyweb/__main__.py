@@ -8,7 +8,7 @@ from .iclient import ipywebclient, version
 
 from .web.app import ipywebapp
 
-from .web.userdata import setupdbase, setconfig, getconfig, get_indiclient
+from .web.userdata import setupdbase, setconfig, getconfig
 
 
 if sys.version_info < (3, 10):

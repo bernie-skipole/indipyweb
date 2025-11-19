@@ -175,8 +175,7 @@ def gotonotfound_error_handler(request: Request, exc: Exception) -> ClientRedire
 @get("/notfound", exclude_from_auth=True, sync_to_thread=False )
 def notfound(request: Request) -> Template:
     "This is the public root page of your site"
-    iclient = userdata.get_indiclient()
-    # Check if user is looged in
+    # Check if user is logged in
     loggedin = False
     cookie = request.cookies.get('token', '')
     if cookie:
@@ -358,7 +357,6 @@ auth_mw = DefineMiddleware(LoggedInAuth, exclude="static")
 
 def ipywebapp():
     # Initialize the Litestar app with a Mako template engine and register the routes
-    iclient = userdata.get_indiclient()
     app = Litestar(
         route_handlers=[publicroot,
                         updateinstruments,
