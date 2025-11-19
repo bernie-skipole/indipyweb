@@ -86,7 +86,7 @@ indipyweb.get_dbhost()    returns the web host from the database
 
 indipyweb.get_dbport()    returns the web port from the database
 
-You may want to use this host and port, or you may want to choose your own, and ignore the database values, the coice is yours.
+You may want to use this host and port, or you may want to choose your own, and ignore the database values, the choice is yours.
 
 So you could create your own script main.py:
 
