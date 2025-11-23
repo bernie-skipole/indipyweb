@@ -1,7 +1,6 @@
 # indipyweb
-Web server, providing browser client connections to an INDI service.
 
-This does not include the INDI server, this is an INDI client.
+This indipyweb package provides a web service, which in turn connects to an INDI server, allowing you to view and control your instrument from a browser session.
 
 INDI defines a protocol for the remote control of instruments.
 
@@ -10,6 +9,10 @@ INDI - Instrument Neutral Distributed Interface.
 See https://en.wikipedia.org/wiki/Instrument_Neutral_Distributed_Interface
 
 The INDI protocol defines the format of the data sent, such as light, number, text, switch or BLOB (Binary Large Object). The client is general purpose, taking the format of switches, numbers etc., from the protocol.
+
+A typical session would look like:
+
+![Browser screenshot](https://raw.githubusercontent.com/bernie-skipole/indipyweb/main/indipyweb.png)
 
 indipyweb is typically installed into a virtual environment with:
 
@@ -68,10 +71,6 @@ On startup, if an INDI service is not running, or not present on localhost:7624 
 
 As the web service by default listens on 'localhost' only a browser running on the same machine will be able to connect. Set the host to '0.0.0.0' to listen on all interfaces.
 
-A typical session would look like:
-
-![Browser screenshot](https://raw.githubusercontent.com/bernie-skipole/indipyweb/main/indipyweb.png)
-
 ## importing indipyweb
 
 indipyweb is normally run as 'python -m indipyweb'
@@ -106,9 +105,7 @@ The database file holds hashes of user passwords, if obtained by an attacker, th
 
 It is envisioned this server will be used on local LAN's rather than on the internet. If it is used on a more open system, then it should be served behind a reverse proxy which provides certificates/https. Setting the command line argument 'securecookie' to 'True' enforces cookies will only be sent by browsers over https, unless the connection is to 'localhost'. This is set to False as default so initial development and home usage without a reverse proxy is easy.
 
-This package is free and open source, developed by a single user, with many third party dependencies, security is not tested at a professional level and this should not be used for any critical systems.
-
-This web service should work with any INDI service, however associated packages by the same author are:
+This package does not provide the INDI service, that requires drivers to interface with your instrumentation, and a server implementation to run the drivers. This web service connects to such a service, and acts as an INDI 'client'. It should operate with any INDI service that follows the INDI spec, however associated packages by the same author are:
 
 ## indipyserver
 
