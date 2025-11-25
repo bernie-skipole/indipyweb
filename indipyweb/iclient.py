@@ -9,7 +9,7 @@ import indipyclient as ipc
 
 from .web.userdata import DEFINE_EVENT, MESSAGE_EVENT, get_indiclient, getconfig, setconfig, get_device_event, get_vector_event, get_group_event
 
-version = "0.0.8"
+version = "0.0.9"
 
 
 
