@@ -36,11 +36,8 @@ _PARAMETERS = {
 # this event is triggered when an event is received that will affect the landing page
 LANDING_EVENT = asyncio.Event()
 
+# dictionary of devicename to asyncio.Event(), populated by get_device_event(devicename)
 DEVICE_EVENTS = {}
-
-GROUP_EVENTS = {}
-
-VECTOR_EVENTS = {}
 
 # This event is set whenever the table of users needs updating
 TABLE_EVENT = asyncio.Event()
@@ -163,19 +160,6 @@ def get_device_event(devicename):
         DEVICE_EVENTS[devicename] = asyncio.Event()
     return DEVICE_EVENTS[devicename]
 
-def get_group_event(devicename):
-    global GROUP_EVENTS
-    if devicename not in GROUP_EVENTS:
-        GROUP_EVENTS[devicename] = asyncio.Event()
-    return GROUP_EVENTS[devicename]
-
-
-def get_vector_event(devicename):
-    "Returns an asyncio.Event() for the given device which will be triggered when a vector of that device changes"
-    global VECTOR_EVENTS
-    if devicename not in VECTOR_EVENTS:
-        VECTOR_EVENTS[devicename] = asyncio.Event()
-    return VECTOR_EVENTS[devicename]
 
 def get_stored_item(item):
     "Gets stored item from the database"

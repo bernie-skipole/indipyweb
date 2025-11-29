@@ -7,9 +7,9 @@ import asyncio
 
 import indipyclient as ipc
 
-from .web.userdata import LANDING_EVENT, get_indiclient, getconfig, setconfig, get_device_event, get_vector_event, get_group_event
+from .web.userdata import LANDING_EVENT, get_indiclient, getconfig, setconfig, get_device_event
 
-version = "0.0.9"
+version = "0.1.0"
 
 
 
@@ -55,9 +55,9 @@ class IPyWebClient(ipc.IPyClient):
             LANDING_EVENT.clear()
             # for the page showing a device
             if event.devicename:
-                gge = get_group_event(event.devicename)
-                gge.set()
-                gge.clear()
+                de = get_device_event(event.devicename)
+                de.set()
+                de.clear()
             return
 
         if event.devicename:
@@ -68,14 +68,9 @@ class IPyWebClient(ipc.IPyClient):
                     event.vector.timestamp = event.timestamp
                 else:
                     event.vector.user_string = ""
-                dve = get_vector_event(event.devicename)
-                dve.set()
-                dve.clear()
-            else:
-                # no vector name, probably a device message
-                dme = get_device_event(event.devicename)
-                dme.set()
-                dme.clear()
+            de = get_device_event(event.devicename)
+            de.set()
+            de.clear()
         else:
             # no devicename, may be a system message
             LANDING_EVENT.set()

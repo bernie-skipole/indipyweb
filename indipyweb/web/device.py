@@ -15,18 +15,23 @@ from litestar.datastructures import State
 
 from litestar.response import ServerSentEvent, ServerSentEventMessage
 
-from .userdata import localtimestring, get_device_event, get_vector_event, get_group_event, get_indiclient, getuserauth, get_deviceobj
+from .userdata import localtimestring, get_device_event, get_indiclient, getuserauth, get_deviceobj
 
 class DeviceEvent:
-    """Iterate with messages whenever a device change happens.
-
-     event 'devicemessages' whenever a device message changes"""
+    """Iterate whenever a device change happens."""
 
     def __init__(self, deviceobj):
         self.lasttimestamp = None
         self.deviceobj = deviceobj
         self.device_event = get_device_event(deviceobj.devicename)
         self.iclient = get_indiclient()
+        # record current vector ids for this device
+        self.currentvectorids = set(vectorobj.itemid for vectorobj in self.deviceobj.values() if vectorobj.enable)
+        # record vectors and time of last change
+        self.vectors = tuple([None, vectorobj] for vectorobj in self.deviceobj.values() if vectorobj.enable)
+        self.number = len(self.vectors)  # number of vectors
+        self.rotator = cycle(self.vectors)
+
 
     def __aiter__(self):
         return self
@@ -58,78 +63,18 @@ class DeviceEvent:
                 self.lasttimestamp = None
                 return ServerSentEventMessage(event="devicemessages")
 
-            # No change, wait, at most 5 seconds, for a device message event
-            try:
-                await asyncio.wait_for(self.device_event.wait(), timeout=5)
-            except TimeoutError:
-                pass
-            # either a device message event has occurred, or 5 seconds since the last has passed
-            # so continue the while loop to check for any new messages
-
-
-class GroupEvent:
-    """Iterate with 'newvectors' messages whenever a vector in group appears or dissapears"""
-
-    def __init__(self, deviceobj, group):
-        self.deviceobj = deviceobj
-        self.group_event = get_group_event(deviceobj.devicename)
-        self.iclient = get_indiclient()
-        self.group = group
-        self.currentvectorids = set(vectorobj.itemid for vectorobj in self.deviceobj.values() if vectorobj.enable and vectorobj.group == group)
-
-    def __aiter__(self):
-        return self
-
-    async def __anext__(self):
-        "Whenever there is a currentvector enable change, return a ServerSentEventMessage"
-
-        while True:
-            if self.iclient.stop:
-                raise StopAsyncIteration
-
-            # check for new/deleted vector in the group
-            newvectorids = set(vectorobj.itemid for vectorobj in self.deviceobj.values() if vectorobj.enable and vectorobj.group == self.group)
+            # check there has been no vectors added or removed from the device
+            newvectorids = set(vectorobj.itemid for vectorobj in self.deviceobj.values() if vectorobj.enable)
             if self.currentvectorids != newvectorids:
                 self.currentvectorids = newvectorids
+
+                # if there has been a change, reset the following
+                self.vectors = tuple([vectorobj.timestamp, vectorobj] for vectorobj in self.deviceobj.values() if vectorobj.enable)
+                self.number = len(self.vectors)  # number of vectors
+                self.rotator = cycle(self.vectors)
                 return ServerSentEventMessage(event="newvectors")
 
-            # No change, wait, at most 5 seconds, for a new event
-            try:
-                await asyncio.wait_for(self.group_event.wait(), timeout=5)
-            except TimeoutError:
-                pass
-            # 5 seconds passed so continue the while loop to check for anything new
-
-
-
-class VectorEvent:
-    """Iterate whenever a vector value change happens, with the vector being
-       a vector of the given device and group.  This also ensures vectors are
-       tested in a round robin way to ensure one rapidly changing vector does
-       not mask others
-
-     Sends event 'vector_vectorid' """
-
-    def __init__(self, deviceobj, group):
-
-        self.deviceobj = deviceobj
-        self.vector_event = get_vector_event(deviceobj.devicename)
-        self.iclient = get_indiclient()
-        self.vectors = tuple([None, vectorobj] for vectorobj in self.deviceobj.values() if vectorobj.enable and vectorobj.group == group)
-        self.number = len(self.vectors)  # number of vectors
-        self.rotator = cycle(self.vectors)
-
-
-    def __aiter__(self):
-        return self
-
-    async def __anext__(self):
-        "Whenever there is a vector change, return a ServerSentEventMessage message"
-
-        while True:
-            if self.iclient.stop:
-                raise StopAsyncIteration
-
+            # check if a vector has been updated by checking its timestamp
             for i in range(self.number):
                 nextvector = next(self.rotator)
                 lasttimestamp = nextvector[0]
@@ -139,43 +84,23 @@ class VectorEvent:
                     nextvector[0] = currenttimestamp
                     return ServerSentEventMessage(event= f"vector_{nextvector[1].itemid}")
 
-            # No change, wait, at most 5 seconds, for an event
+            # No change, wait, at most 5 seconds, for a device event
             try:
-                await asyncio.wait_for(self.vector_event.wait(), timeout=5)
+                await asyncio.wait_for(self.device_event.wait(), timeout=5)
             except TimeoutError:
                 pass
-            # either a vector change has occurred, or 5 seconds since the last has passed
-            # so continue the while loop to check again
+            # either a device message event has occurred, or 5 seconds since the last has passed
+            # so continue the while loop to check for any new messages
 
 
 # SSE Handler
 @get(path="/devicechange/{deviceid:int}", exclude_from_auth=True, sync_to_thread=False)
 def devicechange(deviceid:int, request: Request[str, str, State]) -> ServerSentEvent|ClientRedirect:
-    "This monitors whenever a device message changes"
+    "This monitors whenever a device changes"
     deviceobj = get_deviceobj(deviceid)
     if deviceobj is None:
         return ClientRedirect("/")
     return ServerSentEvent(DeviceEvent(deviceobj))
-
-
-# SSE Handler
-@get(path="/groupchange/{deviceid:int}/{group:str}", exclude_from_auth=True, sync_to_thread=False)
-def groupchange(deviceid:int, group:str, request: Request[str, str, State]) -> ServerSentEvent|ClientRedirect:
-    "This monitors whenever a vector in the group changes enable value"
-    deviceobj = get_deviceobj(deviceid)
-    if deviceobj is None:
-        return ClientRedirect("/")
-    return ServerSentEvent(GroupEvent(deviceobj, group))
-
-
-# SSE Handler
-@get(path="/vectorchange/{deviceid:int}/{group:str}", exclude_from_auth=True, sync_to_thread=False)
-def vectorchange(deviceid:int, group:str, request: Request[str, str, State]) -> ServerSentEvent|ClientRedirect:
-    "This monitors whenever a vector in the group changes value"
-    deviceobj = get_deviceobj(deviceid)
-    if deviceobj is None:
-        return ClientRedirect("/")
-    return ServerSentEvent(VectorEvent(deviceobj, group))
 
 
 @get("/choosedevice/{deviceid:int}", exclude_from_auth=True, sync_to_thread=False)
@@ -266,8 +191,6 @@ def getgroup(deviceid:int, group:str, request: Request[str, str, State]) -> Temp
 
 device_router = Router(path="/device", route_handlers=[choosedevice,
                                                        devicechange,
-                                                       groupchange,
-                                                       vectorchange,
                                                        updatemessages,
                                                        getgroup
                                                        ])
