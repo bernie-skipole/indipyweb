@@ -7,7 +7,7 @@ import asyncio
 
 import indipyclient as ipc
 
-from .web.userdata import DEFINE_EVENT, MESSAGE_EVENT, get_indiclient, getconfig, setconfig, get_device_event, get_vector_event, get_group_event
+from .web.userdata import LANDING_EVENT, get_indiclient, getconfig, setconfig, get_device_event, get_vector_event, get_group_event
 
 version = "0.0.9"
 
@@ -45,18 +45,14 @@ class IPyWebClient(ipc.IPyClient):
             return
 
         if event.eventtype in ("ConnectionMade", "ConnectionLost"):
-            DEFINE_EVENT.set()
-            DEFINE_EVENT.clear()
-            if event.devicename:
-                dme = get_device_event(event.devicename)
-                dme.set()
-                dme.clear()
+            LANDING_EVENT.set()
+            LANDING_EVENT.clear()
             return
 
         if event.eventtype in ("Define", "Delete"):
             # for the landing page
-            DEFINE_EVENT.set()
-            DEFINE_EVENT.clear()
+            LANDING_EVENT.set()
+            LANDING_EVENT.clear()
             # for the page showing a device
             if event.devicename:
                 gge = get_group_event(event.devicename)
@@ -80,3 +76,7 @@ class IPyWebClient(ipc.IPyClient):
                 dme = get_device_event(event.devicename)
                 dme.set()
                 dme.clear()
+        else:
+            # no devicename, may be a system message
+            LANDING_EVENT.set()
+            LANDING_EVENT.clear()

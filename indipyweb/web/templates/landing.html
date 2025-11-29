@@ -22,14 +22,12 @@
   </header>
 
 
-<div class="w3-panel w3-row">
+<div class="w3-panel w3-row" hx-ext="sse" sse-connect="/instruments">
   <div class="w3-container w3-third">
 
-   <div hx-ext="sse" sse-connect="/instruments">
     <div hx-get="/updateinstruments" hx-trigger="sse:newinstruments" hx-target=this>
       <p>No device available</p>
     </div>
-   </div>
 
   % if loggedin and blobfolder:
    <div class="w3-margin">
@@ -52,11 +50,9 @@
 
     <div class="w3-container w3-border" style="margin-top:5vh">
 
-       <div hx-ext="sse" sse-connect="/messages">
         <div hx-get="/updatemessages" hx-trigger="sse:newmessages">
          ## /updatemessages is called as soon as the sse-connect is made, and which then inserts messages.html here
         </div>
-       </div>
 
     </div>
 

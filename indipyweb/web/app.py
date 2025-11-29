@@ -43,11 +43,12 @@ STATICFILES = Path(__file__).parent.resolve() / "static"
 TEMPLATEFILES = Path(__file__).parent.resolve() / "templates"
 
 
-class ShowInstruments:
-    """Iterate with instruments table whenever an instrument change happens."""
+class LandingPageChange:
+    """Iterate whenever an instrument change happens or a system message received."""
 
     def __init__(self):
-        self.instruments = set()
+        self.instruments = set()              # record instrument names
+        self.lasttimestamp = None             # lasttimestamp records last system message changed
         self.connected = False
         self.iclient = userdata.get_indiclient()
 
@@ -55,58 +56,20 @@ class ShowInstruments:
         return self
 
     async def __anext__(self):
-        "Whenever there is a change in devices, return a ServerSentEventMessage message"
+        "Whenever there is a change, return a ServerSentEventMessage"
         while True:
             if self.iclient.stop:
                 raise StopAsyncIteration
             if self.iclient.connected != self.connected:
                 self.connected = self.iclient.connected
                 return ServerSentEventMessage(event="newinstruments")
-            # get a set of instrument names for enabled devices
+            # get current set of instrument names for enabled devices
             newinstruments = set(name for name,value in self.iclient.items() if value.enable)
             if newinstruments != self.instruments:
                 # There has been a change, send a newinstruments to the users browser
                 self.instruments = newinstruments
                 return ServerSentEventMessage(event="newinstruments")
-            # No change, wait, at most 5 seconds, for a DEFINE_EVENT
-            try:
-                await asyncio.wait_for(userdata.DEFINE_EVENT.wait(), timeout=5.0)
-            except TimeoutError:
-                pass
-            # either a DEFINE_EVENT has occurred, or 5 seconds since the last has passed
-            # so continue the while loop to check for any new devices
-            continue
-
-
-
-# SSE Handler
-@get(path="/instruments", exclude_from_auth=True, sync_to_thread=False)
-def instruments() -> ServerSentEvent:
-    return ServerSentEvent(ShowInstruments())
-
-
-class ShowMessages:
-    """Iterate with messages whenever a message change happens."""
-
-    def __init__(self):
-        self.lasttimestamp = None
-        self.connected = False
-        self.iclient = userdata.get_indiclient()
-
-    def __aiter__(self):
-        return self
-
-    async def __anext__(self):
-        "Whenever there is a new message, return a ServerSentEventMessage message"
-        while True:
-            if self.iclient.stop:
-                asyncio.sleep(2)
-                return ServerSentEventMessage(event="newmessage")
-
-            if self.iclient.connected != self.connected:
-                self.connected = self.iclient.connected
-                return ServerSentEventMessage(event="newmessage")
-            # get new message
+            # no change in the instruments, check for new system message
             if self.iclient.messages:
                 lasttimestamp = self.iclient.messages[0][0]
                 if (self.lasttimestamp is None) or (lasttimestamp != self.lasttimestamp):
@@ -118,19 +81,19 @@ class ShowMessages:
                 # has a value, so there has been a change
                 self.lasttimestamp = None
                 return ServerSentEventMessage(event="newmessages")
-            # No change, wait, at most 5 seconds, for a MESSAGE_EVENT
+            # No change, wait, at most 5 seconds, for a LANDING_EVENT
             try:
-                await asyncio.wait_for(userdata.MESSAGE_EVENT.wait(), timeout=5.0)
+                await asyncio.wait_for(userdata.LANDING_EVENT.wait(), timeout=5.0)
             except TimeoutError:
                 pass
-            # either a MESSAGE_EVENT has occurred, or 5 seconds since the last has passed
-            # so continue the while loop to check for any new messages
+            # either a LANDING_EVENT has occurred, or 5 seconds since the last has passed
+            # so continue the while loop to check for any new devices or messages
 
 
 # SSE Handler
-@get(path="/messages", exclude_from_auth=True, sync_to_thread=False)
-def messages() -> ServerSentEvent:
-    return ServerSentEvent(ShowMessages())
+@get(path="/instruments", exclude_from_auth=True, sync_to_thread=False)
+def instruments() -> ServerSentEvent:
+    return ServerSentEvent(LandingPageChange())
 
 
 class LoggedInAuth(AbstractAuthenticationMiddleware):
@@ -366,7 +329,6 @@ def ipywebapp():
                         login,
                         logout,
                         instruments,
-                        messages,
                         blobs,
                         getblob,
                         delblob,

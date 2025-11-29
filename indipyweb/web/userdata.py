@@ -32,9 +32,9 @@ _PARAMETERS = {
                 "securecookie":False
               }
 
-DEFINE_EVENT = asyncio.Event()
 
-MESSAGE_EVENT = asyncio.Event()
+# this event is triggered when an event is received that will affect the landing page
+LANDING_EVENT = asyncio.Event()
 
 DEVICE_EVENTS = {}
 
