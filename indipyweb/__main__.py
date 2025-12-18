@@ -8,7 +8,7 @@ from .iclient import ipywebclient, version
 
 from .web.app import ipywebapp
 
-from .web.userdata import setupdbase, setconfig, getconfig
+from .web.userdata import setconfig, getconfig
 
 
 if sys.version_info < (3, 10):
@@ -65,10 +65,8 @@ to ensure loggedin cookies can only pass over https.
     if args.securecookie == "True":
         setconfig('securecookie', True)
 
-    setupdbase(args.host, args.port, dbfolder)
-
     # create the client, store it for later access with get_indiclient()
-    ipywebclient()
+    ipywebclient(args.host, args.port, dbfolder)
 
     host = getconfig('host')
     port = getconfig('port')

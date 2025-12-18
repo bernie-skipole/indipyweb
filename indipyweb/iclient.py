@@ -7,14 +7,16 @@ import asyncio
 
 import indipyclient as ipc
 
-from .web.userdata import LANDING_EVENT, get_indiclient, getconfig, setconfig, get_device_event
+from .web.userdata import LANDING_EVENT, setupdbase, get_indiclient, getconfig, setconfig, get_device_event
 
 version = "0.1.1"
 
 
 
-def ipywebclient():
+def ipywebclient(host, port, dbfolder):
     "Create and store an instance of IPyWebClient"
+
+    setupdbase(host, port, dbfolder)
 
     indihost = getconfig("indihost")
     indiport = getconfig("indiport")

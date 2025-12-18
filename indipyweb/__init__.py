@@ -37,7 +37,7 @@ from .iclient import ipywebclient
 
 from .web.app import ipywebapp
 
-from .web.userdata import setupdbase, setconfig, getconfig
+from .web.userdata import setconfig, getconfig
 
 
 
@@ -59,19 +59,19 @@ def make_app(dbfolder=None, securecookie = False):
     if securecookie:
         setconfig('securecookie', True)
 
-    setupdbase('', '', dbfolder)
-
     # create the client, store it for later access with get_indiclient()
-    ipywebclient()
+    ipywebclient('', '', dbfolder)
     # create the app
     app = ipywebapp()
     return app
 
 
 def get_dbhost():
-    "Returns the web listenning host as set in the database file"
+    """Returns the web listenning host as set in the database file
+       Should only be called after 'make_app' is called"""
     return getconfig('host')
 
 def get_dbport():
-    "Returns the web listenning port as set in the database file"
+    """Returns the web listenning port as set in the database file
+       Should only be called after 'make_app' is called"""
     return getconfig('port')
