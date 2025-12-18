@@ -6,9 +6,7 @@ import uvicorn
 
 from .iclient import ipywebclient, version
 
-from .web.app import ipywebapp
-
-from .web.userdata import setconfig, getconfig
+from .web.userdata import getconfig
 
 
 if sys.version_info < (3, 10):
@@ -63,15 +61,14 @@ to ensure loggedin cookies can only pass over https.
         dbfolder = pathlib.Path.cwd()
 
     if args.securecookie == "True":
-        setconfig('securecookie', True)
+        securecookie = True
+    else:
+        securecookie = False
 
     # create the client, store it for later access with get_indiclient()
-    ipywebclient(args.host, args.port, dbfolder)
-
+    app = ipywebclient(args.host, args.port, dbfolder, securecookie)
     host = getconfig('host')
     port = getconfig('port')
-    app = ipywebapp()
-
     return app, host, port
 
 

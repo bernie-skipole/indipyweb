@@ -33,8 +33,6 @@ from litestar.response import ServerSentEvent, ServerSentEventMessage
 
 from . import userdata, edit, device, vector, setup
 
-from ..iclient import do_startup, do_shutdown
-
 
 # location of static files, for CSS and javascript
 STATICFILES = Path(__file__).parent.resolve() / "static"
@@ -318,7 +316,7 @@ def api(device:str="", vector:str="") -> dict:
 auth_mw = DefineMiddleware(LoggedInAuth, exclude="static")
 
 
-def ipywebapp():
+def ipywebapp(do_startup, do_shutdown):
     # Initialize the Litestar app with a Mako template engine and register the routes
     app = Litestar(
         route_handlers=[publicroot,

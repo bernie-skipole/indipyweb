@@ -30,14 +30,11 @@ uvicorn main:app
 """
 
 
-
 import sys, pathlib
 
 from .iclient import ipywebclient
 
-from .web.app import ipywebapp
-
-from .web.userdata import setconfig, getconfig
+from .web.userdata import getconfig
 
 
 
@@ -56,14 +53,8 @@ def make_app(dbfolder=None, securecookie = False):
     else:
         dbfolder = pathlib.Path.cwd()
 
-    if securecookie:
-        setconfig('securecookie', True)
-
-    # create the client, store it for later access with get_indiclient()
-    ipywebclient('', '', dbfolder)
-    # create the app
-    app = ipywebapp()
-    return app
+    # create the asgi app
+    return ipywebclient('', '', dbfolder, securecookie)
 
 
 def get_dbhost():

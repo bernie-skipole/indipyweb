@@ -7,14 +7,17 @@ import asyncio
 
 import indipyclient as ipc
 
+from .web.app import ipywebapp
 from .web.userdata import LANDING_EVENT, setupdbase, get_indiclient, getconfig, setconfig, get_device_event
 
-version = "0.1.1"
+version = "0.1.2"
 
 
 
-def ipywebclient(host, port, dbfolder):
-    "Create and store an instance of IPyWebClient"
+def ipywebclient(host, port, dbfolder, securecookie):
+    "Create an instance of IPyWebClient, return the asgi app"
+
+    setconfig('securecookie', securecookie)
 
     setupdbase(host, port, dbfolder)
 
@@ -23,6 +26,8 @@ def ipywebclient(host, port, dbfolder):
     indiclient = IPyWebClient(indihost=indihost, indiport=indiport)
     indiclient.BLOBfolder = getconfig("blobfolder")
     setconfig("indiclient", indiclient)
+    # create and return the asgi app
+    return ipywebapp(do_startup, do_shutdown)
 
 
 def do_startup():
@@ -31,6 +36,7 @@ def do_startup():
     iclient = get_indiclient()
     runclient = asyncio.create_task(iclient.asyncrun())
     setconfig("runclient", runclient)
+
 
 async def do_shutdown():
     "Stop the client, called from Litestar app"
