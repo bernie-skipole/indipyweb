@@ -249,8 +249,16 @@ def blobs(request: Request[str, str, State]) -> Template:
         blobfiles.sort()
     else:
         blobfiles = []
+    images = []
+    for bfile in blobfiles:
+        bsuffix = Path(bfile).suffix.lower()
+        if bsuffix in ('.jpeg', '.jpg'):
+            images.append(True)
+        else:
+            images.append(False)
     admin = True if request.auth == "admin" else False
     context = {'blobfiles':blobfiles,
+               'images':images,
                'admin':admin}
     return Template("blobs.html", context=context)
 
@@ -269,6 +277,46 @@ def getblob(blobfile:str, request: Request[str, str, State]) -> File:
         path=blobpath,
         filename=blobfile
         )
+
+
+@get("/viewblob/{blobfile:str}", sync_to_thread=False )
+def viewblob(blobfile:str, request: Request[str, str, State]) -> Template:
+    "Show the image page"
+    iclient = userdata.get_indiclient()
+    blobfolder = iclient.BLOBfolder
+    if not blobfolder:
+        raise NotFoundException()
+    blobpath = iclient.BLOBfolder / blobfile
+    if not blobpath.is_file():
+        raise NotFoundException()
+    suffix = blobpath.suffix.lower()
+    if suffix not in ('.jpeg', '.jpg'):
+        raise NotFoundException()
+    return Template("image.html", context={"blob":blobfile})
+
+
+@get("/viewimage/{blobfile:str}", sync_to_thread=False )
+def viewimage(blobfile:str, request: Request[str, str, State]) -> File:
+    "Show a BLOB image page"
+    iclient = userdata.get_indiclient()
+    blobfolder = iclient.BLOBfolder
+    if not blobfolder:
+        raise NotFoundException()
+    blobpath = iclient.BLOBfolder / blobfile
+    if not blobpath.is_file():
+        raise NotFoundException()
+    suffix = blobpath.suffix.lower()
+    if suffix == '.jpeg' or suffix == '.jpg':
+         blobmedia = 'image/jpeg'
+    else:
+        raise NotFoundException()
+    return File(
+        path=blobpath,
+        filename=blobfile,
+        media_type=blobmedia
+        )
+
+
 
 @get("/delblob/{blobfile:str}", sync_to_thread=False )
 def delblob(blobfile:str, request: Request[str, str, State]) -> ClientRefresh:
@@ -329,6 +377,8 @@ def ipywebapp(do_startup, do_shutdown):
                         instruments,
                         blobs,
                         getblob,
+                        viewblob,
+                        viewimage,
                         delblob,
                         api,
                         edit.edit_router,     # This router in edit.py deals with routes below /edit

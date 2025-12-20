@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+
+## image.html - The page showing a BLOB image
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BLOB Image</title>
+<link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+<link rel="stylesheet" href="/static/w3.css">
+<link rel="stylesheet" href="/static/w3-colors-flat.css">
+<link rel="stylesheet" href="/static/indipyweb.css">
+<script src="/static/htmx.min.js"></script>
+<script src="/static/indipyweb.js"></script>
+
+
+<body class="w3-flat-clouds">
+
+  <header class="w3-container w3-flat-silver w3-block">
+    <p class="w3-margin-right w3-left"><a href="/" class="w3-button w3-black w3-ripple w3-round w3-medium">Devices</a></p>
+    <p class="w3-right"><a href="/logout" class="w3-button w3-black w3-ripple w3-round w3-small w3-margin-right">Logout</a></p>
+    <p class="w3-right"><a href="/edit" class="w3-button w3-black w3-ripple w3-round w3-small w3-margin-right">Edit</a></p>
+    <h3>${blob|h}</h3>
+  </header>
+
+ <div class="w3-container" style="max-width:800px;margin-top:8vh">
+  <p class="w3-margin-right w3-left"><a href="/blobs" class="w3-button w3-black w3-ripple w3-round w3-medium">Back to BLOBs</a></p>
+  <div class="w3-margin">
+   <img src="/viewimage/${blob|h}" />
+  </div>
+ </div>
+
+</body>
+</html>
