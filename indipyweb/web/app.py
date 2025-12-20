@@ -252,7 +252,7 @@ def blobs(request: Request[str, str, State]) -> Template:
     images = []
     for bfile in blobfiles:
         bsuffix = Path(bfile).suffix.lower()
-        if bsuffix in ('.jpeg', '.jpg'):
+        if bsuffix in ('.jpeg', '.jpg', '.png', 'apng', '.gif', '.webp', '.avif', '.svg', '.jxl'):
             images.append(True)
         else:
             images.append(False)
@@ -290,7 +290,7 @@ def viewblob(blobfile:str, request: Request[str, str, State]) -> Template:
     if not blobpath.is_file():
         raise NotFoundException()
     suffix = blobpath.suffix.lower()
-    if suffix not in ('.jpeg', '.jpg'):
+    if suffix not in ('.jpeg', '.jpg', '.png', 'apng', '.gif', '.webp', '.avif', '.svg', '.jxl'):
         raise NotFoundException()
     return Template("image.html", context={"blob":blobfile})
 
@@ -308,6 +308,20 @@ def viewimage(blobfile:str, request: Request[str, str, State]) -> File:
     suffix = blobpath.suffix.lower()
     if suffix == '.jpeg' or suffix == '.jpg':
          blobmedia = 'image/jpeg'
+    elif suffix == '.png':
+         blobmedia = 'image/png'
+    elif suffix == '.apng':
+         blobmedia = 'image/apng'
+    elif suffix == '.gif':
+         blobmedia = 'image/gif'
+    elif suffix == '.webp':
+         blobmedia = 'image/webp'
+    elif suffix == '.avif':
+         blobmedia = 'image/avif'
+    elif suffix == '.svg':
+         blobmedia = 'image/svg+xml'
+    elif suffix == '.jxl':
+         blobmedia = 'image/jxl'
     else:
         raise NotFoundException()
     return File(

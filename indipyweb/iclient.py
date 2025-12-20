@@ -10,7 +10,7 @@ import indipyclient as ipc
 from .web.app import ipywebapp
 from .web.userdata import LANDING_EVENT, setupdbase, get_indiclient, getconfig, setconfig, get_device_event
 
-version = "0.1.2"
+version = "0.1.3"
 
 
 
