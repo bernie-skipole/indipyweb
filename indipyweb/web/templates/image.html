@@ -9,10 +9,7 @@
 <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
 <link rel="stylesheet" href="/static/w3.css">
 <link rel="stylesheet" href="/static/w3-colors-flat.css">
-<link rel="stylesheet" href="/static/indipyweb.css">
 <script src="/static/htmx.min.js"></script>
-<script src="/static/indipyweb.js"></script>
-
 
 <body class="w3-flat-clouds">
 
@@ -24,9 +21,12 @@
   </header>
 
  <div class="w3-container" style="max-width:800px;margin-top:8vh">
-  <p class="w3-margin-right w3-left"><a href="/blobs" class="w3-button w3-black w3-ripple w3-round w3-medium">Back to BLOBs</a></p>
+  <p class="w3-left">
+     <a href="/blobs" class="w3-button w3-black w3-ripple w3-round w3-medium w3-margin-right">Back to BLOBs</a>
+     <a href="/getblob/${blob|h}" class="w3-button w3-black w3-ripple w3-round w3-medium">Download</a>
+  </p>
   <div class="w3-margin">
-   <img src="/viewimage/${blob|h}" />
+   <img src="/viewimage/${blob|h}" style="width:100%" />
   </div>
  </div>
 
