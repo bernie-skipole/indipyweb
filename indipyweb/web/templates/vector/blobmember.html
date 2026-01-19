@@ -17,6 +17,8 @@
              <p>RX data: --No BLOB Folder set--</p>
           % elif not memberobj.filename:
              <p>RX data: --Nothing received yet--</p>
+          % elif loggedin:
+             <p>RX data: <a href="/getblob/${memberobj.filename|h}">${memberobj.filename|h}</a></p>
           % else:
              <p>RX data: ${memberobj.filename|h}</p>
           % endif
