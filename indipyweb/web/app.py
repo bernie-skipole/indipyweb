@@ -245,7 +245,7 @@ def blobs(request: Request[str, str, State]) -> Template:
     iclient = userdata.get_indiclient()
     blobfolder = iclient.BLOBfolder
     if blobfolder:
-        blobfiles = [f for f in listdir(blobfolder) if isfile(join(blobfolder, f))]
+        blobfiles = [f for f in listdir(blobfolder) if (not f.startswith(".") and isfile(join(blobfolder, f)))]
         blobfiles.sort()
     else:
         blobfiles = []
@@ -266,6 +266,8 @@ def blobs(request: Request[str, str, State]) -> Template:
 @get("/getblob/{blobfile:str}", media_type="application/octet", sync_to_thread=False )
 def getblob(blobfile:str, request: Request[str, str, State]) -> File:
     "Download a BLOB to the browser client"
+    if blobfile.startswith("."):
+        raise NotFoundException()
     iclient = userdata.get_indiclient()
     blobfolder = iclient.BLOBfolder
     if not blobfolder:
@@ -282,6 +284,8 @@ def getblob(blobfile:str, request: Request[str, str, State]) -> File:
 @get("/viewblob/{blobfile:str}", sync_to_thread=False )
 def viewblob(blobfile:str, request: Request[str, str, State]) -> Template:
     "Show the image page"
+    if blobfile.startswith("."):
+        raise NotFoundException()
     iclient = userdata.get_indiclient()
     blobfolder = iclient.BLOBfolder
     if not blobfolder:
@@ -298,6 +302,8 @@ def viewblob(blobfile:str, request: Request[str, str, State]) -> Template:
 @get("/viewimage/{blobfile:str}", sync_to_thread=False )
 def viewimage(blobfile:str, request: Request[str, str, State]) -> File:
     "Show a BLOB image page"
+    if blobfile.startswith("."):
+        raise NotFoundException()
     iclient = userdata.get_indiclient()
     blobfolder = iclient.BLOBfolder
     if not blobfolder:
@@ -338,6 +344,8 @@ def delblob(blobfile:str, request: Request[str, str, State]) -> ClientRefresh:
     auth = request.auth
     if auth != "admin":
         raise NotAuthorizedException()
+    if blobfile.startswith("."):
+        raise NotFoundException()
     iclient = userdata.get_indiclient()
     blobfolder = iclient.BLOBfolder
     if not blobfolder:
