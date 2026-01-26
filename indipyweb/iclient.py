@@ -14,10 +14,11 @@ version = "0.1.6"
 
 
 
-def ipywebclient(host, port, dbfolder, securecookie):
+def ipywebclient(host, port, dbfolder, securecookie, basepath):
     "Create an instance of IPyWebClient, return the asgi app"
 
     setconfig('securecookie', securecookie)
+    setconfig('basepath', basepath)
 
     setupdbase(host, port, dbfolder)
 

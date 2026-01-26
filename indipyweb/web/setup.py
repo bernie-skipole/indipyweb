@@ -20,8 +20,8 @@ def logout(request: Request[str, str, State]) -> ClientRedirect|Redirect:
         # log the user out
         userdata.logout(request.cookies['token'])
     if request.htmx:
-        return ClientRedirect("/login")
-    return Redirect("/login")
+        return ClientRedirect("../login")
+    return Redirect("../login")
 
 
 @get("/", sync_to_thread=False)

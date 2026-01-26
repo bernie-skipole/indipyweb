@@ -37,12 +37,16 @@ possible and the INDI host/port set (default localhost:7624).
 The securecookie argument is 'False' by default, if using a reverse
 proxy providing https connectivity, set securecookie to the string 'True'
 to ensure loggedin cookies can only pass over https.
+The basepath argument can be set to a subpath string which will be prepended
+to the site. So a string such as '/instruments/' will cause the web site
+to be served beneath the /instruments/ path.
 """)
 
     parser.add_argument("--port", type=int, help="Listening port of the web server.")
     parser.add_argument("--host", help="Hostname/IP of the web server.")
     parser.add_argument("--dbfolder", help="Folder where the database will be set.")
     parser.add_argument("--securecookie", default="False", help="Set True to enforce https only for cookies.")
+    parser.add_argument("--basepath", default="", help="Set to a directory which will be prepended to this site URL's")
     parser.add_argument("--version", action="version", version=version)
     args = parser.parse_args()
 
@@ -65,8 +69,17 @@ to ensure loggedin cookies can only pass over https.
     else:
         securecookie = False
 
+    # ensure basepath is either None, or a string with leading and tailing '/' characters
+    basepath = None
+    if args.basepath:
+        basepath = args.basepath.strip("/. ")
+    if basepath:
+        basepath = f"/{basepath}/"
+    else:
+        basepath = None
+
     # create the client, store it for later access with get_indiclient()
-    app = ipywebclient(args.host, args.port, dbfolder, securecookie)
+    app = ipywebclient(args.host, args.port, dbfolder, securecookie, basepath)
     host = getconfig('host')
     port = getconfig('port')
     return app, host, port

@@ -11,7 +11,7 @@
 
   <div id="yourpwdchange" class="w3-container w3-card" style="margin-top:5vh; display:none">
     <p>Change password for user: ${user | h}</p>
-    <form hx-post="/edit/changepwd" hx-target="#pwdconfirm" hx-swap="outerHTML" hx-on::after-request="if(event.detail.successful) this.reset()">
+    <form hx-post="changepwd" hx-target="#pwdconfirm" hx-swap="outerHTML" hx-on::after-request="if(event.detail.successful) this.reset()">
       <p><label for="oldpassword">Old Password:</label>
         <input class="w3-input" type="password" id="oldpassword" name="oldpassword" required /></p>
       <p><label for="password1">New Password:</label>
@@ -35,7 +35,7 @@
 
   <div id="fullnamechange" class="w3-container w3-card" style="margin-top:5vh; display:none">
     <p>Set a new full name for: ${user | h}</p>
-    <form hx-post="/edit/adminfullname" hx-target="#nameconfirm" hx-swap="outerHTML">
+    <form hx-post="adminfullname" hx-target="#nameconfirm" hx-swap="outerHTML">
       <p><label for="fullname">Users full name:</label>
         <input class="w3-input" type="text" id="fullname" name="fullname" value="${fullname | h}" required /></p>
       <p class="w3-center">
@@ -55,7 +55,7 @@
 
   <div id="deleteacc" class="w3-center" style="margin-top:5vh; display:none">
     <p>This deletes your ${user | h} account, and logs you off permanently. Are you sure you want to do this?</p>
-    <p><button hx-get="/edit/delete" hx-target="#delresult" class="w3-button w3-black w3-ripple w3-round">Yes, Please delete my account</button></p>
+    <p><button hx-get="delete" hx-target="#delresult" class="w3-button w3-black w3-ripple w3-round">Yes, Please delete my account</button></p>
     <p id="delresult" class="w3-red"></p>
   </div>
 

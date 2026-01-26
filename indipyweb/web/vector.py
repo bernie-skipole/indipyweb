@@ -28,7 +28,7 @@ def update(vectorid:int, request: Request[str, str, State]) -> Template|ClientRe
     # check valid vector
     vectorobj = get_vectorobj(vectorid)
     if vectorobj is None:
-        return ClientRedirect("/")
+        return ClientRedirect("../../")
     # Check if user is looged in
     loggedin = False
     cookie = request.cookies.get('token', '')
@@ -77,7 +77,7 @@ async def submit(vectorid:int, request: Request[str, str, State]) -> Template|Cl
     # check valid vector
     vectorobj = get_vectorobj(vectorid)
     if vectorobj is None:
-        return ClientRedirect("/")
+        return ClientRedirect("../../")
 
 
     if vectorobj.perm == "ro":
@@ -179,7 +179,7 @@ async def blobsend(
     # check valid vector
     vectorobj = get_vectorobj(vectorid)
     if vectorobj is None:
-        return ClientRedirect("/")
+        return ClientRedirect("../../../")
 
     if vectorobj.perm == "ro":
         return HTMXTemplate(None, template_str="<p>INVALID: This is a Read Only vector!</p>")
@@ -191,7 +191,7 @@ async def blobsend(
             memberobj = mbr
             break
     if memberobj is None:
-        return ClientRedirect("/")
+        return ClientRedirect("../../../")
 
     content = await data.read()
     filename = data.filename

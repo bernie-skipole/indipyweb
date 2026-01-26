@@ -18,7 +18,7 @@
           % elif not memberobj.filename:
              <p>RX data: --Nothing received yet--</p>
           % elif loggedin:
-             <p>RX data: <a href="/getblob/${memberobj.filename|h}">${memberobj.filename|h}</a></p>
+             <p>RX data: <a href="../../getblob/${memberobj.filename|h}">${memberobj.filename|h}</a></p>
           % else:
              <p>RX data: ${memberobj.filename|h}</p>
           % endif
@@ -34,7 +34,7 @@
       </div>
    % else:
       <div class="w3-container w3-margin">
-       <form id='blobform_${memberobj.itemid|h}' hx-encoding='multipart/form-data' hx-post='/vector/blobsend/${vectorobj.itemid|h}/${memberobj.itemid|h}'  hx-target="#result_${vectorobj.itemid}">
+       <form id='blobform_${memberobj.itemid|h}' hx-encoding='multipart/form-data' hx-post='../../vector/blobsend/${vectorobj.itemid|h}/${memberobj.itemid|h}'  hx-target="#result_${vectorobj.itemid}">
         <input id='blobbrowse_${memberobj.itemid|h}' type='file' name='file' class="w3-button w3-black w3-ripple w3-round w3-small" hx-preserve>
         <button class="w3-button w3-black w3-ripple w3-round w3-small">
             Send File

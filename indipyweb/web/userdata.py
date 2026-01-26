@@ -29,7 +29,8 @@ _PARAMETERS = {
                 "dbfolder":None,
                 "dbase":None,
                 "runclient":None,
-                "securecookie":False
+                "securecookie":False,
+                "basepath":None
               }
 
 

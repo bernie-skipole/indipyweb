@@ -21,7 +21,7 @@
   </div>
 
 % if vectorobj.perm != "ro" and loggedin and vectorobj.vectortype != "BLOBVector":
- <form hx-post="/vector/submit/${vectorobj.itemid|h}" hx-target="#result_${vectorobj.itemid|h}">
+ <form hx-post="../../vector/submit/${vectorobj.itemid|h}" hx-target="#result_${vectorobj.itemid|h}">
 % endif
 
  % for memberobj in sorted(vectorobj.members().values(), key=lambda memberobj: memberobj.label):

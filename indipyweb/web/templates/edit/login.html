@@ -6,17 +6,17 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Login</title>
-<link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+<link rel="icon" type="image/x-icon" href="static/favicon.ico">
 <style>
 html, body {
   height: 100%;
   margin: 0;
   }
 </style>
-<link rel="stylesheet" href="/static/w3.css">
-<link rel="stylesheet" href="/static/w3-colors-flat.css">
-<link rel="stylesheet" href="/static/indipyweb.css">
-<script src="/static/htmx.min.js"></script>
+<link rel="stylesheet" href="static/w3.css">
+<link rel="stylesheet" href="static/w3-colors-flat.css">
+<link rel="stylesheet" href="static/indipyweb.css">
+<script src="static/htmx.min.js"></script>
 
 
 <body>
@@ -26,7 +26,7 @@ html, body {
       </header>
 
       <div class="w3-container w3-card w3-display-middle" style="width:80%;max-width:400px">
-        <form hx-post="/login" hx-target="#result" hx-swap="outerHTML">
+        <form hx-post="login" hx-target="#result" hx-swap="outerHTML">
             <p>
             <label for="username">Username:</label>
             <input class="w3-input" type="text" id="username" name="username" required /></p>

@@ -120,17 +120,27 @@ class LoggedInAuth(AbstractAuthenticationMiddleware):
 def gotologin_error_handler(request: Request, exc: Exception) -> ClientRedirect|Redirect:
     """If a NotAuthorizedException is raised, this handles it, and redirects
        the caller to the login page"""
+    basepath = userdata.getconfig("basepath")
+    if basepath:
+        redirectpath = basepath + "login"
+    else:
+        redirectpath = "/login"
     if request.htmx:
-        return ClientRedirect("/login")
-    return Redirect("/login")
+        return ClientRedirect(redirectpath)
+    return Redirect(redirectpath)
 
 
 def gotonotfound_error_handler(request: Request, exc: Exception) -> ClientRedirect|Redirect:
     """If a NotFoundException is raised, this handles it, and redirects
        the caller to the not found page"""
+    basepath = userdata.getconfig("basepath")
+    if basepath:
+        redirectpath = basepath + "notfound"
+    else:
+        redirectpath = "/notfound"
     if request.htmx:
-        return ClientRedirect("/notfound")
-    return Redirect("/notfound")
+        return ClientRedirect(redirectpath)
+    return Redirect(redirectpath)
 
 
 @get("/notfound", exclude_from_auth=True, sync_to_thread=False )
@@ -150,8 +160,22 @@ def notfound(request: Request) -> Template:
 # Note, all routes with 'exclude_from_auth=True' do not have cookie checked
 # and are not authenticated
 
-@get("/", exclude_from_auth=True, sync_to_thread=False )
-def publicroot(request: Request) -> Template:
+@get("/", exclude_from_auth=True)
+async def publicroot(request: Request) -> ClientRedirect|Redirect:
+    "This is the public root folder of your site"
+    basepath = userdata.getconfig("basepath")
+    if basepath:
+        redirectpath = basepath + "indipyweb"
+    else:
+        redirectpath = "/indipyweb"
+    if request.htmx:
+        return ClientRedirect(redirectpath)
+    return Redirect(redirectpath)
+
+
+
+@get("/indipyweb", exclude_from_auth=True, sync_to_thread=False )
+def indipyweb(request: Request) -> Template:
     "This is the public root page of your site"
     iclient = userdata.get_indiclient()
     # Check if user is looged in
@@ -162,9 +186,15 @@ def publicroot(request: Request) -> Template:
         if userauth is not None:
             loggedin = True
     blobfolder = True if iclient.BLOBfolder else False
+    basepath = userdata.getconfig("basepath")
+    if basepath:
+        apipath = basepath + "api"
+    else:
+        apipath = "/api"
     return Template("landing.html", context={"hostname":userdata.connectedtext(),
                                              "loggedin":loggedin,
-                                             "blobfolder":blobfolder})
+                                             "blobfolder":blobfolder,
+                                             "apipath":apipath})
 
 
 @get("/updateinstruments", exclude_from_auth=True, sync_to_thread=False )
@@ -221,7 +251,7 @@ async def login(request: Request) -> Template|ClientRedirect:
     # The user checks out ok, create a cookie for this user and set redirect to the /,
     loggedincookie = userdata.createcookie(userinfo.user)
     # redirect with the loggedincookie
-    response =  ClientRedirect("/")
+    response =  ClientRedirect("indipyweb")
     if userdata.getconfig("securecookie"):
         response.set_cookie(key = 'token', value=loggedincookie, httponly=True, secure=True)
     else:
@@ -388,8 +418,9 @@ auth_mw = DefineMiddleware(LoggedInAuth, exclude="static")
 
 def ipywebapp(do_startup, do_shutdown):
     # Initialize the Litestar app with a Mako template engine and register the routes
-    app = Litestar(
+    app = Litestar( path = userdata.getconfig("basepath"),
         route_handlers=[publicroot,
+                        indipyweb,
                         updateinstruments,
                         updatemessages,
                         notfound,

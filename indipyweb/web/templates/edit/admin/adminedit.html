@@ -6,13 +6,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Admin Edit</title>
-<link rel="icon" type="image/x-icon" href="/static/favicon.ico">
-<link rel="stylesheet" href="/static/w3.css">
-<link rel="stylesheet" href="/static/w3-colors-flat.css">
-<link rel="stylesheet" href="/static/indipyweb.css">
-<script src="/static/htmx.min.js"></script>
-<script src="/static/sse.js"></script>
-<script src="/static/indipyweb.js"></script>
+<link rel="icon" type="image/x-icon" href="../static/favicon.ico">
+<link rel="stylesheet" href="../static/w3.css">
+<link rel="stylesheet" href="../static/w3-colors-flat.css">
+<link rel="stylesheet" href="../static/indipyweb.css">
+<script src="../static/htmx.min.js"></script>
+<script src="../static/sse.js"></script>
+<script src="../static/indipyweb.js"></script>
 
 
 <body class="w3-flat-clouds">
@@ -31,7 +31,7 @@
 ## Create setup button
 
 <div class="w3-content" style="max-width:400px;margin-top:5vh">
- <a href="/setup" class="w3-button w3-black w3-ripple w3-round" style="width:100%">System Setup</a>
+ <a href="../setup/" class="w3-button w3-black w3-ripple w3-round" style="width:100%">System Setup</a>
 </div>
 
 ## Create new user form
@@ -43,7 +43,7 @@
   </div>
 
   <div id="addnewuser" class="w3-container w3-card" style="margin-top:5vh; display:none">
-    <form hx-post="/edit/newuser" hx-target="#newuserconfirm" hx-swap="outerHTML" hx-on::after-request="if(event.detail.successful) this.reset()">
+    <form hx-post="newuser" hx-target="#newuserconfirm" hx-swap="outerHTML" hx-on::after-request="if(event.detail.successful) this.reset()">
       <p><label for="username">New Username:</label>
         <input class="w3-input" type="text" id="username" name="username" required /></p>
       <p><label for="password">New Password:</label>
@@ -66,7 +66,7 @@
 
 </div>
 
-<div id = "userlist" hx-ext="sse" sse-connect="/edit/tablechange">
+<div id = "userlist" hx-ext="sse" sse-connect="tablechange">
 <%include file="listusers.html"/>
 </div>
 

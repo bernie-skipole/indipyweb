@@ -48,8 +48,8 @@ async def edit(request: Request[str, str, State]) -> Template|ClientRedirect|Red
     if uinfo is None:
         # user not recognised, this should never happen, but in the event it does
         if request.htmx:
-            return ClientRedirect("/login")
-        return Redirect("/login")
+            return ClientRedirect("../login")
+        return Redirect("../login")
     # admin and user auth levels get different templates
     if auth != "admin":
         return Template(template_name="edit/user/useredit.html", context={"user": user,
@@ -61,8 +61,8 @@ async def edit(request: Request[str, str, State]) -> Template|ClientRedirect|Red
     context = userdata.userlist(thispage)
     if context is None:
         if request.htmx:
-            return ClientRedirect("/login")
-        return Redirect("/login")
+            return ClientRedirect("../login")
+        return Redirect("../login")
     # add further items to this context dictionary
     context["user"] = user
     context["fullname"] = uinfo.fullname
@@ -184,7 +184,7 @@ def delete(request: Request[str, str, State]) -> Template|ClientRedirect:
                         template_str=f"Failed. {message}")
     userdata.TABLE_EVENT.set()
     userdata.TABLE_EVENT.clear()
-    return ClientRedirect(f"/edit/deleted/{user}")
+    return ClientRedirect(f"../edit/deleted/{user}")
 
 
 @get("/deleted/{user:str}", exclude_from_auth=True, sync_to_thread=False)
@@ -210,7 +210,7 @@ async def userdelete(request: Request[str, str, State]) -> Template|ClientRedire
     userdata.TABLE_EVENT.set()
     userdata.TABLE_EVENT.clear()
     if username == request.user:
-        return ClientRedirect(f"/edit/deleted/{username}")
+        return ClientRedirect(f"../edit/deleted/{username}")
     return HTMXTemplate(template_name="edit/admin/optionsdelete.html", re_target="#editoptions", context={'user': username})
 
 
@@ -220,8 +220,8 @@ def logout(request: Request[str, str, State]) -> ClientRedirect|Redirect:
         # log the user out
         userdata.logout(request.cookies['token'])
     if request.htmx:
-        return ClientRedirect("/login")
-    return Redirect("/login")
+        return ClientRedirect("../login")
+    return Redirect("../login")
 
 
 @post("/newuser")
@@ -253,7 +253,7 @@ def edituser(user:str, request: Request[str, str, State]) -> Template|Redirect:
         return logout(request)
     uinfo = userdata.getuserinfo(user)
     if uinfo is None:
-        return Redirect("/")   ### no such user
+        return Redirect("../")   ### no such user
     # add further items to this context dictionary
     context = {"user": user, "fullname": uinfo.fullname, "hostname":userdata.connectedtext()}
     if user == request.user:
@@ -271,8 +271,8 @@ def tableupdate(thispage:int, request: Request[str, str, State]) -> Template|Cli
     context = userdata.userlist(thispage)
     if context is None:
         if request.htmx:
-            return ClientRedirect("/login")
-        return Redirect("/login")
+            return ClientRedirect("../login")
+        return Redirect("../login")
     return Template(template_name="edit/admin/listusers.html", context=context)
 
 @get("/prevpage", sync_to_thread=False)
@@ -283,8 +283,8 @@ def prevpage(thispage:int, request: Request[str, str, State]) -> Template|Client
     context = userdata.userlist(thispage, "-")
     if context is None:
         if request.htmx:
-            return ClientRedirect("/login")
-        return Redirect("/login")
+            return ClientRedirect("../login")
+        return Redirect("../login")
     return Template(template_name="edit/admin/listusers.html", context=context)
 
 
@@ -296,8 +296,8 @@ def nextpage(thispage:int, request: Request[str, str, State]) -> Template|Client
     context = userdata.userlist(thispage, "+")
     if context is None:
         if request.htmx:
-            return ClientRedirect("/login")
-        return Redirect("/login")
+            return ClientRedirect("../login")
+        return Redirect("../login")
     return Template(template_name="edit/admin/listusers.html", context=context)
 
 

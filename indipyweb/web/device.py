@@ -99,7 +99,7 @@ def devicechange(deviceid:int, request: Request[str, str, State]) -> ServerSentE
     "This monitors whenever a device changes"
     deviceobj = get_deviceobj(deviceid)
     if deviceobj is None:
-        return ClientRedirect("/")
+        return ClientRedirect("../../")
     return ServerSentEvent(DeviceEvent(deviceobj))
 
 
@@ -110,9 +110,9 @@ def choosedevice(deviceid:int, request: Request[str, str, State]) -> Template|Re
     # have to check device exists
     deviceobj = get_deviceobj(deviceid)
     if deviceobj is None:
-        return Redirect("/")
+        return Redirect("../../")
     if not deviceobj.enable:
-        return Redirect("/")
+        return Redirect("../../")
     # Check if user is logged in
     loggedin = False
     cookie = request.cookies.get('token', '')
@@ -142,9 +142,9 @@ def updatemessages(deviceid:int, request: Request[str, str, State]) -> Template|
     "Updates the messages on the device page, and redirects to / if device deleted"
     deviceobj = get_deviceobj(deviceid)
     if deviceobj is None:
-        return ClientRedirect("/")
+        return ClientRedirect("../../")
     if not deviceobj.enable:
-        return Redirect("/")
+        return Redirect("../../")
     messages = list(deviceobj.messages)
     if not messages:
         return HTMXTemplate(template_name="messages.html", context={"messages":["Device messages : Waiting.."]})
@@ -162,7 +162,7 @@ def getgroup(deviceid:int, group:str, request: Request[str, str, State]) -> Temp
     "Set chosen group, populate group tabs and group vectors"
     deviceobj = get_deviceobj(deviceid)
     if deviceobj is None:
-        return ClientRedirect("/")
+        return ClientRedirect("../../../")
     iclient = get_indiclient()
     blobfolder = True if iclient.BLOBfolder else False
     # Check if user is logged in
