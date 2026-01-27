@@ -50,20 +50,25 @@ The package help is:
       --host HOST                  Hostname/IP of the web server.
       --dbfolder DBFOLDER          Folder where the database will be set.
       --securecookie SECURECOOKIE  Set True to enforce https only for cookies.
+      --basepath BASEPATH          Set a path segment which will be prepended to the URL path.
       --version                    show program's version number and exit
 
     The host and port set here have priority over values set in the database.
     If not given, and not set in the database, 'localhost:8000' is used.
     The database file holds user and INDI port configuration, and can be
-    populated via browser using the 'edit' button.
+    populated via browser using the 'edit' facility.
     If it does not already exist, a database file will be created in the
-    given db folder, or if not set, the current working directory will be used.
+    given dbfolder, or if not set, the current working directory will be used.
     A newly generated database file will contain a single default username
     and password 'admin' and 'password!'. These should be changed as soon as
     possible and the INDI host/port set (default localhost:7624).
-    The securecookie argument is 'False' by default, if using a reverse
+    The securecookie argument is 'False' by default. If using a reverse
     proxy providing https connectivity, set securecookie to the string 'True'
     to ensure loggedin cookies can only pass over https.
+    The basepath argument can be set to a path segment which will be prepended
+    to the site path. So a string such as '/instruments/' will cause the web
+    site to be served beneath the /instruments/ path.
+
 
 You should start by connecting with a browser, on localhost:8000 unless you have changed the port with the above command line options.
 
@@ -79,7 +84,7 @@ In which case it creates an app and runs it with uvicorn.
 
 However if indipyweb is imported into your own script, then three functions are available.
 
-indipyweb.make_app(dbfolder=None, securecookie = False)  returns an app, ready to be run with uvicorn
+indipyweb.make_app(dbfolder=None, securecookie = False, basepath = '')  returns an app, ready to be run with uvicorn
 
 indipyweb.get_dbhost()    returns the web host from the database
 

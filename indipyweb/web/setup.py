@@ -61,9 +61,10 @@ def backupdb(request: Request[str, str, State]) -> Template|Redirect:
     filename = userdata.dbbackup()
     if filename:
         return HTMXTemplate(None,
-                        template_str="<p id=\"backupfile\" style=\"color:green\" class=\"w3-animate-right\">Backup file created: ${filename|h}</p>", context={"filename":filename})
+                        template_str="<p id=\"backupfile\" style=\"color:green\" class=\"w3-animate-right\">Backup file created: <a href=\"../getbackup/${filename|h}\">${filename|h}</a></p>", context={"filename":filename})
     return HTMXTemplate(None,
                         template_str="<p id=\"backupfile\"  style=\"color:red\" class=\"w3-animate-right\">Backup failed!</p>")
+
 
 
 @post("/webhost")

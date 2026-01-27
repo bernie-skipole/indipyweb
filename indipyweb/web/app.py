@@ -269,6 +269,31 @@ def logout(request: Request[str, str, State]) -> Template:
     return Template("edit/loggedout.html", context={"hostname":userdata.connectedtext()})
 
 
+@get("/getbackup/{backupfile:str}", media_type="application/octet", sync_to_thread=False )
+def getbackup(backupfile:str, request: Request[str, str, State]) -> File:
+    "Download a backup file to the browser client"
+    auth = request.auth
+    if auth != "admin":
+        raise NotAuthorizedException()
+    if backupfile.startswith("."):
+        raise NotFoundException()
+    if backupfile == "indipyweb.db":
+        # do not allow download of current database
+        raise NotFoundException()
+    if not backupfile.endswith(".db"):
+        raise NotFoundException()
+    backupfolder = userdata.getconfig("dbfolder")
+    if not backupfolder:
+        raise NotFoundException()
+    backuppath = backupfolder / backupfile
+    if not backuppath.is_file():
+        raise NotFoundException()
+    return File(
+        path=backuppath,
+        filename=backupfile
+        )
+
+
 @get("/blobs", sync_to_thread=False )
 def blobs(request: Request[str, str, State]) -> Template:
     "Shows a page of blob files"
@@ -428,6 +453,7 @@ def ipywebapp(do_startup, do_shutdown):
                         login,
                         logout,
                         instruments,
+                        getbackup,
                         blobs,
                         getblob,
                         viewblob,
