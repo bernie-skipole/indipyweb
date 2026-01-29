@@ -215,6 +215,9 @@ def setupdbase(host, port, dbfolder):
     _PARAMETERS["port"] = port
     _PARAMETERS["dbfolder"] = dbfolder
 
+    # This sets the name of the database file. If the name is changed, give it an ending
+    # of '.db' since this is tested in app.getbackup()
+
     dbase = dbfolder / "indipyweb.db"
 
     _PARAMETERS["dbase"] = dbase

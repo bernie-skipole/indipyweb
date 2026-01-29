@@ -145,7 +145,7 @@ def gotonotfound_error_handler(request: Request, exc: Exception) -> ClientRedire
 
 @get("/notfound", exclude_from_auth=True, sync_to_thread=False )
 def notfound(request: Request) -> Template:
-    "This is the public root page of your site"
+    "This is the not found page of your site"
     # Check if user is logged in
     loggedin = False
     cookie = request.cookies.get('token', '')
@@ -277,13 +277,14 @@ def getbackup(backupfile:str, request: Request[str, str, State]) -> File:
         raise NotAuthorizedException()
     if backupfile.startswith("."):
         raise NotFoundException()
-    if backupfile == "indipyweb.db":
-        # do not allow download of current database
-        raise NotFoundException()
     if not backupfile.endswith(".db"):
         raise NotFoundException()
     backupfolder = userdata.getconfig("dbfolder")
     if not backupfolder:
+        raise NotFoundException()
+    dbasefile = userdata.getconfig("dbase").name
+    if backupfile == dbasefile:
+        # do not allow download of current database
         raise NotFoundException()
     backuppath = backupfolder / backupfile
     if not backuppath.is_file():
