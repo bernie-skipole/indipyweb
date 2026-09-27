@@ -34,7 +34,7 @@ or with
 
 python -m indipyweb [options]
 
-This will create a database file holding user information in the working directory, and will run a web server on localhost:8000. Connect with a browser, and initially use the default created user, with username admin and password password! - note the exclamation mark.
+This will create a configuration file holding user information in the working directory (an sqlite database file), and will run a web server on localhost:8000. Connect with a browser, and initially use the default created user, with username admin and password password! - note the exclamation mark.
 
 This server will attempt to connect to an INDI service on localhost:7624, and the user should be able to view and control devices.
 
@@ -86,9 +86,9 @@ However if indipyweb is imported into your own script, then three functions are 
 
 indipyweb.make_app(dbfolder=None, securecookie = False, basepath = '')  returns an app, ready to be run with uvicorn
 
-indipyweb.get_dbhost()    returns the web host from the database
+indipyweb.get_dbhost()    returns the web host from the database file
 
-indipyweb.get_dbport()    returns the web port from the database
+indipyweb.get_dbport()    returns the web port from the database file
 
 You may want to use this host and port, or you may want to choose your own, and ignore the database values, the choice is yours.
 
